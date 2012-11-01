@@ -1,3 +1,3 @@
 define
   routes:
-    '/': 'cs!site/docs'
+    '/': 'cs!site/pages/docs'

@@ -1,6 +1,9 @@
 define ['less!./page'], () ->
+  _extend:
+    section: 'REPLACE'
+    options: 'APPEND'
+    
   options:
-    content: ['Page not found!']
     section: 'about'
   
   template: (o) -> """
