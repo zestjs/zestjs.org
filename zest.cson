@@ -1,0 +1,15 @@
+require:
+  paths:
+    site: '../zestjs.org'
+    less: 'require-less/less'
+
+  map:
+    '*':
+      selector: 'jquery'
+
+rebuildZestLayer: false
+
+modules:
+  'cs!$/zestjs.org': true
+
+port: 8080

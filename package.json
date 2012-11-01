@@ -1,0 +1,27 @@
+{
+  "name": "ZestJS.org",
+  "description": "Website & documentation for ZestJS",
+  "version": "0.0.1",
+  "author": "",
+  "dependencies": {
+    "markdown": ">=0.4.0"
+  },
+  "amd": {
+    "baseUrl": "www/lib"
+  },
+  "volo": {
+    "dependencies": {
+      "require": "github:jrburke/requirejs/2.1.1",
+      "zest": "github:zestjs/zest/master",
+      "require-is": "github:guybedford/require-is/master",
+      "selector": "github:guybedford/selector/master",
+      "require-css": "github:guybedford/require-css/master",
+      "require-less": "github:guybedford/require-less/master",
+      "coffee-script": "github:jashkenas/coffee-script/1.4.0",
+      "cs": "github:jrburke/require-cs/0.4.2",
+      "empty": "github:guybedford/empty-module/master",
+      "zoe": "github:zestjs/zoe/master",
+      "rest": "github:guybedford/rest/master"
+    }
+  }
+}
