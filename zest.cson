@@ -1,3 +1,6 @@
+page:
+  title: null
+
 require:
   paths:
     site: '../zestjs.org'
