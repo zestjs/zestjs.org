@@ -1,0 +1,90 @@
+.contents {
+  padding: 20px;
+  padding-top: 0;
+}
+
+.contents h1, .contents h2 {
+  cursor: pointer;
+  font-family: "PT Sans", arial, sans-serif;
+  font-weight: 100;
+}
+.contents h1 {
+  font-size: 17px;
+  line-height: 22px;
+  margin: 20px 0 10px 0;
+  
+  a {
+    color: #444444;
+    text-decoration: none;
+    text-shadow: 1px 1px white;
+  }
+  
+  a:hover {
+    color: #CA3;
+  }
+  a.active {
+    
+  }
+}
+.contents h2 {
+  font-size: 14px;
+  
+  a {
+    margin-left: 5px;
+    padding-left: 10px;
+    color: #707070;
+    text-shadow: 1px 1px white;
+    text-decoration: none;
+  }
+  a:hover {
+    text-shadow: 1px 1px white;
+    color: #CA3;
+  }
+  a.active {
+    border-left: 2px solid #ccc;
+    margin-left: 3px;
+    color: #555;
+    font-weight: bold;
+  }
+}
+.contents-footer {
+  position: absolute;
+  height: 50px;
+  width: 100%;
+  margin-left: -20px;
+  bottom: 40px;
+  
+  .github {
+    float: left;
+    margin-left: 10px;
+    text-indent: -1000px;
+    overflow: hidden;
+    width: 51px;
+    height: 23px;
+    background-image: url(./sprites.png);
+    background-position: 0px -42px;
+    &:hover {
+      background-position: 0px 0px;
+    }
+  }
+  .built-zest {
+    float: right;
+    margin-right: 10px;
+    text-indent: -1000px;
+    overflow: hidden;
+    width: 118px;
+    height: 23px;
+    background-image: url(./sprites.png);
+    background-position: 118px -42px;
+    
+    &:hover {
+      background-position: 118px -0px;
+    }
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .contents-footer {
+    bottom: 72px;
+  }
+}

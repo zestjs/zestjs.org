@@ -10,30 +10,28 @@ h1.page-title {
 }
 .header {
   width: 100%;
-  background-color: #000;
-  height: 40px;
+  background-color: #202020;
   position: fixed;
   font-family: "PT Sans", arial, sans-serif;
+  z-index: 10;
   
   .logo {
-    float: left;
     display: block;
-    color: #fff;
-    font-size: 16px;
-    line-height: 40px;
-    vertical-align: middle;
+    float: left;
+    text-indent: -1000px;
+    overflow: hidden;
     margin-left: 12px;
-    
-    span {
-      color: #EDCB5A;
-    }
+    background-image: url(zest-logo.png);
+    height: 28px;
+    margin-top: 4px;
+    width: 74px;
   }
   
   ul.menu {
-    width: 40em;
     margin: 0;
     float: right;
     margin-right: 8em;
+    height: 40px;
   
     li {
       float: left;
@@ -52,5 +50,30 @@ h1.page-title {
     a:hover, a.active {
       color: #BCBCBC;
     }
+  }
+}
+
+.page-content {
+  padding-top: 40px;
+}
+
+@media screen and (max-width: 1024px) {
+  .header ul.menu {
+    clear: both;
+    float: none;
+    margin: 0;
+    padding: 0;
+    
+    li a {
+      margin: 0 1em 0 12px;
+    }
+  }
+  .page-content {
+    padding-top: 72px;
+  }
+}
+@media screen and (max-width: 800px) {
+  .header ul.menu a {
+    font-size: 12px;
   }
 }

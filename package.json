@@ -21,7 +21,8 @@
       "cs": "github:jrburke/require-cs/0.4.2",
       "empty": "github:guybedford/empty-module/master",
       "zoe": "github:zestjs/zoe/master",
-      "rest": "github:guybedford/rest/master"
+      "rest": "github:guybedford/rest/master",
+      "marked": "https://raw.github.com/chjj/marked/master/lib/marked.js"
     }
   }
 }
