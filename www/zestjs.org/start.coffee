@@ -4,11 +4,30 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     title: 'Getting Started'
     section: 'start'
     data: [
+      chapterName: 'Getting Started'
+      sections: [
+        sectionName: 'Contents'
+        markdown: """
+          1. [Introduction](#Introduction) - The very quick introduction.
+          2. [Install Zest Server](#Install%20Zest%20Server) - Install the NodeJS render server.
+          3. [Install Zest Client](#Install%20Zest%20Client) - Install Zest in the browser only.
+          4. [An Introduction to Writing Zest Components](#An%20Introduction%20to%20Writing%20Zest%20Components) - Create extensible and portable components.
+          5. [Creating Zest Server Modules](#Creating%20Zest%20Server%20Modules) - Build an entire website with Zest server.
+        """
+      ,
+        sectionName: 'Engage'
+        markdown: """
+          If you're stuck or have any questions, post a comment on the [ZestJS Google Group](http://groups.google.com/group/zestjs).
+          
+          To report issues or get involved in the development, [find us on GitHub](https://github.com/zestjs).
+        """
+      ]
+    ,
       chapterName: 'Quick Start'
       sections: [
         sectionName: 'Introduction'
         markdown: """
-          At its core, Zest simply renders JavaScript **Component** files. Think of a component like a jQuery plugin. It consists of some HTML, CSS and then an attachment such as a domReady or JavaScript call. With Zest all of these steps are included in a single JavaScript definition file, as a **Component**.
+          At its core, Zest simply renders JavaScript **Component** definitions. Think of a component like a jQuery plugin. It consists of some HTML, CSS and then an attachment such as a domReady or JavaScript call. With Zest all of these steps are included in a single JavaScript definition file, as a **Component**.
           
           Zest comes with two identical rendering functions - one for the server and one in the browser.
           
@@ -22,7 +41,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           ```javascript
             $z.render('componentId', {options}, destination);
           ```
-          * Components are managed as [RequireJS](http://requirejs.org) modules, so that _componentId_ is the RequireJS moduleId for the component being rendered.
+          * Components are managed as [RequireJS](http://requirejs.org) modules, so that _componentId_ is the RequireJS moduleId for the component being rendered. Typically RequireJS _moduleId's_ are just the file path relative to a baseUrl, but without the '.js' extension.
           * _{options}_ sets the instance options for the creation of the component. For example, a slideshow would need a list of images and a width and height.
           * _destintation_ is where the component will be rendered. On the server, this is the NodeJS response object. In the browser, this is the container document element. For example, `document.body`.
           
@@ -47,8 +66,6 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           This loads up RequireJS with the minimal zest configuration, and then renders a sample component into the page.
           
           This technique can be used to create single page apps, with all Zest rendering occurring on the client.
-          
-          One of the major benefits of Zest is the ability to render all components either on the client or the server. This allows for creating component-based dynamic interactive applications, while still ensuring search engines can crawl the site as well.
           
         """
       ,
@@ -85,7 +102,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
         """
       ]
     ,
-      chapterName: 'A Brief Introduction to Writing Zest Components'
+      chapterName: 'An Introduction to Writing Zest Components'
       sections: [
         sectionName: 'The Simplest Component'
         markdown: """
@@ -116,7 +133,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
         """
       ]
     ,
-      chapterName: 'Zest Server'
+      chapterName: 'Creating Zest Server Modules'
       sections: [
         sectionName: 'Working with Routes'
         markdown: """

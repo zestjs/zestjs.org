@@ -8,7 +8,7 @@ define ['zest', 'css!./clearfix', 'less!./page'], ($z) ->
     title: ''
     menu:
       '/why-zest': 'Why Zest?'
-      '/start': 'Quick Start'
+      '/start': 'Get Started'
       '/docs': 'Documentation'
       # '/components': 'Component Library'
   

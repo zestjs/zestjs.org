@@ -4,8 +4,8 @@ define ['css!./sidebar'], ->
     sidebar: ''
   
   template: '''
-    <div class="sidebar">{`sidebar`}</div>
     <div class="content-container">
       <div class="content">{`content`}</div>
     </div>
+    <div class="sidebar">{`sidebar`}</div>
   '''

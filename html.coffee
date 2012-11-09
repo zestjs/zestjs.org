@@ -20,7 +20,7 @@ define
     <head>
       <meta charset='utf-8'>
       {`title`}
-      <link rel="shortcut icon" href="favicon.ico" />
+      <link rel="shortcut icon" href="/favicon.ico" />
       <script type='text/javascript'>var require = #{JSON.stringify(o.requireConfig)};</script>
       <script type='text/javascript' src='#{o.requireConfig.baseUrl}/require.js' data-main='#{if o.main then o.main else ''}'></script>
       

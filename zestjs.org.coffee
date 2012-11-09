@@ -1,7 +1,8 @@
 define
   routes:
-    '@/': '/start'
+    '/': 'cs!app/home'
     '/why-zest': 'cs!app/why-zest'
+    '/docs/zoe': 'cs!app/zoe'
+    '/docs': 'cs!app/zest-docs'
     '/start': 'cs!app/start'
-    '/docs': 'cs!app/docs'
     '/components': 'cs!app/components'

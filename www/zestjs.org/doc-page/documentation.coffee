@@ -1,17 +1,17 @@
-define ['is!render?marked', 'is!browser?jquery', 'less!./documentation'], (marked, $) ->
+define ['is!render?marked', 'is!browser?jquery', 'zoe', 'less!./documentation'], (marked, $, zoe) ->
   marked.setOptions
     gfm: true
     highlight: (code, lang) ->
-      if lang == 'javascript'
+      if lang == 'javascript' || lang == 'jslive'
         code
           .replace(/\/\/(.*)/gm, '<span class="comment">//$1</span>')
-          .replace(/('.*')/gm, '<span class="string">$1</span>')
-          .replace(/\d+/gm, '<span class="number">$1</span>')
+          .replace(/('[^']*')/gm, '<span class="string">$1</span>')
+          .replace(/(\d+)/gm, '<span class="number">$1</span>')
           .replace(/\b(for|function|new|throw|return|var|if|else)\b/gm, '<span class="keyword">$1</span>')
-      else if lang == 'coffeescript'
+      else if lang == 'coffeescript' || lang == 'cslive'
         code
           .replace(/#(.*)/gm, '<span class="comment">#$1</span>')
-          .replace(/(".*")/gm, '<span class="string">$1</span>')
+          .replace(/("[^"]*")/gm, '<span class="string">$1</span>')
           .replace(/(\d+)/gm, '<span class="number">$1</span>')
           .replace(/\b(function|new|throw|return|var|if|else)\b/gm, '<span class="keyword">$1</span>')
       else
@@ -39,5 +39,19 @@ define ['is!render?marked', 'is!browser?jquery', 'less!./documentation'], (marke
     __
   
   attach: ($$, o) ->
+    if typeof window != 'undefined'
+      window.zoe = zoe;
+    
     $('a', $$).each ->
       $(@).attr 'target', '_blank' if $(@).attr('href').substr(0, 1) != '#'
+      
+    # live code examples
+    $('code.lang-jslive', $$).each ->
+      runButton = $ '<div class="run-code"><a class="run-button">Run</a><span class="result"></span></div>'
+      $('.run-button', runButton).click ->
+        parent = $(@).parent()
+        try
+          $('.result', parent).text eval $(@).parent().prev().text()
+        catch e
+          $('.result', parent).text 'Error: ' + e.toString()
+      $(@).attr('contenteditable', true).attr('spellcheck', false).parent().after(runButton)
