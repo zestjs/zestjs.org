@@ -4,24 +4,24 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     title: 'Why Zest?'
     section: 'why-zest'
     data: [
-      chapterName: 'Towards a Component Web'
+      chapterName: 'Render Components'
       sections: [
         sectionName: 'The Idea'
         markdown: """
           
           ZestJS grew from a very simple idea:
           
-          **The need to write easily installable and buildable components that can be shared between sites.**
+          **The need to write render components in a common format that can be easily installed, built and shared between sites.**
+          
+          _A **Render Component** is a combination of template HTML, CSS and JavaScript dependencies. It conforms to an expected interface which specifies a template converting options data into HTML. It also includes a loading hook, CSS, and the dynamic attachment for the HTML. When used with a **render function**, the render component can be rendered into the page as a dynamic component._
           
           Installing should be one command. Requiring should be a one line require. And building should be a single step as well.
           The framework should be minimal, flexible and open, and not impose any way of doing things unnecessarily.
           
-          Zest is at its core a specification for such components.
+          Zest is at its core is an implementation of the specification for such components.
           
-          A component is a combination of template HTML, CSS and JavaScript dependencies. It is a template, which takes JSON options data, and returns HTML.
-          
-          There are many benefits of a component model - code reuse between sites and organisations along with the open source benefits.
-          If you can break an entire webpage specification down into components, it's much easier to break down the workload between developers, just like
+          There are many benefits to a **Renderable Component Model** - code reuse between sites and organisations along with the open source benefits.
+          If you can break an entire webpage specification down into render components, it's much easier to break down the workload between developers, just like
           Object Oriented programming provides. Testing becomes easier as you can test the individual components separately.
           
           This website itself is built using Zest. Feel free to view the source in the page or on [GitHub here](https://github.com/zestjs/zestjs.org).
@@ -45,7 +45,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           Because we've hidden the internals of our element from the underlying HTML, we're actually hiding content as well.
           This means custom elements are naturally less Google-friendly.
           
-          It should be possible for every part of a webpage to be a component, without sacrificing search engine potential.
+          It should be possible for every part of a webpage to be a render component, without sacrificing search engine potential.
           A component system should be based on the principles of dependency and build management at its core, as that is the fundamental
           property of being able to share portable code. And it should be possible to use the technology across all devices today, without
           having to work out complicated fallback solutions.
@@ -127,9 +127,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
             });
           ```
           
-          And there we have a completely modular component, that completely supports builds naturally.
+          And there we have a completely modular render component, that completely supports builds naturally.
           
-          This is the basic concept that grew into the Zest component specification.
+          This is the basic concept that grew into the Render Component interface.
         """
       ,
         sectionName: "Client or Server?"
@@ -160,7 +160,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           Zest-server grew primarily to serve this need.
         """
       ,
-        sectionName: "Dynamic Components: Attachment"
+        sectionName: "Dynamic Render Components: Attachment"
         markdown: """
           We're finally ready to make the slideshow component tick.
           
@@ -202,79 +202,68 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           
           Lovely.
           
-          Notice also how easy it is to convert an existing jQuery plugin into a fully-portable component.
+          Notice also how easy it is to convert an existing jQuery plugin into a fully-portable render component.
           
           But we're already repeating ourselves. The above code is the same for every component. What we've hit on here is the need for a general
           render function that can handle this for us.
           
           Some extra features come to mind:
-          * Why do we need to create the attach options? Surely these can also be put together by the component itself?
-          * How can we have components contain other components in regions?
-          * What about asynchronous component loading and how does this all also happen on the server identically?
+          * Why do we need to create the attach options? Surely these can also be put together by the component itself from the initial options?
+          * How can we have render components contain other components in regions?
           * How do we handle component extension and inheritance?
           
         """
       ,
-        sectionName: "Component Specification"
+        sectionName: "Zest Component Specification"
         markdown: """
           
-          `zest.render` implements the component specification on both the client and the server equally.
+          The `zest.render` function renders components on both the client and the server equally.
           
           zest-server provides the component rendering for NodeJS. Alternatively it can act as a service application providing a 'render service' for other frameworks.
           zest-client provides the component rendering in the browser.
           
-          zest.render takes the following form:
+          The simplest component would be one with only a template:
           
-          ```javascript
-            zest.render(renderable, options, destination)
-          ```
-          
-          * **renderable**: _The object to be rendered. Confirming to the Zest render specification_
-          * **options** (optional): _The rendering options object_
-          * **destination**: _On the client, it's a containing elemenet. On the server it's the response object to render and HTML string_
-          
-          [The full specification is available here](/docs/zest-client#$z.render)
-          
-          Then the Component renderable is described by an object with the following properties:
-          
-          ```javascript
-            {
-              //default options object, to be populated when not given
-              options: {},
-              
-              //load function. Synchronous and asynchronous forms allowed (done as an optional argument).
-              load: function(options, done) {},
-              
-              //template function or direct string
-              template: function(options) {},
-              
-              //pipe -> converts the 'render' options into 'attach' options for use on the client
-              pipe: function(options) {
-                return {
-                  attach: 'options'
-                };
-              },
-              
-              //attachment -> the module Id to use for the attachment of this component.
-              attach: 'moduleId'
-            }
-          ```
-          
-          
-          A renderable can be one of the following five forms:
-          * **moduleId, string**: A string specifying the RequireJS moduleId for the renderable.
-          * **[renderables], Array**: An array of renderables. When used with options, the options are ignored.
-          * **function**: A function returning a renderable. For example, this allows for dynamic region population.
-          * **Instance Render, Object**: It can be necessary to define a renderable with options set. The instance render takes the form:
+          myComponent.js:
             ```javascript
-              {
-                structure: renderable,
-                options: {options}
-              }
+            define(function() {
+              return {
+                template: '<p>Hello World</p>'
+              };
+            });
             ```
-            This render is detected by the existence of a `structure` attribute.
-          * **Component Render, Object**: The component specification. Detected by the existence of a `template` attribute, with first preference over other renderable detection.
           
+          Then on the client we can render this into the body with:
+          
+          ```javascript
+            $z.render('myComponent', options, document.body);
+          ```
+          
+          This would render the component located at the RequireJS moduleId, _componentId_ into the end of the body, rendered from the provided options object.
+          
+          The template can be a moduleId string as in the above, or a direct render object.
+          
+          The 'template' property is the only required property for a component to have. There are 7 other properties that allow
+          for full flexibility of loading, rendering the template, converting from render options to attachment options,
+          allowing for regions, and defining the dynamic attachment.
+          
+          All of these are designed with build support in mind from the start.
+          
+          To read more about writing render components, try the [Component Introduction in the Getting Started section](/start#C).
+        """
+      ,
+        sectionName: "Summary"
+        markdown: """
+          We've presented a system for defining render components that brings together modular CSS, dependency management, packaging and builds from the core.
+          
+          The rendering model is based purely on an object interface, the basics of which we've touched upon above.
+          
+          The additional benefit of an object-based render interface is that this works naturally with JavaScript inheritance.
+          
+          A custom component inheritance built with this render specification in mind is provided by [$z.Component](), as part of the [zoe inheritance model]().
+          
+          We have found this has solved some fundamental architecture issues with large JavaScript applications. The hope is that
+          this can benefit others as well form a part of the dialog for how to approach these problems as web technologies continue to evolve.
         """
       ,
         sectionName: "Next Steps"

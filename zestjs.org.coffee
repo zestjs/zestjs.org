@@ -1,8 +1,9 @@
 define
   routes:
-    '/': 'cs!app/home'
-    '/why-zest': 'cs!app/why-zest'
-    '/docs/zoe': 'cs!app/zoe'
-    '/docs': 'cs!app/zest-docs'
-    '/start': 'cs!app/start'
-    '/components': 'cs!app/components'
+    # 'site' is the path mapping to 'www/zestjs.org'
+    '/': 'cs!site/home'
+    '/why-zest': 'cs!site/why-zest'
+    '/docs/zoe': 'cs!site/zoe'
+    '/docs': 'cs!site/zest-docs'
+    '/start': 'cs!site/start'
+    '/components': 'cs!site/components'

@@ -6,14 +6,18 @@ define ['is!render?marked', 'is!browser?jquery', 'zoe', 'less!./documentation'],
         code
           .replace(/\/\/(.*)/gm, '<span class="comment">//$1</span>')
           .replace(/('[^']*')/gm, '<span class="string">$1</span>')
-          .replace(/(\d+)/gm, '<span class="number">$1</span>')
+          .replace(/([^#\d])(\d+)/gm, '$1<span class="number">$2</span>')
           .replace(/\b(for|function|new|throw|return|var|if|else)\b/gm, '<span class="keyword">$1</span>')
       else if lang == 'coffeescript' || lang == 'cslive'
         code
-          .replace(/#(.*)/gm, '<span class="comment">#$1</span>')
+          .replace(/[^&]#([^{].*)/gm, '$1<span class="comment">#$2</span>')
           .replace(/("[^"]*")/gm, '<span class="string">$1</span>')
-          .replace(/(\d+)/gm, '<span class="number">$1</span>')
+          .replace(/([^#\d])(\d+)/gm, '$1<span class="number">$2</span>')
           .replace(/\b(function|new|throw|return|var|if|else)\b/gm, '<span class="keyword">$1</span>')
+      else if lang == 'css' || lang == 'less'
+        code
+          .replace(/("[^"]*")/gm, '<span class="string">$1</span>')
+          .replace(/([\w-]+):/gm, '<span class="property">$1</span>:')
       else
         code
     

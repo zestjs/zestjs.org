@@ -5,7 +5,8 @@ page:
 require:
   paths:
     www: '../'
-    app: '../zestjs.org'
+    site: '../zestjs.org'
+    app: '../zestjs.org/sample-files'
     less: 'require-less/less'
 
   map:
