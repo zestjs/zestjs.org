@@ -48,6 +48,14 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           That is pretty much the core of what Zest does. It renders the component, ensures the CSS is on the page, and applies the JavaScript enhancements for dynamic elements. It also comes with an optional flexible inheritance model for dynamic render components using JavaScript classes, and is fully-compatible with the RequireJS optimizer allowing project builds into a single JavaScript file.
           
           [Read more about the high-level overview and benefits of the Zest component architecture here](/why-zest).
+          
+          Rendering is naturally an asynchronous operation. This means server rendering can be streamed. On the client chunked rendering is not currently
+          suppported although the rendering is still asynchronous.
+          
+          For post-rendering attachment, use the optional render complete hook:
+          ```javascript
+            $z.render('componentId', {options}, destination, completeFunction);
+          ```          
         """
       ,
         sectionName: 'Install Zest Client'
@@ -604,132 +612,473 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     
           """
       ,
-        sectionName: 'Loading'
+        sectionName: 'Attaching Controllers'
         markdown: """
+    
+    So lets try and make this example vaguely useful. The Button should be hookable so that when its clicked the Dialog can hide itself.
+    
+    We need to 'attach' to the click event of the button.
+    
+    In order to do this, the button needs to provide a controller that we can use to communicate with it.
+    
+    **The return value of an 'attach' function is the controller for that render component.**
+    
+    Adding this to the button (since we no longer need a message we've removed this and the pipe function):
+    ```javascript
+      define(['zest', 'css!./button'], function($z) {
+        return {
+          type: 'BigButton',
+          options: {
+            text: 'Button'
+          },
+          template: function(o) {
+            return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
+          },
+          attach: function(els, o) {
+            var _clickCallback = function(){};
+            var buttonController = {
+              setClickCallback: function(callback) {
+                _clickCallback = callback;
+              }
+            };
+            els[0].addEventListener('click', function() {
+              _clickCallback();
+            });
+            return buttonController;
+          }
+        };
+      });
+    ```
+    
+    So where does the controller go? It gets registered by zest and linked to the unique id that is generated for each button instance.
+        """
+      ,
+        sectionName: 'The Component Selector'
+        markdown: """
+          The standard way of getting access to the component controller is by using a **component selector**.
           
-
+          This is just like a jQuery selector:
+            
+          ```javascript
+            $z(selectorString, context);
+          ```
+          
+          The selectorString can use ids and names for component type names. Also spaces are allowed for hierarchical selections. No other selector syntax is supported currently.
+          The context is an optional container element within which to do the selection.
+          
+          Examples:
+            
+          ```javascript
+            $z('Button'); //returns array of all 'Button' components ([component=Button] type name).
+            $z('Dialog Button'); //returns array of all 'Button' components inside any 'Dialog' component.
+            $z('#myDialog Button', myDiv); //returns array of all 'Button' components inside the component with id '#myDialog', within the containing element, 'myDiv'
+          ```
+          
+          The return value is an array of components or a single component if there is only one.
+          The return value is the single item if it is found. When there is a controller provided for a component, it returns the controller. When no controller has been assigned, it just returns the array of DOM elements for the component.
+          
+          Let's create a button with a given id and then use the component selector to get its controller:
+          
+          ```jslive
+            $z.render('app/button7', {
+              id: 'controllerButton',
+              text: 'ControllerButton'
+            }, document.querySelector('.container-10'), function() {
+            
+              $z('#controllerButton').setClickCallback(function() {
+                alert('custom callback!');
+              });
+              
+            });
+          ```
+          <div class='container-10' style='margin: 20px'></div>
+          
+          Note that because rendering is asynchronous, we've put the interaction code in the complete callback for the render function
+          to ensure that rendering is completed before we run the component selector.
+        
+        """
+      ,
+        sectionName: 'Disposal'
+        markdown: """
+        
+    The controller can have any methods it wants. The only method that zest makes assumptions about is the **dispose** method.
+    If it exists, this method is called when the element is disposed.
+    
+    Let's be good and add a dispose method to our button controller to ensure we don't create any memory leaks:
+    ```javascript
+      define(['zest', 'css!./button'], function($z) {
+        return {
+          type: 'BigButton',
+          options: {
+            text: 'Button'
+          },
+          template: function(o) {
+            return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
+          },
+          attach: function(els, o) {
+            var _clickCallback = function(){};
+            var clickEvent = function() {
+              _clickCallback();
+            }
+            
+            els[0].addEventListener('click', clickEvent);
+            return {
+              setClickCallback: function(callback) {
+                _clickCallback = callback;
+              },
+              dispose: function() {
+                els[0].removeEventListener('click', clickEvent);
+              }
+            };
+          }
+        };
+      });
+    ```
+    
+    ```jslive
+      $z.render('app/button8', {
+        id: 'controllerButton2',
+        text: 'ControllerButton'
+      }, document.querySelector('.container-11'), function() {
+      
+        var button = $z('#controllerButton2');
+        button.setClickCallback(function() {
+          button.dispose();
+        });
+        
+      });
+    ```
+    
+    We can also dispose arbitrary HTML:
+    ```jslive
+      $z.render('app/button8', {
+        id: 'controllerButton2',
+        text: 'ControllerButton'
+      }, document.querySelector('.container-11'), function() {
+      
+        var button = $z('#controllerButton2');
+        button.setClickCallback(function() {
+          $z.dispose(document.querySelector('.container-11'));
+        });
+        
+      });
+    ```
+    
+    <div class='container-11' style='margin: 20px'></div>
+        """
+      ,
+        sectionName: 'Linking Everything Together'
+        markdown: """
+    So let's link together the button component with the dialog component so that the button disposes the dialog:
+    
+    dialog.js:
+    ```javascript
+      define(['app/button8', 'css!./dialog'], function(Button) {
+        return {
+          type: 'SimpleDialog',
+          options: {
+            closeButton: false
+          },
+          template: function(o) {
+            return "&lt;div>{&#96;content&#96;}&lt;div class='footer'>{&#96;footer&#96;}&lt;/div>&lt;/div>"
+          },
+          footer: function(o) {
+            if (!o.closeButton)
+              return null;
+            else
+              return {
+                structure: Button,
+                options: {
+                  text: 'Close'
+                }
+              };
+          },
+          pipe: function(o) {
+            return {
+              closeButton: o.closeButton
+            };
+          },
+          attach: function($$, o) {
+            if (o.closeButton)
+              $z('BigButton', $$).setClickCallback(function() {
+                $z.dispose($$);
+              });
+          }
+        };
+      });
+    ```
+    
+    And see it in action:
+    ```jslive
+      $z.render('app/dialog4', {
+        closeButton: true,
+        content: {
+          template: '&lt;span>content&lt;/span>'
+        }
+      }, document.querySelector('.container-12'));
+    ```
+    <div class='container-12' style='margin: 20px'></div>
+    
+    ### Summary
+    
+    We manage the render components as one entity, while maintaining a strict separation between rendering and attachment so that
+    server-rendering is naturally supported.
+    
+    For attachment, we provide custom controllers, which are merely JavaScript objects. To find controllers, we use the 'zest selector'
+    just like in jQuery.
+    
+    The standard attachment process for a component that contains others is thus:
+    1) Use a contextual component selector based on the current component context, to find sub components that require linking.
+    2) Manually manage communication, registration and interaction between sub-components.
+    
+    This implies a hierarchical model to the development process, similar to a [PAC](http://www.vico.org/pages/PatronsDisseny/Pattern%20Presentation%20Abstra/) model.
+    
+    The exact implementations of this process is entirely left up to the user. Zest handles only the render process and no further.
+    
+    ***
+    
+        """
+      ,
+        sectionName: '$z.Component'
+        markdown: """
+        
+    $z.Component provides one system for managing the dynamic interactions on components.
+    
+    It is a base class that can be implemented using the ZOE inheritance model designed for this purpose.
+    
+    It provides a number of helpers making the previous tasks easier to accomplish.
+    
+    These are:
+    
+    * Converting render components to support standard prototypal inheritance in JavaScript.
+    * Full inheritance support for components with dynamic attachment, allowing the dynamic controllers to be extended.
+    * Providing a contextual DOM selector on the component. It is automatically restricted to DOM elements of the component, and not those
+      of its child components. The DOM selector can also be mapped to jQuery using a RequireJS config to allow for easy jQuery use.
+    * A contextual component selector is also directly available on the component instance. The component selector
+      is also automatically restricted to first-level subcomponents as well.
+    * When using jQuery, events are automatically removed during disposal.
+    * A natural eventing mechanism that is compatible with inheritance.
+    
+    Read the full specification in the documentation for $z.Component.
+    
+    ### Converting our Button and Dialog components to $z.Component
+    
+    We create the implementation with the `$z.create` function, implementing from `$z.Component`. This prepopulates the `attach`
+    function automatically for us. The `construct` function becomes the constructor for the component object, and properties placed
+    on the `prototype` object are the natural prototypal methods of the controller instance used for attachment.
+    
+    Thus, the button becomes:
+    
+    ```javascript
+      define(['zest', 'css!./button'], function($z) {
+        return $z.create([$z.Component], {
+          type: 'BigButton',
+          options: {
+            text: 'Button'
+          },
+          template: function(o) {
+            return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
+          },
+          //these are the constructor and prototype for the controller:
+          construct: function(o) {
+            //if we configure the selector to jQuery, we can directly use
+            //$('button').click(..etc...);
+            this.$('button')[0].addEventListener('click', this.click);
+          },
+          prototype: {
+            __click: function() {},
+            dispose: function() {
+              this.$('button')[0].removeEventListener('click', this.click);
+            }
+          }
+        });
+      });
+    ```
+    
+    The '__click' notation indicates that the click function should be converted into a function that can be ammended
+    with the 'on' method. This creates a form of basic eventing.
+    
+    The dialog then becomes:
+    
+    ```javascript
+      define(['zest', 'app/button9', 'css!./dialog'], function($z, Button) {
+        return $z.create([$z.Component], {
+          type: 'SimpleDialog',
+          options: {
+            closeButton: false
+          },
+          template: function(o) {
+            return "&lt;div>{&#96;content&#96;}&lt;div class='footer'>{&#96;footer&#96;}&lt;/div>&lt;/div>"
+          },
+          footer: function(o) {
+            if (!o.closeButton)
+              return null;
+            else
+              return {
+                structure: Button,
+                options: {
+                  text: 'Close'
+                }
+              };
+          },
+          pipe: function(o) {
+            return {
+              closeButton: o.closeButton
+            };
+          },
+          construct: function(o) {
+            if (o.closeButton)
+              this.$z('BigButton').click.on(this.close);
+          },
+          prototype: {
+            __close: function() {
+              $z.dispose(this.$$);
+            }
+          }
+        });
+      });
+    ```
+    
+    Note also that it isn't necessary to bind the 'close' method to the prototype instance. By default, functions defined with the
+    '__' syntax are automatically scoped to make communication easier.
+    
+    See that it behaves the same here:
+    ```jslive
+      $z.render('app/dialog5', {
+        closeButton: true,
+        content: {
+          template: '&lt;span>content&lt;/span>'
+        }
+      }, document.querySelector('.container-13'));
+    ```
+    <div class='container-13' style='margin: 20px'></div>
+        
+    
+    ### $z.Component Benefits Illustrated
+    
+    Leave the above dialog open (by clicking run and not the close button). Then run this example:
+    
+    ```jslive
+      var buttonInstance = $z('BigButton', document.querySelector('.container-13'));
+      //hook the click method
+      buttonInstance.click.on(function() {
+        alert('button clicked!');
+      });
+      //do a click (entirely equivalent in behavior to actually clicking the button)
+      buttonInstance.click();
+    ```
+    
+    To create a new dialog that extends the previous dialog, it's also much easier:
+    
+    ```javascript
+      define(['app/dialog5'], function(Dialog) {
+        return $z.create([Dialog], {
+          prototype: {
+            newMethod: function() {
+              alert('new instance method');
+            },
+            __close: function() {
+              alert('new dialog closed!');
+            }
+          }
+        });
+      });
+    ```
+    
+    The same eventing method works with inheritance.
+    
+    Try the extended dialog here:
+    ```jslive
+      $z.render('app/dialog6', {
+        closeButton: true,
+        content: {
+          template: '&lt;span>content&lt;/span>'
+        }
+      }, document.querySelector('.container-14'), function() {
+        
+        $z('SimpleDialog', document.querySelector('.container-14')).newMethod();
+      
+      });
+    ```
+    <div class='container-14' style='margin: 20px'></div>
+        
+    ***
+        
         """
       ,
         sectionName: 'CoffeeScript Components'
         markdown: """
         
-    If we use CoffeeScript, we can get multi-line string support and interpolation, which
-    makes writing inline templates much more natural (although we can load templates from external files when written in RequireJS
-    module definitions).
-      
-    Here's the previous component in CoffeeScript:
+    The final enhancement we can do is to convert our components into CoffeeScript. The multi-line string support with interpolation
+    makes the templates easier to write, and the code looks nicer in general.
     
-  ```cslive
-    TwoColumn =
-      template: \"\"\"
-        &lt;table>&lt;tr>
-          &lt;td>{&#96;columnOne&#96;}&lt;/td>
-          &lt;td>{&#96;columnTwo&#96;}&lt;/td>
-        &lt;/tr>&lt;/table>
-      \"\"\"
+    button.coffee:
+    ```coffeescript
+      define ['zest', 'css!./button'], ($z) ->
+        $z.create([$z.Component],
+          type: 'BigButton'
+          options:
+            text: 'Button'
+          template: (o) -> &quot;&lt;button>&#35;{$z.esc(o.text, 'htmlText')}&lt;/button>&quot;
+          
+          construct: (o) ->
+            @$('button')[0].addEventListener 'click', @click
+          prototype:
+            __click: ->
+            dispose: ->
+              @$('button')[0].removeEventListener 'click', @click
+        )
+    ```
     
-    Button =
-      options:
-        msg: "Hi"
-        text: "Button"
-      
-      template: (o) ->
-        "&lt;button>\#{$z.esc o.text, 'htmlText'}&lt;/button>"
-        
-      pipe: (o) ->
-        msg: o.msg
+    dialog.coffee:
+    ```coffeescript
+      define ['zest', 'cs!app/button', 'css!./dialog'], ($z, Button) ->
+        $z.create([$z.Component],
+          type: 'SimpleDialog'
+          options:
+            closeButton: false
+          template: (o) -> &quot;&quot;&quot;
+            &lt;div>
+              {&#96;content&#96;}
+              &lt;div class='footer'>{&#96;footer&#96;}&lt;/div>
+            &lt;/div>
+          &quot;&quot;&quot;
+          
+          footer: (o) ->
+            if !o.closeButton
+              null
+            else
+              structure: Button
+              options:
+                text: 'Close'
+          
+          pipe: (o) ->
+            closeButton: o.closeButton
+            
+          construct: (o) ->
+            if o.closeButton
+              @$z('BigButton').click.on @close
+          prototype:
+            __close: ->
+              @dispose();
+        )
+    ```
+    
 
-      attach: (els, o) ->
-        els[0].addEventListener "click", ->
-          alert o.msg
-    
-    $z.render TwoColumn,
-      columnOne:
-        structure: Button
-        options:
-          text: "First column button"
-      columnTwo:
-        structure: Button
-        options:
-          text: "Second column button"
-    , document.querySelector(".render-placeholder-7");
-  ```
-    <div class='render-placeholder-8' style='margin: 20px'></div>
-    
-    These gains make writing components in CoffeeScript much easier and more elegant.
-        """
-      ,
-        sectionName: 'RequireJS File Organisation'
-        markdown: """
-  
-  With the examples above, we wouldn't normally write our components as variables but rather into separate files in the `www/app` folder.
-  
-  Public libraries are included in the `www/lib` folder so we rely on a path mapping `app`, which maps from the public to the app folder.
-  
-  To organise our code as RequireJS modules that can be loaded asynchronously, we write one component per file
-  using the RequireJS module definition format.
-  
-  We would write our components as:
-  
-  **button.js** (in the www/app folder):
-  ```coffeescript
-    define [], () ->
-      options:
-        msg: "hi"
-        text: "button"
-      
-      template: (o) ->
-        "&lt;button>\#{$z.esc o.text, 'htmlText'}&lt;/button>"
         
-      pipe: (o) ->
-        msg: o.msg
-
-      attach: (els, o) ->
-        els[0].addEventListener 'click', ->
-          alert o.msg
-  ```
-  
-  **two-column.js**:
-  ```coffeescript
-    define [], () ->
-      template: \"\"\"
-        &lt;table>&lt;tr>
-          &lt;td>{&#96;columnOne&#96;}&lt;/td>
-          &lt;td>{&#96;columnTwo&#96;}&lt;/td>
-        &lt;/tr>&lt;/table>
-      \"\"\"
-  ```
-  
-  Then in the browser we can write:
-  
-  ```javascript
-    $z.render('cs!app/two-column', {
-      columnOne: {
-        structure: 'cs!app/button'
-        options: {
-          msg: 'first'
-        }
-      },
-      columnTwo: {
-        structure: 'cs!app/button'
-        options: {
-          msg: 'second'
-        }
-      }
-    }, containerDiv);
-  ```
-  
-  Within the app folder, code organisation is completely unimposed. Helper functions, models and CSS dependencies can all be loaded
-  as relative paths from the component itself, allowing comprehensive component dependency management.
-  
-  
-    To dispose, we can simply use `$z.dispose` to clean up all components inside a wrapper element. This includes the facility for a disposal hook in the components themselves,
-    allowing for clean event detachment and custom unloading.
+    With the RequireJS CoffeeScript plugin we simply add the `cs!` prefix to the requireId:
     
     ```jslive
-      $z.dispose(document.querySelector('.render-placeholder-1'));
+      $z.render('cs!app/dialog', {
+        closeButton: true,
+        content: {
+          template: '&lt;span>content&lt;/span>'
+        }
+      }, document.querySelector('.container-15'));
     ```
-  
+    <div class='container-15' style='margin: 20px'></div>
+
+    ***
         """
       ]
     ,
@@ -737,21 +1086,19 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
       sections: [
         sectionName: 'Working with Routes'
         markdown: """
-          So what is actually going on here?
-          
-          Well first, let's go back a step. What is Zest doing? At it's core, Zest breaks down any website into **Components**. Think of components like a jQuery plugin. It consists of some HTML, a bit of CSS and then an attachment such as a domReady or JavaScript call. With Zest all of these steps are included in a single JavaScript definition file, as a **Component**. [To read more about the benefits of this approach, read the high-level motivation here](/why-zest).
-          
-          > CSON is a lot more convenient for writing config files than JSON since property quotes, braces and commas can be left out. If you don't like it, `zest.json` is used as a default fallback.
+    So what is actually going on here?
     
-          The logic path of the server bootstrap is the following:
-          
-          * Zest checks the config file, `zest.cson` (CoffeeScript JSON file) in the application directory and builds up the server from this configuration.
-          * As part of the process, it checks the `modules` property, and sees it must load the `cs!$/application` module.
-          * Zest loads the CoffeeScript file `application.coffee` from the application folder, and reads it for module information.
-            
-            _Modules are loaded as [RequireJS](http://requirejs.org) dependencies. For server requires, Zest provides the `$/` path reference to the base application folder. Zest also comes with the [RequireJS CoffeeScript plugin](https://github.com/jrburke/require-cs) preinstalled. The `cs!` part is the CoffeeScript plugin name indicating that we want to load the module as a CoffeeScript file._
-            
-          * Inside the module, Zest reads the `routes` property, which is an object mapping URL patterns to Zest components.
+    > CSON is a lot more convenient for writing config files than JSON since property quotes, braces and commas can be left out. If you don't like it, `zest.json` is used as a default fallback.
+
+    The logic path of the server bootstrap is the following:
+    
+    * Zest checks the config file, `zest.cson` (CoffeeScript JSON file) in the application directory and builds up the server from this configuration.
+    * As part of the process, it checks the `modules` property, and sees it must load the `cs!$/application` module.
+    * Zest loads the CoffeeScript file `application.coffee` from the application folder, and reads it for module information.
+      
+      _Modules are loaded as [RequireJS](http://requirejs.org) dependencies. For server requires, Zest provides the `$/` path reference to the base application folder. Zest also comes with the [RequireJS CoffeeScript plugin](https://github.com/jrburke/require-cs) preinstalled. The `cs!` part is the CoffeeScript plugin name indicating that we want to load the module as a CoffeeScript file._
+      
+    * Inside the module, Zest reads the `routes` property, which is an object mapping URL patterns to Zest components.
 
         """
       ,

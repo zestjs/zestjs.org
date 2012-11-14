@@ -1,4 +1,4 @@
-define(['app/button6', 'css!./dialog'], function(Button) {
+define(['app/button8', 'css!./dialog'], function(Button) {
   return {
     type: 'SimpleDialog',
     options: {
@@ -17,6 +17,17 @@ define(['app/button6', 'css!./dialog'], function(Button) {
             text: 'Close'
           }
         };
+    },
+    pipe: function(o) {
+      return {
+        closeButton: o.closeButton
+      };
+    },
+    attach: function($$, o) {
+      if (o.closeButton)
+        $z('BigButton', $$).setClickCallback(function() {
+          $z.dispose($$);
+        });
     }
   };
 });

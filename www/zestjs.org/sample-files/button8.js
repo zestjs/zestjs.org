@@ -9,15 +9,19 @@ define(['zest', 'css!./button'], function($z) {
     },
     attach: function(els, o) {
       var _clickCallback = function(){};
-      var controller = {
+      var clickEvent = function() {
+        _clickCallback();
+      }
+      
+      els[0].addEventListener('click', clickEvent);
+      return {
         setClickCallback: function(callback) {
           _clickCallback = callback;
+        },
+        dispose: function() {
+          els[0].removeEventListener('click', clickEvent)
         }
       };
-      els[0].addEventListener('click', function() {
-        _clickCallback();
-      });
-      return controller;
     }
   };
 });
