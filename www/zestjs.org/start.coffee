@@ -117,6 +117,8 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     Regardless of whether you are using the zest-server or zest-browser template, you would create a file
     called 'button.js' in the 'www/app' folder. (We're creating numbered buttons here because we have a bit of evolution to go through.)
     
+    By defining all render components as RequireJS modules, this allows us to manage modular dependencies, code portability and builds.
+    
     button1.js:
     ```javascript
       define([], function() {
@@ -125,14 +127,15 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
         };
       });
     ```
-  
-    By defining all render components as RequireJS modules, this allows us to manage modular dependencies, code portability and builds.
+    
+    We simply create an object with a template property. Note that the template must always start with an HTML tag, otherwise an error
+    will be thrown.
     
     This guide is interactive - the above file has already been created in this site, so that it can be found at the RequireJS
     moduleId, `app/button`. _ModuleId's_ in RequireJS are like paths to files, but including configured path mappings, relative to a
     baseUrl, and excluding the '.js' extension.
     
-    Thus, to render this template we use `zest.render` in the browser with the following code:
+    To render this template we use `zest.render` in the browser with the following code:
     
     > This is a live example. Click 'Run' to see it in action, or edit the code to change it.
     
@@ -142,11 +145,11 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     
     <div class='container-1' style='margin: 20px;'></div>
     
-    Since we are running the live demo site, the button is already built into the scripts that loaded with this page, so it will
-    render instantly. In development, or when the component hasn't been loaded already, a request for the script will be sent.
-    
     The above code renders the component with an empty options object, into the container div with class 'container-1'
     (conveniently located right below the code block). Click run to see it render.
+    
+    Since we are running the live demo site, the button is already built into the scripts that loaded with this page, so it
+    renders instantly. In development, or when the component hasn't been loaded already, a request for the script will be sent.
         """
       ,
         sectionName: 'Rendering with Options'
@@ -209,11 +212,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           
     The next thing we're probably going to want to do is add some styles to our component.
     
-    To do this, we use [RequireCSS](https://github.com/guybedford/require-css) to load the CSS as a dependency of the component.
-    The use of './' in the dependency name is the RequireJS syntax for a relative path so our code remains completely portable.
-    
-    We also need a unique class on the component to ensure our CSS is properly scoped. We can either add a class name into the template,
-    or we can give the component a Component Type Name, which we demonstrate here:
+    To do this, we use [RequireCSS](https://github.com/guybedford/require-css) to load the CSS as a dependency of the component:
     
     ```javascript
       define(['css!./button'], function() {
@@ -225,6 +224,11 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
         }
       });
     ```
+    
+    The use of './' in the dependency name is the RequireJS syntax for a relative path so our code remains completely portable.
+    
+    We also need a unique class on the component to ensure our CSS is properly scoped. We can either add a class name into the template,
+    or we can give the component a Component Type Name, which is specified with the `type` property above.
     
     > By default Zest adds the `component` attribute to all render components. If you'd rather write valid XHTML, you can configure
       Zest to use the attribute `data-component` instead.
@@ -310,7 +314,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     
         """
       ,
-        sectionName: 'Rendering with Attachment'
+        sectionName: 'Rendering with Dynamic Attachment'
         markdown: """
     
     Right, so how about we actually do something when we click the button?
@@ -348,7 +352,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     The attach property can also be a _moduleId_ string to reference a separate module to use for attachment, but it feels a lot nicer
     having things in once place.
     
-    #### Some nitty gritty for those interested
+    #### Some nitty gritty if you're interested
     
     When rendering on the server, Zest automatically rewrites the above code containing just the 'attachment' code, by removing the properties
     associated with rendering - `options`, `template`, `load` and `pipe`.
@@ -362,7 +366,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     There is no loss though as it is still possible to have the render and attachment parts as separate files. Simply reference a string attach moduleId
     in the attach property, and then create a separate module containing just the attach function property as above.
     
-    #### And for those not...
+    #### And if you're not...
     
     All of this is done in the background to ensure writing a component is as simple as possible.
     
@@ -421,7 +425,91 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     If you like, you can directly send the render options itself, or even delete options off the render options object first that shouldn't be piped
     (since this is the last render function, these options aren't needed anymore). It is generally better to just pipe each property directly though.
     
-      """
+        """
+      ,
+        sectionName: 'Template Regions'
+        markdown: """
+          
+    The standard way of combining components is with the use of named template regions. These are defined in the template
+    with a special syntax allowing them to contain render components themselves.
+    
+    For example, we can create a dialog component which can contain any content:
+    
+    dialog.js:
+    ```javascript
+      define(['css!./dialog'], function() {
+        return {
+          type: 'SimpleDialog',
+          template: function(o) {
+            return "&lt;div>{&#96;content&#96;}&lt;/div>"
+          }
+        };
+      });
+    ```
+    
+    dialog.css:
+    ```css
+      div[component="SimpleDialog"] {
+        background-color: #ccc;
+        padding: 20px;
+        border: 1px solid #999;
+      }
+    ```
+    
+    The `content` region is denoted by the special syntax <code>&#96;{RegionName}&#96;</code>. Any number of regions
+    can be provided with any region names.
+    
+    The regions can be populated by setting the region name property on either the component itself, or through the options.
+    Setting the region on the component will take preference over the region in the options, allowing for 'private regions'.
+    
+    In this example, the region is public as we haven't set it already. Hence we can populate the region through the options, to a
+    and render component:
+          
+    ```jslive
+      $z.render('app/dialog', {
+        content: {
+          template: '&lt;span>some content&lt;/span>'
+        }
+      }, document.querySelector('.container-7'));
+    ```
+    <div class='container-7' style='margin: 20px'></div>
+    
+    Hmm you say. How come we're able to just pass a component in like that? Well I've actually been dishonest about the render function
+    up until now. It doesn't just render from moduleIds for render components, it can render a few other things as well.
+    
+    #### Renderables
+    
+    
+    
+    
+    
+    In this way, we can build up complex layout components and component combinations from simple component parts,
+    all of which can still be rendered by a single render call.
+    
+    This means an entire page can be a component, allowing us to render pages both client and server-side seamlessly.
+        """
+      ,
+        sectionName: 'Loading'
+        markdown: """
+          
+          The question now arises - where do we get this data from? And how do we process it?
+          
+          1. Up until now, we've provided the data to the render function having already loaded it from somewhere else.
+             This model works perfectly well for anything from components to pages consisting of compositions of components
+             (component )
+          
+          
+          It's probably a good idea to take a break at this point. Perhaps browse your favourite news magazine. Or try something different
+          like 
+        
+          Five cool things you could build with Zest:
+          
+          * A fully customizable mobile theme set of components
+          * Your own, better, Google Reader
+          * Take any jQuery plugin and give it some 'zest' (if I could install galleria with a single line of code I would thank you deeply, as
+            I always seem to embed it wrong and have layout issues)
+          * 
+        """
       ,
         sectionName: 'Template Regions'
         markdown: """
