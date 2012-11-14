@@ -386,7 +386,8 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
         return {
           type: 'BigButton',
           options: {
-            text: 'Button'
+            text: 'Button',
+            message: 'Message'
           },
           template: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
@@ -462,11 +463,13 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     The regions can be populated by setting the region name property on either the component itself, or through the options.
     Setting the region on the component will take preference over the region in the options, allowing for 'private regions'.
     
-    In this example, the region is public as we haven't set it already. Hence we can populate the region through the options, to a
-    and render component:
-          
+    In this example, the region is public as we haven't set it already.
+    Hence we can populate the region to any content when creating any dialog instance.
+    
+    
+    For example, we can include a simple component in the dialog:
     ```jslive
-      $z.render('app/dialog', {
+      $z.render('app/dialog1', {
         content: {
           template: '&lt;span>some content&lt;/span>'
         }
@@ -474,141 +477,136 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     ```
     <div class='container-7' style='margin: 20px'></div>
     
-    Hmm you say. How come we're able to just pass a component in like that? Well I've actually been dishonest about the render function
-    up until now. It doesn't just render from moduleIds for render components, it can render a few other things as well.
+    We could also set a default content for the 'content' region by providing this property in the default options (the `options`
+    property on the component), so that if not provided the default would apply.
     
-    #### Renderables
+        """
+      ,
+        sectionName: 'Private Template Regions'
+        markdown: """
     
+    Let's create a private region in the dialog as well that is pre-populated with a button:
     
+    ```javascript
+      define(['app/button6', 'css!./dialog'], function(Button) {
+        return {
+          type: 'SimpleDialog',
+          template: function(o) {
+            return "&lt;div>{&#96;content&#96;}&lt;div class='footer'>{&#96;footer&#96;}&lt;/div>&lt;/div>"
+          },
+          footer: {
+            structure: Button,
+            options: {
+              text: 'Dialog button',
+              msg: 'Dialog message'
+            }
+          }
+        };
+      });
+    ```
     
+    This region can't be overridden with the instance options because it is already defined on the dialog itself.
     
+    By importing the 'button' component, a build of the dialog will now also contain the build of the button so that we can still
+    build this compound component.
     
+    Run the code here:
+    ```jslive
+      $z.render('app/dialog2', {
+        content: {
+          template: '&lt;span>more content&lt;/span>'
+        },
+        footer: {
+          template: '&lt;span>this content ignored&lt;/span>'
+        }
+      }, document.querySelector('.container-8'));
+    ```
+    <div class='container-8' style='margin: 20px'></div>
+        
+
     In this way, we can build up complex layout components and component combinations from simple component parts,
     all of which can still be rendered by a single render call.
     
-    This means an entire page can be a component, allowing us to render pages both client and server-side seamlessly.
+    This means an entire page can be a component, allowing us to render pages both client and server-side seamlessly,
+    while still allowing full build support.
+        
         """
+      ,
+        sectionName: 'Allowed Renderables'
+        markdown: """
+    When populating the regions, we weren't referencing moduleIds, instead we were providing **renderables**. There are actually
+    a number of renderable forms accepted by `zest.render` which are called **renderables**. The **render component** we've been using
+    up until now is just one of them.
+    
+    The full list of renderables is:
+      
+    * **moduleId, string**: _A moduleId, pointing to a renderable. Just as we've been using when rendering components._
+    * **render component, object**: _A render component, indicated by the `template` property, as we've been using._
+    * **renderable array, array**: _An array of renderables will be rendered one after another. Useful for regions with lots of components._
+    * **dynamic renderable, function**: _A function that returns a renderable. The function takes the options of the render returning a new renderable._
+    * **instance render, object**: _Allows rendering a renderable with the given options. Indicated by a `structure` property. Form:_
+      ```javascript
+      {
+        structure: renderable,
+        options: {...options...}
+      }
+      ```
+      _This is what allowed us to provide a specific button instance in the dialog renderable._
+      
+    We could have used a dynamic renderable to optionally show the dialog button:
+    
+    ```javascript
+      define(['app/button6', 'css!./dialog'], function(Button) {
+        return {
+          type: 'SimpleDialog',
+          options: {
+            closeButton: false
+          },
+          template: function(o) {
+            return "&lt;div>{&#96;content&#96;}&lt;div class='footer'>{&#96;footer&#96;}&lt;/div>&lt;/div>"
+          },
+          footer: function(o) {
+            if (!o.closeButton)
+              return null;
+            else
+              return {
+                structure: Button,
+                options: {
+                  text: 'Close',
+                }
+              };
+          }
+        };
+      });
+    ```
+    
+    By making the footer region a dynamic renderable function of the component options itself, we're able to dynamically provide the region content.
+    
+    Without the close button (the default):
+    ```jslive
+      $z.render('app/dialog3', {
+        content: {
+          template: '&lt;span>more content&lt;/span>'
+        }
+      }, document.querySelector('.container-9'));
+    ```
+    
+    With the close button:
+    ```jslive
+      $z.render('app/dialog3', {
+        closeButton: true,
+        content: {
+          template: '&lt;span>more content&lt;/span>'
+        }
+      }, document.querySelector('.container-9'));
+    ```
+    <div class='container-9' style='margin: 20px'></div>
+    
+          """
       ,
         sectionName: 'Loading'
         markdown: """
           
-          The question now arises - where do we get this data from? And how do we process it?
-          
-          1. Up until now, we've provided the data to the render function having already loaded it from somewhere else.
-             This model works perfectly well for anything from components to pages consisting of compositions of components
-             (component )
-          
-          
-          It's probably a good idea to take a break at this point. Perhaps browse your favourite news magazine. Or try something different
-          like 
-        
-          Five cool things you could build with Zest:
-          
-          * A fully customizable mobile theme set of components
-          * Your own, better, Google Reader
-          * Take any jQuery plugin and give it some 'zest' (if I could install galleria with a single line of code I would thank you deeply, as
-            I always seem to embed it wrong and have layout issues)
-          * 
-        """
-      ,
-        sectionName: 'Template Regions'
-        markdown: """
-    For layout components like tables, accordions and tabs you can define regions. These are specified with a region syntax in the template string:
-    
-    ```jslive
-    
-      var TwoColumn = {
-        template: "&lt;table>&lt;tr>&lt;td>{&#96;columnOne&#96;}&lt;/td>&lt;td>{&#96;columnTwo&#96;}&lt;/td>&lt;/tr>&lt;/table>"
-      };
-      
-      //exactly as before...
-      var Button = {
-        options: {
-          msg: 'Hi', // the message when you click the button
-          text: 'Button' // the button text
-        },
-        template: function(o) {
-          return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
-        },
-        pipe: function(o) {
-          return {
-            msg: o.msg
-          };
-        },
-        attach: function(els, o) {
-          els[0].addEventListener('click', function() {
-            alert(o.msg);
-          });
-        }
-      }
-      
-      $z.render(TwoColumn, {
-        columnOne: Button,
-        columnTwo: Button
-      }, document.querySelector('.render-placeholder-6'));
-    ```
-      <div class='render-placeholder-6' style='margin: 20px'></div>
-      
-      The region itself can be set either as a property of the component itself (an internal region), or as an option for the template.
-      
-      If the region is set as a property of the component itself, then it will not be possible to override it with options.
-    
-      """
-      ,
-        sectionName: 'Alternative Render Structures'
-        markdown: """
-  Note how the buttons both have the default options only. To send individual options to the buttons we can use an instance render, which is different from
-  a component render.
-  
-  Instead of having the column containing the button component, we provide an object with the properties `structure` and `options`. `structure` indicates the
-  component or structure to render, and `options` the options to render for it.
-    
-  ```jslive
-    //exactly as before...
-    var TwoColumn = {
-      template: "&lt;table>&lt;tr>&lt;td>{&#96;columnOne&#96;}&lt;/td>&lt;td>{&#96;columnTwo&#96;}&lt;/td>&lt;/tr>&lt;/table>"
-    };
-    
-    //exactly as before...
-    var Button = {
-      options: {
-        msg: 'Hi', // the message when you click the button
-        text: 'Button' // the button text
-      },
-      template: function(o) {
-        return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
-      },
-      pipe: function(o) {
-        return {
-          msg: o.msg
-        };
-      },
-      attach: function(els, o) {
-        els[0].addEventListener('click', function() {
-          alert(o.msg);
-        });
-      }
-    }
-    
-    //create buttons differently:
-    $z.render(TwoColumn, {
-      columnOne: {
-        structure: Button,
-        options: {
-          text: 'First column button'
-        }
-      },
-      columnTwo: {
-        structure: Button,
-        options: {
-          text: 'Second column button'
-        }
-      }
-    }, document.querySelector('.render-placeholder-7'));
-  ```
-  <div class='render-placeholder-7' style='margin: 20px'></div>
-    
-  It is also possible to provide an array of renderables to a region to allow for many components one after another in the region.
 
         """
       ,
