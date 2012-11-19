@@ -1,9 +1,9 @@
-define ['zest', 'app/button9', 'css!./dialog'], ($z, Button) ->
+define ['zest', 'cs!app/button', 'css!./dialog'], ($z, Button) ->
   $z.create([$z.Component],
     type: 'SimpleDialog'
     options:
       closeButton: false
-    template: (o) -> """
+    render: (o) -> """
       <div>
         {`content`}
         <div class='footer'>{`footer`}</div>
@@ -13,7 +13,7 @@ define ['zest', 'app/button9', 'css!./dialog'], ($z, Button) ->
       if !o.closeButton
         null
       else
-        structure: Button
+        render: Button
         options:
           text: 'Close'
     

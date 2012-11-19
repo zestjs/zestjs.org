@@ -1,5 +1,5 @@
 define ['cs!./doc-page/doc-page'], (DocsPage) ->
-  structure: DocsPage
+  render: DocsPage
   options:
     title: 'Documentation'
     section: 'docs'
@@ -11,7 +11,7 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
         markdown: """
         """
       ,
-        sectionName: 'RequireCSS'
+        sectionName: '$z.render Server Notes'
         markdown: """
         """
       ,

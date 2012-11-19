@@ -1,6 +1,6 @@
 define([], function() {
   return {
-    template: function(o) {
+    render: function(o) {
       return '<button>' + o.text + '</button>';
     }
   };

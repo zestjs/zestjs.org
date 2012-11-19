@@ -3,7 +3,7 @@ define ['css!./sidebar'], ->
     content: ''
     sidebar: ''
   
-  template: '''
+  render: '''
     <div class="content-container">
       <div class="content">{`content`}</div>
     </div>

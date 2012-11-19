@@ -7,3 +7,9 @@ define [], () ->
     '/docs': 'cs!site/zest-docs'
     '/start': 'cs!site/start'
     '/components': 'cs!site/components'
+
+  routeHandler: (req, res, next) ->
+    # all routes use deferred titles in this module
+    if req.page.options._route != '/test'
+      req.page.title = null
+    next();

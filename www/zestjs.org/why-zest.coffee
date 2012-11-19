@@ -1,5 +1,5 @@
 define ['cs!./doc-page/doc-page'], (DocPage) ->
-  structure: DocPage
+  render: DocPage
   options:
     title: 'Why Zest?'
     section: 'why-zest'

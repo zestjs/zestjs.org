@@ -1,6 +1,5 @@
 define ['zest', 'css!./clearfix', 'less!./page'], ($z) ->
   _extend:
-    section: 'REPLACE'
     options: 'APPEND'
     
   options:
@@ -15,7 +14,7 @@ define ['zest', 'css!./clearfix', 'less!./page'], ($z) ->
   load: (o) ->
     o.global.setTitle o.title
   
-  template: (o) ->
+  render: (o) ->
     __menu = ""
     for link, item of o.menu
       __menu += "<li><a href='#{link}' #{if o.section == link.substr(1) then 'class="active"' else ''}>#{item}</a></li>"

@@ -4,7 +4,7 @@ define(['zest', 'app/button9', 'css!./dialog'], function($z, Button) {
     options: {
       closeButton: false
     },
-    template: function(o) {
+    render: function(o) {
       return "<div>{`content`}<div class='footer'>{`footer`}</div></div>"
     },
     footer: function(o) {
@@ -12,7 +12,7 @@ define(['zest', 'app/button9', 'css!./dialog'], function($z, Button) {
         return null;
       else
         return {
-          structure: Button,
+          render: Button,
           options: {
             text: 'Close'
           }

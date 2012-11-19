@@ -1,21 +1,21 @@
 page:
-  title: null
-  pageStructure: 'cs!$/html'
+  pageRender: 'cs!$/html'
+
+#environments:
+#  dev:
+#    staticLatency: 500
+#    renderDelay: 500
 
 require:
   paths:
     www: '../'
     site: '../zestjs.org'
     app: '../zestjs.org/sample-files'
-    less: 'require-less/less'
 
   map:
     '*':
       selector: 'jquery'
 
-# rebuildZestLayer: true
-
-modules:
-  'cs!$/zestjs.org': true
+modules: ['cs!$zest-server/core-module', 'cs!$/zestjs.org']
 
 port: 8082

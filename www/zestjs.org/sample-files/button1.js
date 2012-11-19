@@ -1,5 +1,5 @@
 define([], function() {
   return {
-    template: '<button>Hello World</button>'
+    render: '<button>Hello World</button>'
   };
 });

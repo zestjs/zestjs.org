@@ -4,7 +4,7 @@ define(['zest', 'css!./button'], function($z) {
     options: {
       text: 'Button'
     },
-    template: function(o) {
+    render: function(o) {
       return '<button>' + $z.esc(o.text, 'htmlText') + '</button>';
     },
     construct: function(o) {

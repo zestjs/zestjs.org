@@ -3,8 +3,7 @@ define ['zest', 'css!./button'], ($z) ->
     type: 'BigButton'
     options:
       text: 'Button'
-    template: (o) -> "<button>#{$z.esc(o.text, 'htmlText')}</button>"
-    
+    render: (o) -> "<button>#{$z.esc(o.text, 'htmlText')}</button>"
     construct: (o) ->
       @$('button')[0].addEventListener 'click', @click
     prototype:

@@ -1,5 +1,5 @@
 define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
-  structure: DocPage
+  render: DocPage
   options:
     title: 'zoe - Zest Object Extension'
     section: 'zoe'

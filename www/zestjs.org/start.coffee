@@ -1,5 +1,5 @@
 define ['cs!./doc-page/doc-page'], (Docs) ->
-  structure: Docs
+  render: Docs
   options:
     title: 'Getting Started'
     section: 'start'
@@ -21,10 +21,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           
           To report issues or get involved in the development, [find us on GitHub](https://github.com/zestjs).
         """
-      ]
-    ,
-      chapterName: 'Quick Start'
-      sections: [
+      ,
         sectionName: 'Introduction'
         markdown: """
           At its core, Zest simply renders JavaScript **Component** definitions. Think of a component like a jQuery plugin. It consists of some HTML, CSS and then an attachment such as a domReady or JavaScript call. With Zest all of these steps are included in a single JavaScript definition file, as a **Component**.
@@ -57,7 +54,10 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
             $z.render('componentId', {options}, destination, completeFunction);
           ```          
         """
-      ,
+      ]
+    ,
+      chapterName: 'Installation'
+      sections: [
         sectionName: 'Install Zest Client'
         markdown: """
           Either use Volo to install the client template:
@@ -131,7 +131,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     ```javascript
       define([], function() {
         return {
-          template: '&lt;button>Hello World&lt;/button>'
+          render: '&lt;button>Hello World&lt;/button>'
         };
       });
     ```
@@ -168,7 +168,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     ```javascript
       define([], function() {
         return {
-          template: function(o) {
+          render: function(o) {
             return '&lt;button>' + o.text + '&lt;/button>';
           }
         };
@@ -203,7 +203,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     ```javascript
       define(['jade!./button'], function(buttonTemplate) {
         return {
-          template: buttonTemplate
+          render: buttonTemplate
         };
       });
     ```
@@ -222,11 +222,14 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     
     To do this, we use [RequireCSS](https://github.com/guybedford/require-css) to load the CSS as a dependency of the component:
     
+    > If you want to use LESS instead of CSS, there is the [RequireLESS](https://github.com/guybedford/require-less) plugin
+      which behaves identically to RequireCSS but for LESS code.
+    
     ```javascript
       define(['css!./button'], function() {
         return {
           type: 'BigButton',
-          template: function(o) {
+          render: function(o) {
             return '&lt;button>' + o.text + '&lt;/button>';
           }
         }
@@ -294,7 +297,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           options: {
             text: 'Button'
           },
-          template: function(o) {
+          render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           }
         };
@@ -336,7 +339,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           options: {
             text: 'Button'
           },
-          template: function(o) {
+          render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
           attach: function(els) {
@@ -363,7 +366,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     #### Some nitty gritty if you're interested
     
     When rendering on the server, Zest automatically rewrites the above code containing just the 'attachment' code, by removing the properties
-    associated with rendering - `options`, `template`, `load` and `pipe`.
+    associated with rendering - `options`, `render`, `load` and `pipe`.
     
     This is done by loading the render component through the RequireJS plugin `zest/attach!`, which then builds just the necessary parts for the
     attachment of the component when running a build.
@@ -397,7 +400,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
             text: 'Button',
             message: 'Message'
           },
-          template: function(o) {
+          render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
           pipe: function(o) {
@@ -449,7 +452,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
       define(['css!./dialog'], function() {
         return {
           type: 'SimpleDialog',
-          template: function(o) {
+          render: function(o) {
             return "&lt;div>{&#96;content&#96;}&lt;/div>"
           }
         };
@@ -479,7 +482,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     ```jslive
       $z.render('app/dialog1', {
         content: {
-          template: '&lt;span>some content&lt;/span>'
+          render: '&lt;span>some content&lt;/span>'
         }
       }, document.querySelector('.container-7'));
     ```
@@ -499,11 +502,11 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
       define(['app/button6', 'css!./dialog'], function(Button) {
         return {
           type: 'SimpleDialog',
-          template: function(o) {
+          render: function(o) {
             return "&lt;div>{&#96;content&#96;}&lt;div class='footer'>{&#96;footer&#96;}&lt;/div>&lt;/div>"
           },
           footer: {
-            structure: Button,
+            render: Button,
             options: {
               text: 'Dialog button',
               msg: 'Dialog message'
@@ -522,10 +525,10 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     ```jslive
       $z.render('app/dialog2', {
         content: {
-          template: '&lt;span>more content&lt;/span>'
+          render: '&lt;span>more content&lt;/span>'
         },
         footer: {
-          template: '&lt;span>this content ignored&lt;/span>'
+          render: '&lt;span>this content ignored&lt;/span>'
         }
       }, document.querySelector('.container-8'));
     ```
@@ -555,7 +558,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     * **instance render, object**: _Allows rendering a renderable with the given options. Indicated by a `structure` property. Form:_
       ```javascript
       {
-        structure: renderable,
+        render: renderable,
         options: {...options...}
       }
       ```
@@ -570,7 +573,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           options: {
             closeButton: false
           },
-          template: function(o) {
+          render: function(o) {
             return "&lt;div>{&#96;content&#96;}&lt;div class='footer'>{&#96;footer&#96;}&lt;/div>&lt;/div>"
           },
           footer: function(o) {
@@ -578,7 +581,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
               return null;
             else
               return {
-                structure: Button,
+                render: Button,
                 options: {
                   text: 'Close',
                 }
@@ -594,7 +597,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     ```jslive
       $z.render('app/dialog3', {
         content: {
-          template: '&lt;span>more content&lt;/span>'
+          render: '&lt;span>more content&lt;/span>'
         }
       }, document.querySelector('.container-9'));
     ```
@@ -604,7 +607,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
       $z.render('app/dialog3', {
         closeButton: true,
         content: {
-          template: '&lt;span>more content&lt;/span>'
+          render: '&lt;span>more content&lt;/span>'
         }
       }, document.querySelector('.container-9'));
     ```
@@ -631,7 +634,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           options: {
             text: 'Button'
           },
-          template: function(o) {
+          render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
           attach: function(els, o) {
@@ -712,7 +715,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           options: {
             text: 'Button'
           },
-          template: function(o) {
+          render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
           attach: function(els, o) {
@@ -779,7 +782,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           options: {
             closeButton: false
           },
-          template: function(o) {
+          render: function(o) {
             return "&lt;div>{&#96;content&#96;}&lt;div class='footer'>{&#96;footer&#96;}&lt;/div>&lt;/div>"
           },
           footer: function(o) {
@@ -787,7 +790,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
               return null;
             else
               return {
-                structure: Button,
+                render: Button,
                 options: {
                   text: 'Close'
                 }
@@ -813,7 +816,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
       $z.render('app/dialog4', {
         closeButton: true,
         content: {
-          template: '&lt;span>content&lt;/span>'
+          render: '&lt;span>content&lt;/span>'
         }
       }, document.querySelector('.container-12'));
     ```
@@ -876,7 +879,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           options: {
             text: 'Button'
           },
-          template: function(o) {
+          render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
           //these are the constructor and prototype for the controller:
@@ -907,7 +910,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           options: {
             closeButton: false
           },
-          template: function(o) {
+          render: function(o) {
             return "&lt;div>{&#96;content&#96;}&lt;div class='footer'>{&#96;footer&#96;}&lt;/div>&lt;/div>"
           },
           footer: function(o) {
@@ -915,7 +918,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
               return null;
             else
               return {
-                structure: Button,
+                render: Button,
                 options: {
                   text: 'Close'
                 }
@@ -947,7 +950,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
       $z.render('app/dialog5', {
         closeButton: true,
         content: {
-          template: '&lt;span>content&lt;/span>'
+          render: '&lt;span>content&lt;/span>'
         }
       }, document.querySelector('.container-13'));
     ```
@@ -992,7 +995,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
       $z.render('app/dialog6', {
         closeButton: true,
         content: {
-          template: '&lt;span>content&lt;/span>'
+          render: '&lt;span>content&lt;/span>'
         }
       }, document.querySelector('.container-14'), function() {
         
@@ -1019,7 +1022,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           type: 'BigButton'
           options:
             text: 'Button'
-          template: (o) -> &quot;&lt;button>&#35;{$z.esc(o.text, 'htmlText')}&lt;/button>&quot;
+          render: (o) -> &quot;&lt;button>&#35;{$z.esc(o.text, 'htmlText')}&lt;/button>&quot;
           
           construct: (o) ->
             @$('button')[0].addEventListener 'click', @click
@@ -1037,7 +1040,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           type: 'SimpleDialog'
           options:
             closeButton: false
-          template: (o) -> &quot;&quot;&quot;
+          render: (o) -> &quot;&quot;&quot;
             &lt;div>
               {&#96;content&#96;}
               &lt;div class='footer'>{&#96;footer&#96;}&lt;/div>
@@ -1048,7 +1051,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
             if !o.closeButton
               null
             else
-              structure: Button
+              render: Button
               options:
                 text: 'Close'
           
@@ -1072,7 +1075,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
       $z.render('cs!app/dialog', {
         closeButton: true,
         content: {
-          template: '&lt;span>content&lt;/span>'
+          render: '&lt;span>content&lt;/span>'
         }
       }, document.querySelector('.container-15'));
     ```
@@ -1084,29 +1087,36 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
     ,
       chapterName: 'Creating Zest Server Modules'
       sections: [
-        sectionName: 'Working with Routes'
+        sectionName: 'A simple server'
         markdown: """
-    So what is actually going on here?
+          
+    The server is entirely built up from the zest.cson file config. It is assumed that `www/lib` is the main RequireJS baseUrl, but this
+    can be customized with configuration. In the `www/lib` folder, it is expected that there is an install of zest client and its dependencies
+    (done with `volo add zest-client`).
     
+    If using the basic template, this is already done for you.
+          
+          
+        
+        
     > CSON is a lot more convenient for writing config files than JSON since property quotes, braces and commas can be left out. If you don't like it, `zest.json` is used as a default fallback.
 
-    The logic path of the server bootstrap is the following:
+    The logic path of the server bootstrap (run when typing the `zest` command from the base folder) for is the following:
     
-    * Zest checks the config file, `zest.cson` (CoffeeScript JSON file) in the application directory and builds up the server from this configuration.
-    * As part of the process, it checks the `modules` property, and sees it must load the `cs!$/application` module.
-    * Zest loads the CoffeeScript file `application.coffee` from the application folder, and reads it for module information.
+    1. Zest checks the config file, `zest.cson` (CoffeeScript JSON file) in the application directory and builds up the server from this configuration.
+    2. It checks the `modules` object property, which lists module RequireJS Ids as keys.
+    3. Zest loads the CoffeeScript file `application.coffee` from the application folder, and reads it for module information.
       
       _Modules are loaded as [RequireJS](http://requirejs.org) dependencies. For server requires, Zest provides the `$/` path reference to the base application folder. Zest also comes with the [RequireJS CoffeeScript plugin](https://github.com/jrburke/require-cs) preinstalled. The `cs!` part is the CoffeeScript plugin name indicating that we want to load the module as a CoffeeScript file._
       
-    * Inside the module, Zest reads the `routes` property, which is an object mapping URL patterns to Zest components.
+    * Inside the module, Zest reads the `routes` property, which is an object mapping URL patterns to Zest components. The variables in the
+      url patterns get turned into the options to be used in the `zest.render` call.
+    
+    * By default, 
 
         """
       ,
         sectionName: 'Useful Configuration Options'
-        markdown: """
-        """
-      ,
-        sectionName: 'Creating Request Handlers'
         markdown: """
         """
       ]

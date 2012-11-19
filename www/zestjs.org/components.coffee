@@ -1,5 +1,5 @@
 define ['cs!./page/page'], (Page) ->
-  structure: Page
+  render: Page
   options:
     title: 'Component Library'
     section: ''

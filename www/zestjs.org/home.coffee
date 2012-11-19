@@ -1,6 +1,7 @@
 define [
+  'zest'
   'cs!./page/page'
-], (Page) ->
+], ($z, Page) ->
   $z.create([Page],
     options:
       title: 'ZestJS'

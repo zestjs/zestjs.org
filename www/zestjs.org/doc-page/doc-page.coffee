@@ -1,10 +1,11 @@
 define [
+  'zest'
   'cs!../page/page'
 
   'cs!./sidebar'
   'cs!./contents'
   'cs!./documentation'
-], (Page, Sidebar, Contents, Docs) ->
+], ($z, Page, Sidebar, Contents, Docs) ->
   $z.create([Page],
     options:
       title: 'Documentation'
@@ -12,17 +13,17 @@ define [
       section: 'docs'
 
     content: (o) ->
-      structure: Sidebar
+      render: Sidebar
       options:
         title: o.title
         
         sidebar:
-          structure: Contents
+          render: Contents
           options:
             contents: o.data
         
         content:
-          structure: Docs
+          render: Docs
           options:
             contents: o.data
   )

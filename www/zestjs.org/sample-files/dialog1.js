@@ -1,7 +1,7 @@
 define(['css!./dialog'], function() {
   return {
     type: 'SimpleDialog',
-    template: function(o) {
+    render: function(o) {
       return "<div>{`content`}</div>"
     }
   };
