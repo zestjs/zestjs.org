@@ -23,10 +23,10 @@ define(['app/button8', 'css!./dialog'], function(Button) {
         closeButton: o.closeButton
       };
     },
-    attach: function($$, o) {
+    attach: function(o, els) {
       if (o.closeButton)
-        $z('BigButton', $$).setClickCallback(function() {
-          $z.dispose($$);
+        $z('BigButton', els).setClickCallback(function() {
+          $z.dispose(els);
         });
     }
   };

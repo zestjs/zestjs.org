@@ -43,7 +43,7 @@ define ['marked', 'is!browser?jquery', 'zoe', 'less!./documentation'], (marked, 
     __ += "</div>"
     __
   
-  attach: ($$, o) ->
+  attach: (o, $$) ->
     if typeof window != 'undefined'
       window.zoe = zoe;
     

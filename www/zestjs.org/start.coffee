@@ -342,7 +342,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
-          attach: function(els) {
+          attach: function(o, els) {
             els[0].addEventListener('click', function() {
               alert('click');
             });
@@ -408,7 +408,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
               msg: o.msg
             };
           },
-          attach: function(els, o) {
+          attach: function(o, els) {
             els[0].addEventListener('click', function() {
               alert(o.message);
             });
@@ -637,7 +637,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
-          attach: function(els, o) {
+          attach: function(o, els) {
             var _clickCallback = function(){};
             var buttonController = {
               setClickCallback: function(callback) {
@@ -718,7 +718,7 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
           render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
-          attach: function(els, o) {
+          attach: function(o, els) {
             var _clickCallback = function(){};
             var clickEvent = function() {
               _clickCallback();
@@ -801,10 +801,10 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
               closeButton: o.closeButton
             };
           },
-          attach: function($$, o) {
+          attach: function(o, els) {
             if (o.closeButton)
-              $z('BigButton', $$).setClickCallback(function() {
-                $z.dispose($$);
+              $z('BigButton', els).setClickCallback(function() {
+                $z.dispose(els);
               });
           }
         };
