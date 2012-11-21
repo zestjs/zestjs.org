@@ -1,10 +1,13 @@
 page:
   pageRender: 'cs!$/html'
 
-#environments:
-#  dev:
-#    staticLatency: 500
-#    renderDelay: 500
+###
+environments:
+  # useful for testing page loads at network speeds
+  dev:
+    staticLatency: 200
+    renderDelay: 200
+###
 
 require:
   paths:
@@ -15,6 +18,48 @@ require:
   map:
     '*':
       selector: 'jquery'
+      
+      
+  build:
+    stubModules: ['cs']
+    zestLayer:
+      include: [
+        
+        # Includes the 'attachment' of cs!site/doc-page/doc-page.
+        # ie All assets needed just for the attachment of this component and
+        # its dependencies instead of rendering, ignoring the module itself.
+        
+        '$attach!cs!site/doc-page/doc-page'
+        
+        'app/button1'
+        'app/button2'
+        'app/button3'
+        'app/button4'
+        'app/button5'
+        'app/button6'
+        'app/button7'
+        'app/button8'
+        'app/button9'
+        'app/dialog1'
+        'app/dialog2'
+        'app/dialog3'
+        'app/dialog4'
+        'app/dialog5'
+        'app/dialog6'
+        'cs!app/dialog'
+      ]
+      exclude: ['jquery']
+    
+    # this technique can be used to separate build layers instead of having one:
+    ###
+      modules: [
+        name: 'site/build'
+        create: true
+        include: ['$attach!cs!site/doc-page/doc-page']
+        exclude: ['zest/excludes']
+      ]
+      # nb need to add layers: ['site/build'] to page as well
+    ###
 
 modules: ['cs!$zest-server/core-module', 'cs!$/zestjs.org']
 

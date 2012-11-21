@@ -18,6 +18,13 @@ Then simply create from this template into a folder:
   volo create folder_name zestjs/zestjs.org
 ```
 
+Note: On windows, you need to run `npm install`:
+
+```
+  cd folder_name
+  npm install
+```
+
 Finally run the application by executing the 'zest' commandline tool:
 
 ```
