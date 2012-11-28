@@ -1,5 +1,8 @@
-page:
-  pageRender: 'cs!$/html'
+modules: ['cs!$zest-server/core-module', 'cs!$/zestjs.org', 'cs!$/samples']
+
+port: 8082
+
+pageTemplate: 'cs!$/html'
 
 ###
 environments:
@@ -8,6 +11,7 @@ environments:
     staticLatency: 200
     renderDelay: 200
 ###
+
 
 require:
   paths:
@@ -60,7 +64,3 @@ require:
       ]
       # nb need to add layers: ['site/build'] to page as well
     ###
-
-modules: ['cs!$zest-server/core-module', 'cs!$/zestjs.org']
-
-port: 8082

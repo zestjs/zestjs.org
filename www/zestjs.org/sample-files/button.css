@@ -1,6 +1,49 @@
-button[component="BigButton"] {
-  font-size: 20px;
+button[component="MyButton"] {
+  font-size: 12px;
   font-family: verdana;
+  color: #fff;
   cursor: pointer;
-  padding: 10px;
+  padding: 5px 20px;
+  
+  position: relative;
+  
+  text-shadow: 0px 0px 3px rgb(129, 110, 129);
+  
+  border: 1px solid #FFF;
+  -webkit-box-shadow: 1px 1px 2px 0px #969696;
+  box-shadow: 1px 1px 2px 0px #969696;
+  
+  -webkit-border-radius: 12px;
+  border-radius: 6px;
+  -moz-background-clip: padding;
+  -webkit-background-clip: padding-box;
+  background-clip: padding-box;
+
+  background-color: #EDAE3D;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#EDAE3D), to(#f0b95b));
+  background-image: -webkit-linear-gradient(top, #EDAE3D, #f0b95b);
+  background-image: -moz-linear-gradient(top, #EDAE3D, #f0b95b);
+  background-image: -o-linear-gradient(top, #EDAE3D, #f0b95b);
+  background-image: linear-gradient(to bottom, #EDAE3D, #f0b95b);
+}
+
+button[component="MyButton"]:hover {
+  /* -webkit-box-shadow: 2px 2px 5px 0px #969696;
+  box-shadow: 2px 2px 5px 0px #969696; */
+  
+  background-color: #f0b95b;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#f0b95b), to(#edb03d));
+  background-image: -webkit-linear-gradient(top, #f0b95b, #edb03d);
+  background-image: -moz-linear-gradient(top, #f0b95b, #edb03d);
+  background-image: -o-linear-gradient(top, #f0b95b, #edb03d);
+  background-image: linear-gradient(to bottom, #f0b95b, #edb03d);
+}
+
+button[component="MyButton"]:active {
+  top: 1px;
+  left: 1px;
+  
+  -webkit-box-shadow: 0px 0px 2px 0px #969696;
+  box-shadow: 0px 0px 2px 0px #969696;
+  
 }

@@ -1,5 +1,5 @@
-define(['zest', 'app/button9', 'css!./dialog'], function($z, Button) {
-  return $z.create([$z.Component], {
+define(['app/button9', 'css!./dialog'], function(Button) {
+  return {
     type: 'SimpleDialog',
     options: {
       closeButton: false
@@ -23,14 +23,11 @@ define(['zest', 'app/button9', 'css!./dialog'], function($z, Button) {
         closeButton: o.closeButton
       };
     },
-    construct: function(o) {
+    attach: function(o, els) {
       if (o.closeButton)
-        this.$z('BigButton').click.on(this.close);
-    },
-    prototype: {
-      __close: function() {
-        this.dispose();
-      }
+        $z('MyButton', els).setClickCallback(function() {
+          $z.dispose(els);
+        });
     }
-  });
+  };
 });

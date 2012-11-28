@@ -1,5 +1,21 @@
-div[component="SimpleDialog"] {
-  background-color: #ccc;
-  padding: 20px;
-  border: 1px solid #999;
+div[component="SimpleDialog"] {  
+  font-family: georgia;
+  font-size: 13px;
+  font-style: italic;
+  line-height: 20px;
+  color: #555;
+  
+  background-color: #fff;
+  margin: 50px;
+  border: 1px solid #ccc;
+  
+  position: relative;
+}
+div[component="SimpleDialog"] p {
+  margin-left: 20px;
+}
+
+div[component="SimpleDialog"] .footer {
+  text-align: right;
+  padding: 10px;
 }

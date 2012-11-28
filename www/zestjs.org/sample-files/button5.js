@@ -1,6 +1,6 @@
 define(['zest', 'css!./button'], function($z) {
   return {
-    type: 'BigButton',
+    type: 'MyButton',
     options: {
       text: 'Button'
     },

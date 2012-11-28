@@ -58,13 +58,18 @@ define ['zest', 'jquery'], ($z, $) ->
         
         curSection = firstSection if !curSection
         
+
+
         # finally highlight the chapter and section
         if (curChapter != self.curChapter)
           self.curChapter = curChapter
           self.$chapters.removeClass 'active'
+          # hide all sections not in this chapter
+          self.$sections.css 'display', 'none'
+
           self.$chapters.filter(->
             $(@).text() == curChapter
-          ).addClass 'active'
+          ).addClass('active').parent().nextUntil('h1').children().css 'display', 'block'
           
         if (curSection != self.curSection)
           self.curSection = curSection
