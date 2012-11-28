@@ -1,9 +1,9 @@
 define ['zest', 'jquery'], ($z, $) ->
   $z.create([$z.Component],
-    construct: (o) ->
+    construct: (els, o) ->
       @$chapters = @$('h1 a')
       @$sections = @$('h2 a')
-      @$scrollContainer = $(@$$[0])
+      @$scrollContainer = $(els[0])
       
       # add the contents scroll detection
       @constructor.detectScroll.call(@)

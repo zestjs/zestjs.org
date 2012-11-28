@@ -2055,7 +2055,7 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
     In this way, Render Components can be extended - I can have a very abstract slideshow render component and controller, 
     that gets extended into something more specific, say with a specific toolbar and colour scheme.
 
-    The entire process is designed around object extension, so that we work with JavaScript and not against it.
+    The entire process is designed around natural JavaScript object extension.
 
     The inheritance model is based on three functions:
 
@@ -2067,7 +2067,268 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
 
     For component controllers, the inheritor, `$z.Component` is provided to easily create Render Components.
 
-    To skip the inheritance details and read about how to use this directly, jump down to the `$z.Component` section.
+        """
+      ,
+        sectionName: 'Controllers'
+        markdown: """
+        """
+      ,
+        sectionName: '$z.Component'
+        markdown: """
+        
+    $z.Component is a base class that can be implemented using the ZOE inheritance model. It is just an object that can be
+    used with `$z.create`. This is what it looks like:
+
+    ```javascript
+      $z.RenderComponent = {
+        // 1. It implements the Constructor base class
+        _implement: [zoe.Constructor],
+        
+        // 2. It intelligently extends Render Component properties
+        _extend: {
+          'options': 'APPEND',
+          'type': 'REPLACE',
+          'pipe': $z.fn.executeReduce(function(){ return {} }, function(out1, out2) {
+            return $z.extend(out1, out2, {
+              '*': 'REPLACE',
+              'global': 'APPEND'
+            });
+          });,
+          'load': zoe.extend.makeChain('ASYNC')
+        },
+        
+        // 3. When adding to the constructor or prototype, the attach function is added to create the controller instance
+        _integrate: function(def) {
+          if (def.construct || def.prototype)
+            this.attach = this.attach || function(o, els) {
+              return new this(o, els);
+            }
+        },
+        
+        // 4. It can be constructed directly
+        construct: function(o, els) {
+          this.o = o;
+        },
+
+        // 5. It provides the contextual component and DOM selectors on the prototype
+        prototype: {
+          $: $z.$,
+          $z: $z.$z
+        }
+      };
+    ```
+
+    Firstly, note that `$z.Component` deals with the controller and Render Component in the same object. This is because
+    `$z.Component` is designed for all cases - Render Components, combined Render Component and controller modules and also controllers only.
+    If used just it for a controller then the only real benefit is that we get the contextual selectors on the prototype.
+
+    Let's demonstrate this in action:
+
+    ```jslive
+
+      var FlashingHeading = $z.create([$z.Component], {
+        options: {
+          text: 'hello world'
+        },
+        render: function(o) {
+          return '<h1>' + $z.esc(o.text, 'htmlText') + '</h1>';
+        }
+        construct: function(els, o) {
+          this.$heading = this.$('h1');
+
+          this.flash();
+        },
+        prototype: {
+          flash: function() {
+            var heading = this.$heading;
+            heading.stop().fadeOut(200, function() {
+              heading.fadeIn(200);
+            });
+          }
+        }
+      });
+
+
+      var FlashingExpandingHeading = $z.create([FlashingHeading], {
+
+        options: {
+          expandSize: 20
+        },
+        pipe: function(o) {
+          return {
+            expandSize: o.expandSize
+          };
+        },
+        prototype: {
+          flash: function() {
+            var expandSize = this.o.expandSize;
+            heading.animate({
+              'font-size': expandSize + 'px'
+            }, 200, function() {
+              heading.animate({
+                'font-size': '16px'
+              }, 200);
+            })
+          }
+        }
+      });
+
+      $z.render(FlashingExpandingHeading, document.body);
+
+    ```
+
+    The above demonstrates everything that our inheritance model is designed to do for us. Let's go through these one by one:
+
+    1. It implements from `zoe.Constructor` meaning that it can be instantiated with the `new` keyword. The `construct` function
+      becomes the constructor and the `prototype` object is the prototype, as with standard JavaScript classes.
+    
+    2. It specifies extend rules for the Render Component properties. It automatically appends the options between inheritors,
+
+
+    Let's convert the previous button and dialog components to use `$z.Component`.
+    
+    We create the implementation with the `$z.create` function, implementing from `$z.Component`. This prepopulates the `attach`
+    function automatically for us. The `construct` function becomes the constructor for the component object, and properties placed
+    on the `prototype` object are the natural prototypal methods of the controller instance used for attachment.
+    
+    Thus, the button becomes:
+    
+    ```javascript
+      define(['zest', 'css!./button'], function($z) {
+        return $z.create([$z.Constructor], {
+          type: 'BigButton',
+          options: {
+            text: 'Button'
+          },
+          render: function(o) {
+            return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
+          },
+          attach: function(o, els) {
+            return new this(o, els);
+          },
+          //these are the constructor and prototype for the controller:
+          construct: function(o) {
+            //if we configure the selector to jQuery, we can directly use
+            this.$('button').click('click', this.click);
+          },
+          prototype: {
+            __click: $z.fn(),
+            dispose: function() {
+              this.$('button').unbind();
+            }
+          }
+        });
+      });
+    ```
+    
+    The '__click' notation indicates that the click function should be converted into a function that can be ammended
+    with the 'on' method. This creates a form of basic eventing.
+    
+    The dialog then becomes:
+    
+    ```javascript
+      define(['zest', 'app/button9', 'css!./dialog'], function($z, Button) {
+        return $z.create([$z.Component], {
+          type: 'SimpleDialog',
+          options: {
+            closeButton: false
+          },
+          render: function(o) {
+            return "&lt;div>{&#96;content&#96;}&lt;div class='footer'>{&#96;footer&#96;}&lt;/div>&lt;/div>"
+          },
+          footer: function(o) {
+            if (!o.closeButton)
+              return null;
+            else
+              return {
+                render: Button,
+                options: {
+                  text: 'Close'
+                }
+              };
+          },
+          pipe: function(o) {
+            return {
+              closeButton: o.closeButton
+            };
+          },
+          construct: function(o) {
+            if (o.closeButton)
+              this.$z('BigButton').click.on(this.close);
+          },
+          prototype: {
+            __close: function() {
+              $z.dispose(this.$$);
+            }
+          }
+        });
+      });
+    ```
+    
+    Note also that it isn't necessary to bind the 'close' method to the prototype instance. By default, functions defined with the
+    '__' syntax are automatically scoped to make communication easier.
+    
+    See that it behaves the same here:
+    ```jslive
+      $z.render('app/dialog5', {
+        closeButton: true,
+        content: {
+          render: '&lt;span>content&lt;/span>'
+        }
+      }, document.querySelector('.container-13'));
+    ```
+    <div class='container-13' style='margin: 20px'></div>
+        
+    
+    ### $z.Component Benefits Illustrated
+    
+    Leave the above dialog open (by clicking run and not the close button). Then run this example:
+    
+    ```jslive
+      var buttonInstance = $z('BigButton', document.querySelector('.container-13'));
+      //hook the click method
+      buttonInstance.click.on(function() {
+        alert('button clicked!');
+      });
+      //do a click (entirely equivalent in behavior to actually clicking the button)
+      buttonInstance.click();
+    ```
+    
+    To create a new dialog that extends the previous dialog, it's also much easier:
+    
+    ```javascript
+      define(['app/dialog5'], function(Dialog) {
+        return $z.create([Dialog], {
+          prototype: {
+            newMethod: function() {
+              alert('new instance method');
+            },
+            __close: function() {
+              alert('new dialog closed!');
+            }
+          }
+        });
+      });
+    ```
+    
+    The same eventing method works with inheritance.
+    
+    Try the extended dialog here:
+    ```jslive
+      $z.render('app/dialog6', {
+        closeButton: true,
+        content: {
+          render: '&lt;span>content&lt;/span>'
+        }
+      }, document.querySelector('.container-14'), function() {
+        
+        $z('SimpleDialog', document.querySelector('.container-14')).newMethod();
+      
+      });
+    ```
+    <div class='container-14' style='margin: 20px'></div>
+        
+    ***
 
         """
       ,
