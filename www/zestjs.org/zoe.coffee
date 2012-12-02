@@ -175,6 +175,7 @@ define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
   ```
         """
       ,
+        """
         sectionName: 'zoe.fn.ASYNC'
         markdown: """
   _Executes the asynchronous functions in series, before the final complete callback._

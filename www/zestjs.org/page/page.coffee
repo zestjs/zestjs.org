@@ -1,18 +1,11 @@
 define ['zest', 'css!./clearfix', 'less!./page'], ($z) ->
-  _extend:
-    options: 'APPEND'
-    
   options:
     section: 'about'
-    title: ''
     menu:
       '/why-zest': 'Why Zest?'
       '/start': 'Get Started'
       '/docs': 'Documentation'
       # '/components': 'Component Library'
-  
-  load: (o) ->
-    o.global.setTitle o.title
   
   render: (o) ->
     __menu = ""

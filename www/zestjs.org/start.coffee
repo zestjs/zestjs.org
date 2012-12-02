@@ -1,7 +1,7 @@
-define ['cs!./doc-page/doc-page'], (Docs) ->
-  render: Docs
+define ['cs!./doc-page/doc-page'], (DocPage) ->
+  title: 'Zest Quick Start'
+  body: DocPage
   options:
-    title: 'Zest Quick Start'
     section: 'start'
     data: [
       chapterName: 'Zest Quick Start'
@@ -55,23 +55,23 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
 
           2. Run the app by opening up `www/index.html` in the browser.
 
-          This loads up RequireJS with the minimal Zest configuration, and then renders a sample component into the page.
+        This loads up RequireJS with the minimal Zest configuration, and then renders a sample component into the page.
 
-          This technique can be used to create single page apps, with all Zest rendering occurring in the browser.
+        This technique can be used to create single page apps, with all Zest rendering occurring in the browser.
 
-          #### CoffeeScript Template
+        #### CoffeeScript Template
 
-            Writing Render Components with CoffeeScript is a lot neater. To see the sample in CoffeeScript, use the version from:
+          Writing Render Components with CoffeeScript is a lot neater. To see the sample in CoffeeScript, use the version from:
 
-            ```
-              volo create myapp zestjs/template-browser-cs
-            ```
+          ```
+            volo create myapp zestjs/template-browser-cs
+          ```
 
-            or [download the CoffeeScript browser template here](https://github.com/downloads/zestjs/template-browser-cs/zest-template-browser-cs.zip).
+          or [download the CoffeeScript browser template here](https://github.com/downloads/zestjs/template-browser-cs/zest-template-browser-cs.zip).
 
-          #### Next Steps
+        #### Next Steps
 
-          With the application set up, follow the [Render Component Introduction](#Render%20Components) below.
+        With the application set up, follow the [Render Component Introduction](#Render%20Components) below.
 
         ***
 
@@ -133,10 +133,11 @@ define ['cs!./doc-page/doc-page'], (Docs) ->
         
       In both template apps, you are greeted to an incredibly simple welcome component. So how does this component get rendered?
       
-      In both cases, it is rendered by the Zest render function. In Zest Server, the application uses the URL to determine what component
-      to render, and with what options.
+      In both cases, it is rendered by the Zest render function. 
 
-      In the Zest Client example, the main application code entry point simply runs the render directly in the form:
+      With Zest Server, the application routing matches the URL to a component to render with some options.
+
+      With the Zest Client example, the main application code entry point simply runs the render directly in the form:
       
       ```javascript
         $z.render('app/Hello/hello', {}, document.body);

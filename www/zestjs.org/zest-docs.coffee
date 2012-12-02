@@ -1,8 +1,7 @@
-define ['cs!./doc-page/doc-page'], (DocsPage) ->
-  render: DocsPage
+define ['cs!./doc-page/doc-page'], (DocPage) ->
+  title: 'Documentation'
+  body: DocPage
   options:
-    title: 'Documentation'
-    section: 'docs'
     data: [
       chapterName: 'Introduction'
       sections: [
@@ -18,6 +17,8 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
       sections: [
         sectionName: 'Basic Rendering'
         markdown: """          
+
+    If you don't yet have one of the example Zest templates installed, [follow the install guide here](/start#Install%20Zest%20Server).
           
     Let's start with simplest render component, which simply provides a template.
     
@@ -27,9 +28,9 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
     the render component object directly to define the module.
     
     Regardless of whether you are using the zest-server or zest-browser template, you would create a file
-    called 'button.js' in the 'www/app' folder or a subfolder. (We're creating numbered buttons here because we have a bit of evolution to go through.)
+    called 'button.js' in the 'www/app' folder or a sub-folder. (We're creating numbered buttons here because we have a bit of evolution to go through.)
     
-    By defining all render components as RequireJS modules, this allows us to manage modular dependencies, code portability and builds.
+    By defining all render components as [RequireJS](http://requirejs.org) modules, this allows us to manage modular dependencies, code portability and builds.
     
     button1.js:
     ```javascript
@@ -40,8 +41,8 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
       });
     ```
     
-    We simply create an object with a `render` property, which provides a template. Note that the template must always start with an
-    HTML tag, otherwise an error will be thrown.
+    We create an object with a `render` property, which provides a template. Note that the template must always start with an
+    HTML tag when we want to add dynamic functionality, otherwise an error will be thrown when we add our `attach` method.
     
     This guide is interactive - the above file has already been created in this site, so that it can be found at the RequireJS
     moduleId, `app/button1`. _ModuleId's_ in RequireJS are like paths to files, but including configured path mappings, relative to a
@@ -56,19 +57,46 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
     ```
     
     <div class='container-1' style='margin: 20px;'></div>
-    
-    The above code renders the component with an empty options object, into the container div with class 'container-1'
-    (conveniently located right below the code block). Click run to see it render.
-    
-    Since we are running the live demo site, the button is already built into the scripts that loaded with this page, so it
+
+    The above code renders the `app/button1` Render Component with an empty options object, appending it into the container div with 
+    class 'container-1' (conveniently located right below the code block). Click run to see it render.
+
+    Since this is a production site, the button is already built into the scripts that loaded with this page, so it
     renders instantly. In development, or when the component hasn't been loaded already, a request for the script will be sent.
-    Render is thus an asynchronous operation. You can optionally pass a complete callback as the last argument.
+    Rendering is thus an asynchronous operation. You can optionally pass a complete callback as its last argument.
+
+        """
+      ,
+        sectionName: 'RequireJS Notes'
+        markdown: """
+
+    Render Components in Zest are normally written as RequireJS modules. For an overview of the module format, read the [RequireJS API documentation here](http://requirejs.org/docs/api.html).
+
+    It is still possible to render components without using any modules if you really need to, but it's not nearly as useful.
+
+    To configure RequireJS, the Zest Client template configuration file is located at `www/main.js`. In the Zest Server template, the
+    RequireJS configuration can be set on the `require` property in the `zest.json` or `zest.cson` server configuration file.
+
+    #### $z Global
+
+    For convenience, the `$z` global variable is defined to allow easy rendering and component interaction as used in these
+    examples.
+
+    To disable the `$z` global creation, add the following RequireJS configuration:
+
+    ```javascript
+      config: {
+        'zest/zest-render': {
+          defineGlobal: false
+        }
+      }
+    ```
         """
       ,
         sectionName: 'Rendering with Options'
         markdown: """
-    
-    Templates are much more interesting when they can be customised with data. Let's allow the button to be given custom text:
+
+    Let's allow the button to be given custom text:
     
     ```javascript
       define([], function() {
@@ -90,14 +118,18 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
     <div class='container-2' style='margin: 20px;'></div>
     
     Note how the template is now a function instead of a string. The options object we pass into the render function gets passed
-    to the template function, which can read out the options it needs.
+    to the template function, which can read out the options it needs and insert them into the HTML.
+        """
+      ,
+        sectionName: 'Template Plugins'
+        markdown: """
+
+    #### CoffeeScript for Templating
     
-    #### CoffeeScript templates
+    CoffeeScript is easily supported by RequireJS and allows multi-line strings and interpolation.
+    This allows for writing template in-line and keeping Render Components nicely readable.
     
-    CoffeeScript is easily supported by RequireJS and allows multiline strings and interpolation.
-    This makes writing components in the above format much easier to use.
-    
-    #### Template processors
+    #### Template Plugins
     
     On the other hand, you can also use a template processor through a RequireJS loader plugin
     which parses template syntax, and supports builds.
@@ -114,7 +146,7 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
     ```
     
     Since the jade plugin supports builds, the above would also support adding the compiled template into the build, without including
-    the processor in production.
+    the Jade compiler in production.
     
     There is a list of supported templating languages on the [RequireJS plugins page](https://github.com/jrburke/requirejs/wiki/Plugins#wiki-templating).
     
@@ -122,13 +154,12 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
       ,
         sectionName: 'Adding CSS'
         markdown: """
-          
-    The next thing we're probably going to want to do is add some styles to our component.
     
-    To do this, we use [RequireCSS](https://github.com/guybedford/require-css) to load the CSS as a dependency of the component:
+    CSS is loaded as a dependency of the Render Component with [RequireCSS](https://github.com/guybedford/require-css), which allows
+    CSS build support as just another dependency.
     
     > If you want to use LESS instead of CSS, there is the [RequireLESS](https://github.com/guybedford/require-less) plugin
-      which behaves identically to RequireCSS but for LESS code.
+      which behaves identically to RequireCSS but for LESS code. If using Volo, install it with `volo add guybedford/require-less`.
     
     ```javascript
       define(['css!./button'], function() {
@@ -141,21 +172,24 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
       });
     ```
     
-    The use of './' in the dependency name is the RequireJS syntax for a relative path so our code remains completely portable. It loads
+    The use of `./` in the dependency name is the RequireJS syntax for a relative path so our code remains completely portable. It loads
     `button.css` from the same folder as `button.js`.
     
-    We now need a unique class on the component to ensure our CSS is properly scoped. We can either add a class name onto the template,
+    We need a unique class on the component to ensure our CSS is properly scoped. We can either add a class name onto the template,
     or we can give the component a Component Type Name, which is specified with the `type` property above.
     
-    > By default Zest adds the `component` attribute to all render components. If you'd rather write valid XHTML, you can configure
-      Zest to use the attribute `data-component` instead.
+    > If you'd rather write valid XHTML, you can configure
+      Zest to use the attribute `data-component` instead. To enable this, add the configuration option `typeAttribute: 'data-component'`
+      to the Zest Server configuration file, or under the `zest/zest-render` RequireJS configuration in the browser template.
     
     When rendering, the `type` name is automatically added as the `component` attibute on the element, so the HTML will render as the element:
     
     ```
       <button component='MyButton'>
     ```
-      
+    
+    The `component` attribute is always added, making it easier to see Render Components when inspecting the DOM.  
+
     It is worth ensuring this name is unique to the component as it may clash with other components on the page.
     
     We can then use the attribute selector in our CSS as the main scope. Attribute-equals selectors are supported in IE7+ and on mobile devices.
@@ -188,14 +222,18 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
     
     In development and for CSS not yet loaded, the CSS is downloaded as needed.
     
-    Read more about this at the [RequireCSS](https://github.com/guybedford/require-css) project page.
+    Read more about this process at the [RequireCSS](https://github.com/guybedford/require-css) project page.
 
-    ### Styling by Id
+    ### Styling by ID
 
-    When writing a component, it is generally better not to style by id. But if you're converting existing styles and HTML,
-    and know that the elements will only be used once, then you can also style by id.
+    When writing a Render Component, it is generally better not to style by ID in order to allow multiple component instances. 
 
-    Simply write the ID in the template, and Zest will then use this ID as the internal component ID as well.
+    Zest adds unique ID's to components in order to manage the attachment process. It is also possible to provide
+    an `id` option in the component render options to set this ID.
+
+    If you know for certain that the component will only be rendered once in a page, this `id` option can be set in the
+    default options. Alternatively write the template HTML including an `id` attribute on the master template element.
+    Zest will detect this ID and use it automatically.
 
     Styling by class or component type is the recommended method in most cases though.
           
@@ -203,9 +241,9 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
       ,
         sectionName: 'Default Options and Escaping'
         markdown: """
-    What if someone doesn't provide text? Or worse, what if they provide text containing a cross site scripting attack?
+    What if someone doesn't provide text in the rendering options? Or worse, what if they provide text containing a cross site scripting attack?
     
-    Let's clean this up and add some default options and escaping.
+    Let's clean this up and add some default options and escaping:
     
     ```javascript
       define(['zest', 'css!./button'], function($z) {
@@ -225,19 +263,18 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
     
     ### Escaping Functions
     
-    The `zest` library comes with an escaping function, `$z.esc`, which provides the following escaping functions:
+    The `zest` client library comes with an escaping function, `$z.esc`, which provides the following escaping methods:
     
-    * HTML Attribute: `$z.esc(val, 'attr')`
-    * HTML Text: `$z.esc(val, 'htmlText')`
-    * Filtered HTML: `$z.esc(val, 'html', [allowedTagsArray], [allowedAttributesAttay])`. _AllowedTags and AllowedAttributes optional, by default
-    filter to all safe allowed values that don't provide scripting._
-    * URL: `$z.esc(val, 'url')`. _Protects against `javascript:` urls._
-    * URI Component: `$z.esc(val, 'uriComponent')`
-    * Number: `$z.esc(val, 'num', [NaNVal])`. _NaNVal is an optional default to output if the value is not a number. It should typically be used._
-    * CSS Attribute: `$z.esc(val, 'cssAttr')`. _Ensures that the text is an attribute only, and not defining any additional style rules. It is assumed
-      that the CSS attribute is being written into an HTML style attribute, quoted with double quotes and so double quotes are removed. **Note
-      that this function not be used with a style attribute inside a single quoted HTML attribute as this will allow script injection.**_
-    
+    * **`$z.esc(val, 'attr')`**: _HTML Attribute escaping. Escapes quotes, ampersands and HTML tags within attributes._
+    * **`$z.esc(val, 'htmlText')`**: _HTML Text escaping. Escapes any HTML tags._
+    * **`$z.esc(val, 'html', [allowedTagsArray], [allowedAttrArray])`**: _Filters HTML to allowed tags and attributes. If not specified,
+      allowedTags contains all safe, non-script-injecting tags and similarly for allowedAttr, including HTML5 tags and attributes._
+    * **`$z.esc(val, 'url')`**: _Escapes any `javascript:` urls and performs URI encoding._
+    * **`$z.esc(val, 'num', [NaNVal])`**: _Parses the value as a number, providing the NaNVal if not a number._
+    * **`$z.esc(val, 'cssAttr')`**: _Ensures the value is a single CSS attribute, escaping `:`, `{`, `}` and `"`. Single quotes are not escaped,
+      so that using this in a single-quoted HTML style attribute will not be safe. It can only be safely used within a double quoted HTML style 
+      attribute tag._
+
     Now we can try out the edge cases with no 'text' option provided:
     ```jslive
       $z.render('app/button4', {}, document.querySelector('.container-4'));
@@ -257,10 +294,12 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
       ,
         sectionName: 'Rendering with Dynamic Attachment'
         markdown: """
-    
-    Right, so how about we actually do something when we click the button?
-    
-    Let's add the dynamic attachment code:
+
+    Currently the button is a static Render Component. It is simply HTML and CSS which can be rendered with data options.
+
+    To be able to listen to the button click event, we need to turn this into a dynamic Render Component.
+
+    Dynamic Render Components have an `attach` method, which allows for interaction scripts to be applied:
     
     ```javascript
       define(['zest', 'css!./button'], function($z) {
@@ -272,7 +311,7 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
           render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
-          attach: function(o, els) {
+          attach: function(els, o) {
             els[0].addEventListener('click', function() {
               alert('click');
             });
@@ -288,23 +327,42 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
     ```
     <div class='container-5' style='margin: 20px'></div>
     
-    `els` is the array of DOM elements that were rendered from the template. Hence `els[0]` is the button element itself.
+    The first argument of the `attach` function, `els`, is the array of DOM elements that were rendered from the template. 
+    Hence `els[0]` is the button DOM element.
+
+    ### Separate Attachment
+
+    The attach property can also be a _moduleId_ string to reference a separate module to load the attachment function from. 
+    This allows for the attachment code to be built separately to the render code when components are only going to be rendered on the server.
+    Note that the CSS is always a dependency of the render code.
+
+    For example, we could write the button attachment module in `button-controller.js` as:
+    ```javascript
+      define([], function() {
+        return function(els, o) {
+          els[0].addEventListener('click', function() {
+            alert('click');
+          });
+        }
+      });
+    ```
+
+    And then update the `attach` property in the Button Render Component to be `attach: './button-controller'` to reference the module
+    as a relative moduleId.
     
-    The attach property can also be a _moduleId_ string to reference a separate module to use for attachment. This allows for the
-    attachment code to be built separately to the render code when components are only going to be rendered on the server.
-    
-    It is thus advisable to use a separate attach module for server renderables (layouts / menus etc), but an inline attach module
-    is nicer during prototyping and can be left for components only ever rendered in the browser such as dialogs.
+    It is advisable to use a separate attach module for server Render Components (layouts / menus etc), but an inline attach module
+    is nicer during prototyping and can be used for components only ever rendered in the browser such as popups.
     
         """
       ,
-        sectionName: 'Piping Options to Attachment'
+        sectionName: 'Piping Attachment Options'
         markdown: """
   
-    What about custom attachment options, say for example, we want an option to customise the message provided
-    when you click the button?
-      
-    The pipe method is used to generate the 'attachment options':
+    The second argument sent to the attach function is the **Attachment Options** object. As an example, let's
+    provide an option to customize a message given when the button is clicked.
+    
+    By default, the attachment options provided to the attachment function is an empty object. We need to manually
+    populate the attachment options from the render options by providing a **Pipe Function**:
     
     ```javascript
       define(['zest', 'css!./button'], function($z) {
@@ -332,7 +390,7 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
     ```
     
     Pipe is a function, taking the main options object (as given to the template) and outputting the options object to use for
-    attachment. These options are then sent as the second argument to the `attach` function.
+    attachment. These options are then sent to the `attach` function.
     
     ```jslive
       $z.render('app/button6', {
@@ -342,32 +400,64 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
     ```
     <div class='container-6' style='margin: 20px'></div>
     
-    The benefit of pipe, is that when we render a component on the server, we dont need to send down all the data that was used
+    The benefit of pipe, is that when we render a component on the server, we don't need to send down all the data that was used
     to perform the rendering to the client - we only send the attachment options that we want to pipe to the client. Consider a gallery
     component that renders images from raw image data, there is no reason to send all this raw JSON image data to the client once its been generated
     into HTML.
-    
-    If you like, you can directly send the entire render options itself, or even delete options off the render options object first that shouldn't be piped
-    (since this is the last render function, these options aren't needed anymore). It is generally better to just pipe each property directly though.
-    
+
+    #### Next Steps
+
+    Will will come back to this button example shortly to demonstrate [@controller registration](#controller). But first,
+    we need to finish understanding static Render Components - particularly how to create hierarchies of components with
+    the use of regions.
+
+        """
+      ,
+        sectionName: 'Render Structures'
+        markdown: """
+
+      `zest.render` can render a little more than just Render Components. It can actually render any **Render Structure**,
+      of which the Render Component is just one.
+
+      There are four types of Render Structure: an HTML string, an array of Render Structures, a Render Component or a 
+      function returning a Render Structure.
+
+      The `zest.render` function renders all Render Structures, except for the HTML string. This is because it assumes strings are ModuleIds
+    of Render Structures to load them for convenience. Besides if we passed a string of HTML directly to the render function we may as well
+    just have used a native method instead.
+
+      ### Render Arrays
+
+      The Render Array is simply a JavaScript array of Render Structures, each item in the list is rendered one after the other.
+
+      Let's render a few buttons:
+
+      ```jslive
+        require(['app/button6'], function(Button) {
+          $z.render([Button, Button, Button], {}, document.querySelector('.container-7'));
+        });
+      ```
+      <div class='container-7' style='margin: 20px'></div>
+
+
+    In the previous example, we rendered the content region is rendered using the `HTML String` Render Structure.
+
         """
       ,
         sectionName: 'Template Regions'
         markdown: """
-          
-    The standard way of combining components is with the use of named template regions. These are defined in the template
-    with a special syntax allowing them to contain render components themselves.
-    
-    For example, we can create a dialog component which can contain any content:
+
+    Render Components don't need to have a dynamic attachment - they can also be static HTML layouts or display units. 
+    Both static and dynamic Render Components permit regions allowing them to contain structures of other Render Components.
+
+    Regions are defined in the template with a special syntax. For example, we can create a dialog component which can contain any content:
     
     dialog.js:
     ```javascript
       define(['css!./dialog'], function() {
         return {
           type: 'SimpleDialog',
-          render: function(o) {
-            return "&lt;div>{&#96;content&#96;}&lt;/div>"
-          }
+          render: "&lt;div>{&#96;content&#96;}&lt;/div>"
         };
       });
     ```
@@ -384,98 +474,59 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
     ```
     
     The `content` region is denoted by the special syntax <code>&#96;{RegionName}&#96;</code>. Any number of regions
-    can be provided with any region names.
+    can be provided with any region names in this way.
     
-    The regions can be populated by setting the region name property on either the component itself, or through the options.
-    Setting the region on the component will take preference over the region in the options, allowing for 'private regions'.
+    The regions can be populated by setting the region name property either on the Render Component itself, or through its options.
     
-    In this example, the region is public as we haven't set it already.
-    Hence we can populate the region to any content when creating any dialog instance.
-    
-    
-    For example, we can include a simple component in the dialog:
+    For example, we can include some content in the dialog by passing the region through options:
     ```jslive
       $z.render('app/dialog1', {
-        content: {
-          render: '&lt;p>some content&lt;/p>'
-        }
+        content: '&lt;p>some content&lt;/p>'
       }, document.querySelector('.container-7'));
     ```
     <div class='container-7' style='margin: 20px'></div>
-    
-    We could also set a default content for the 'content' region by providing this property in the default options (the `options`
-    property on the component), so that if not provided the default would apply.
-    
-        """
-      ,
-        sectionName: 'Private Template Regions'
-        markdown: """
-    
-    Let's create a private region in the dialog as well that is pre-populated with a button:
-    
-    ```javascript
-      define(['app/button6', 'css!./dialog'], function(Button) {
-        return {
-          type: 'SimpleDialog',
-          render: function(o) {
-            return "&lt;div>{&#96;content&#96;}&lt;div class='footer'>{&#96;footer&#96;}&lt;/div>&lt;/div>"
-          },
-          footer: {
-            render: Button,
-            options: {
-              text: 'Dialog button',
-              msg: 'Dialog message'
-            }
-          }
-        };
-      });
-    ```
-    
-    This region can't be overridden with the instance options because it is already defined on the dialog itself.
-    
-    By importing the 'button' component, a build of the dialog will now also contain the build of the button so that we can still
-    build this compound component.
-    
-    Run the code here:
-    ```jslive
-      $z.render('app/dialog2', {
-        content: {
-          render: '&lt;p>more content&lt;/p>'
-        },
-        footer: {
-          render: '&lt;p>this content ignored&lt;/p>'
-        }
-      }, document.querySelector('.container-8'));
-    ```
-    <div class='container-8' style='margin: 20px'></div>
-        
 
-    In this way, we can build up complex layout components and component combinations from simple component parts,
-    all of which can still be rendered by a single render call.
+    The region value can be any **Render Structure**
+
+    Regions are rendered as any other `zest.render` call. In this example, the content region is rendered as a **Render Structure** with the same options from the dialog Render Component.
+    The function just returns a Render Component to render next, containing some content.
+
+    Content is a **public region** as it can be set publicly through options.
     
-    This means an entire page can be a component, allowing us to render pages both client and server-side seamlessly,
-    while still allowing full build support.
-        
+    We could also set a default Render Structure for the content region by providing this property in the default options (the `options`
+    property on the component), so that if not provided with render options the default Render Structure would apply.
+    
         """
       ,
-        sectionName: 'Allowed Renderables'
+        sectionName: 'Render Structures'
         markdown: """
-    When populating the regions, we weren't referencing moduleIds, instead we were providing **renderables**. There are actually
-    a number of renderable forms accepted by `zest.render` which are called **renderables**. The **render component** we've been using
-    up until now is just one of them.
-    
-    The full list of renderables is:
-      
-    * **HTML, string**: _A string of HTML to render, with any regions allowed from options._
-    * **Render Component, object**: _A render component, an object with a `render` property, as we've been using._
-    * **Render array, array**: _An array of renderables will be rendered one after another.
-      Useful for regions with lots of components._
-    * **dynamic renderable, function**: _A function that returns a renderable. The function takes the options of the render returning
-      a new renderable. A template is simply a _
-      
-    Rendering with a `moduleId` is only supported by the top-level render call. After this a string signifies HTML only.
-    
-    ### Instance Renders
+
+    The value of a region property is the region **Render Structure**. There are a number of Render Structure forms allowed, including
+    an HTML string, an array of Render Structures, a Render Component or a function returning a Render Structure.
+
+    The `zest.render` function renders all Render Structures, except for the HTML string. This is because it assumes strings are ModuleIds
+    of Render Structures to load them for convenience. All subsequent renders assume that strings are HTML.
+
+    In the previous example, we rendered the content region is rendered using the `HTML String` Render Structure.
+
+    Let's try some of the others:
+
+    ### Render Component 
+
+    We can render a Render Component directly as Render Structure**
+
+    ```jslive
+      $z.render('app/dialog1', {
+        content: Button
+      }, document.querySelector('.container-7'));
+    ```
+    <div class='container-7' style='margin: 20px'></div>
+
+    There are four 
+    When populating the regions, we aren't referencing moduleIds or Render Components directly, instead we were providing **Render Structures**. There are actually
+    four Render Structure forms accepted by `zest.render`, of which a **Render Component** is just one.
+
+    ### Instance Rendering
     
     There is a very useful render component variation which allows for providing render options to the render function.
     
@@ -557,8 +608,74 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
       }, document.querySelector('.container-9'));
     ```
     <div class='container-9' style='margin: 20px'></div>
+
+
+    ### Full Render Structure Listing
+
+    To summarize the allowed Render Structures:
+      
+    * **HTML, String**: _A string of HTML to render, with any regions defined with the syntax <code>&#96;{RegionName}&#96;</code>._
+    * **Render Component, Object**: _A render component, an object with a `render` property, as we've been using._
+    * **Render Array, Array**: _An array of Render Structures to render one after another. Each structure in the array is rendered with an empty options object.
+      Useful for regions containing multiple components._
+    * **Dynamic Renderable, function**: _A function that returns a Render Structure. This allows the render options to be mapped from one render call into
+      subsequent renders, just like The function takes the options from the render call, returning
+      a new Render Structure._
+      
+    Rendering with a `moduleId` is only supported by the top-level render call. After this a string signifies HTML only.
     
           """
+      ,
+        sectionName: 'Private Template Regions'
+        markdown: """
+
+    Setting the region on the component will take preference over the region in the options, allowing for **private regions**.
+    
+    Let's also create a private region in the dialog that is pre-populated with a button:
+    
+    ```javascript
+      define(['app/button6', 'css!./dialog'], function(Button) {
+        return {
+          type: 'SimpleDialog',
+          render: "&lt;div>{&#96;content&#96;}&lt;div class='footer'>{&#96;footer&#96;}&lt;/div>&lt;/div>",
+          footer: function(o) {
+            return {
+              render: Button,
+              options: {
+                text: 'Dialog button',
+                msg: 'Dialog message'
+              }
+            };
+          }
+        };
+      });
+    ```
+    
+    This region is private because it is defined on the Render Component itself, so it can't be overridden with the instance options.
+
+    In this case, we've set the region to return a rendering of the Button component, with some options provided.    
+
+    By importing the Button component, the a build of the dialog dependencies into one file will now include the button as well
+    as part of this component component.
+    
+    Run the code here:
+    ```jslive
+      $z.render('app/dialog2', {
+        content: {
+          render: '&lt;p>more content&lt;/p>'
+        }
+      }, document.querySelector('.container-8'));
+    ```
+    <div class='container-8' style='margin: 20px'></div>
+        
+
+    In this way, we can build up complex layout Render Components from simple Render Component parts,
+    all of which can still be rendered by a single render call.
+    
+    This means an entire page can be a component, allowing us to render pages both client and server-side seamlessly,
+    while still allowing full build support.
+        
+        """
       ,
         sectionName: 'Attaching Controllers'
         markdown: """
@@ -1665,7 +1782,7 @@ define ['cs!./doc-page/doc-page'], (DocsPage) ->
 
 
 
-    
+
     
     For testing the latency of rendering for a slow page load, there is also the `renderDelay` configuration option.
     This specifies a delay in ms to wait before each Render Component is rendered. Useful for inspecting how the site

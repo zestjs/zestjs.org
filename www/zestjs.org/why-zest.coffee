@@ -1,7 +1,7 @@
 define ['cs!./doc-page/doc-page'], (DocPage) ->
-  render: DocPage
+  title: 'Documentation'
+  body: DocPage
   options:
-    title: 'Why Zest?'
     section: 'why-zest'
     data: [
       chapterName: 'Why Zest'
@@ -10,7 +10,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         markdown: """
           > This website itself is built using Zest. You can view the source in the page or on [GitHub here](https://github.com/zestjs/zestjs.org).
         
-          ZestJS is an open source JavaScript library that forms a way to build scalable, maintainable modern web applications - both single page applications
+          ZestJS is an open source JavaScript library that provides a way to build modular, maintainable modern web applications - both single page applications
           in the browser and multi-page applications with complex interactions.
           
           The key premise of Zest is in making the **Render Component** the unit of development.
@@ -23,7 +23,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           It is suitable for any form of HTML component modularity, from websites to cross-platform web applications. Since SVG is rendered with HTML, components
           can even be SVG-based allowing for vector component modularization as well.
           
-          The benefits of a Render Component model include code reuse between sites and developers along with the open source
+          The benefits of a Render Component model include portability between sites and developers along with the open source
           benefits of this sharing. If you can break an entire web page or application specification down into render components, it's much easier to break down the
           workload between developers. Testing becomes easier as you can isolate separate components easily.
           
@@ -31,7 +31,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           rendered on both the client and server, built for production and shared between sites, without imposing unnecessary framework
           constraints and leaving the development environment as open and flexible as possible._
           
-          Zest at its core is an implementation and specification for these components.
+          Zest at its core is an implementation and specification for these components, that works across all of today's devices and browsers.
         """
       ,
         sectionName: 'Designing for Many Environments'

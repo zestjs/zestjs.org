@@ -10,8 +10,13 @@
   padding-left: 340px;
 }
 
+@media screen and (max-width: 1024px), screen and (max-device-width: 1024px) {
+  .sidebar {
+    margin-top: 32px;
+  }
+}
 
-@media screen and (max-width: 800px), print {
+@media screen and (max-width: 800px), screen and (max-device-width: 800px) {
   .sidebar {
     display: none;
   }
