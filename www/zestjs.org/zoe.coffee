@@ -1,7 +1,6 @@
 define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
-  render: DocPage
+  body: DocPage
   options:
-    title: 'zoe - Zest Object Extension'
     section: 'zoe'
     data: [
       chapterName: 'Zoe - Zest object extension'
@@ -67,11 +66,11 @@ define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
        when no executionFunction is provided. Defaults to [`zoe.fn.LAST_DEFINED`](#zoe.fn.LAST_DEFINED). When a string `FUNCTION_NAME` is provided, the function is loaded from `zoe.fn.FUNCTION_NAME`. These provided execution functions are detailed below._
       
   #### Instance methods:
-    * `f.on(fn)`: _add a new function to the list of functions_
-    * `f.off(fn)`: _remove a function from the list of functions_
-    * `f.first(fn)`: _add a new function at the beginning of the list of functions_
-    * `f.bind(thisVar)`: _used to permanently bind this instance to the given 'this' reference. **By default, and when passed the value `undefined`, binding is identical to natural function scope binding.**_
-    * `f()`: _executes the current function list based on the given executionFunction_
+    * **f.on(fn)**: _add a new function to the list of functions_
+    * **f.off(fn)**: _remove a function from the list of functions_
+    * **f.first(fn)**: _add a new function at the beginning of the list of functions_
+    * **f.bind(thisVar)**: _used to permanently bind this instance to the given 'this' reference. **By default, and when passed the value `undefined`, binding is identical to natural function scope binding.**_
+    * **f()**: _executes the current function list based on the given executionFunction_
       
   #### What it does:
   * zoe.fn is a factory function returning a function instance acting as a wrapper around an array of functions.
@@ -175,7 +174,6 @@ define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
   ```
         """
       ,
-        """
         sectionName: 'zoe.fn.ASYNC'
         markdown: """
   _Executes the asynchronous functions in series, before the final complete callback._

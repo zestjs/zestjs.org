@@ -13,7 +13,7 @@ define(['zest', 'css!./button'], function($z) {
         msg: o.msg
       };
     },
-    attach: function(o, els) {
+    attach: function(els, o) {
       els[0].addEventListener('click', function() {
         alert(o.msg);
       });

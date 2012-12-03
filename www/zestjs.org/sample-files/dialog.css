@@ -10,12 +10,14 @@ div[component="SimpleDialog"] {
   border: 1px solid #ccc;
   
   position: relative;
+  padding-bottom: 50px;
 }
 div[component="SimpleDialog"] p {
-  margin-left: 20px;
+  margin: 20px;
 }
 
-div[component="SimpleDialog"] .footer {
-  text-align: right;
-  padding: 10px;
+div[component="SimpleDialog"] .button {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
 }
