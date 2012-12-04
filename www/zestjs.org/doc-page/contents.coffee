@@ -17,11 +17,13 @@ define ['cs!../page/line-break', 'less!./contents'], (LineBreak) ->
         first = false
     
     """
-      <div class="contents">
-        #{contents}
-      </div>
-      <div class='contents-footer'>
-        {`contentsFooter`}
+      <div>
+        <div class="contents">
+          #{contents}
+        </div>
+        <div class='contents-footer'>
+          {`contentsFooter`}
+        </div>
       </div>
     """
   

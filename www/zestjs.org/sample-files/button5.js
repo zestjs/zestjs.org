@@ -7,8 +7,8 @@ define(['zest', 'css!./button'], function($z) {
     render: function(o) {
       return '<button>' + $z.esc(o.text, 'htmlText') + '</button>';
     },
-    attach: function(els, o) {
-      els[0].addEventListener('click', function() {
+    attach: function(el, o) {
+      el.addEventListener('click', function() {
         alert('click');
       });
     }

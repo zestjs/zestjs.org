@@ -190,7 +190,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       The `attach` function can return a **controller** object which allows the component to communicate with other
       modules and components on the page.
       
-    To learn more about rendering from the first principles, read the [Render Component Introduction](/docs#An%20Introduction%20to%20Writing%20Render%20Components).
+    To learn more about rendering from the first principles, read the [Render Component Introduction](/docs#Writing%20Render%20Components).
     
     ***
 
@@ -265,7 +265,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     The home page is simply returning the Hello component, which is then being rendered.
     
-    Read more about [rendering](/docs#An%20Introduction%20to%20Writing%20Render%20Components) and [server modules](/docs#An%20Introduction%20to%20Zest%20Server) in the documentation.
+    Read more about [rendering](/docs#Writing%20Render%20Components) and [server modules](/docs#Zest%20Server) in the documentation.
         
     ***
 
@@ -309,7 +309,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     From this, all the dependencies are traced, compiled and included in a single built file.
 
-    Read more on the [build process in the documentation](/docs#An%20Introduction%20to%20Building).
+    Read more on the [build process in the documentation](/docs#Building).
 
         """
       ]

@@ -1,4 +1,4 @@
-define(['zest', 'is!browser?jquery', 'css!./button'], function($z, $) {
+define(['zest', 'jquery', 'css!./button'], function($z, $) {
   return {
     type: 'MyButton',
     options: {
@@ -7,17 +7,14 @@ define(['zest', 'is!browser?jquery', 'css!./button'], function($z, $) {
     render: function(o) {
       return '<button>' + $z.esc(o.text, 'htmlText') + '</button>';
     },
-    attach: function(o, els) {
-      var _clickCallback = function(){};
-      $(els).click(function() {
-        _clickCallback();
-      });
+    attach: function(el, o) {
+      var clickEvent = $z.fn();
+      $(el).click(clickEvent);
+      
       return {
-        setClickCallback: function(callback) {
-          _clickCallback = callback;
-        },
+        click: clickEvent,
         dispose: function() {
-          $(els).unbind();
+          $(el).unbind();
         }
       };
     }

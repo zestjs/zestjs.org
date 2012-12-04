@@ -7,17 +7,13 @@ define(['zest', 'css!./button'], function($z) {
     render: function(o) {
       return '<button>' + $z.esc(o.text, 'htmlText') + '</button>';
     },
-    attach: function(o, els) {
-      var _clickCallback = function(){};
-      var controller = {
-        setClickCallback: function(callback) {
-          _clickCallback = callback;
-        }
+    attach: function(el, o) {
+      var clickEvent = $z.fn();
+      el.addEventListener('click', clickEvent);
+      
+      return {
+        click: clickEvent
       };
-      els[0].addEventListener('click', function() {
-        _clickCallback();
-      });
-      return controller;
     }
   };
 });

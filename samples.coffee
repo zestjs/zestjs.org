@@ -1,7 +1,7 @@
-define ['cs!app/dialog'], (Dialog) ->
+define ['cs!app/dialog1'], (Dialog) ->
   routes:
-    '/dialog1': 'cs!app/dialog'
-    '/dialog2/{width}/{height}': 'cs!app/dialog'
+    '/dialog1': 'cs!app/dialog1'
+    '/dialog2/{width}/{height}': 'cs!app/dialog1'
     '/dialog3':
       structure:
         render: Dialog

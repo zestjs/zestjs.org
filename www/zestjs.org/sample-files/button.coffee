@@ -1,15 +1,13 @@
-define ['zest', 'is!browser?jquery', 'css!./button'], ($z, $) ->
+define ['zest', 'jquery', 'css!./button'], ($z, $) ->
   type: 'MyButton'
   options:
     text: 'Button'
   render: (o) -> "<button>#{$z.esc(o.text, 'htmlText')}</button>"
     
-  attach: (o, els) ->
-    _clickCallback = ->
-    $(els).click ->
-      _clickCallback()
+  attach: (el, o) ->
+    clickEvent = $z.fn()
+    $(el).click clickEvent
 
-    setClickCallback: (callback) ->
-      _clickCallback = callback
-    dispose: ->
-      $(els).unbind()
+    click: clickEvent
+    dispose: -> 
+      $(el).unbind()

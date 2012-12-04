@@ -1,33 +1,20 @@
 define(['app/button9', 'css!./dialog'], function(Button) {
   return {
     type: 'SimpleDialog',
-    options: {
-      closeButton: false
-    },
-    render: function(o) {
-      return "<div>{`content`}<div class='footer'>{`footer`}</div></div>"
-    },
-    footer: function(o) {
-      if (!o.closeButton)
-        return null;
-      else
-        return {
-          render: Button,
-          options: {
-            text: 'Close'
-          }
-        };
-    },
-    pipe: function(o) {
+    render: "<div>{`content`}<div class='button'>{`button`}</div></div>",
+    button: function(o) {
       return {
-        closeButton: o.closeButton
+        render: Button,
+        options: {
+          text: o.confirmText
+        }
       };
     },
-    attach: function(o, els) {
-      if (o.closeButton)
-        $z('MyButton', els).setClickCallback(function() {
-          $z.dispose(els);
-        });
+    attach: function(el, o) {
+      var MyButton = $z.select('>.button MyButton', el);
+      MyButton.click.on(function() {
+        $z.dispose(el);
+      });
     }
   };
 });

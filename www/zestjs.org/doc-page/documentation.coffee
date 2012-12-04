@@ -14,7 +14,7 @@ define ['marked', 'is!browser?jquery', 'zoe', 'less!./documentation'], (marked, 
           .replace(/("[^"]*")/gm, '<span class="string">$1</span>')
           .replace(/('[^']*')/gm, '<span class="string">$1</span>')
           .replace(/([^#\d])(\d+)/gm, '$1<span class="number">$2</span>')
-          .replace(/\b(function|new|throw|return|var|if|else|true|false|this)\b/gm, '<span class="keyword">$1</span>')
+          .replace(/(\-\>|new|throw|return|if|else|true|false|this|@)/g, '<span class="keyword">$1</span>')
       else if lang == 'css' || lang == 'less'
         code
           .replace(/("[^"]*")/gm, '<span class="string">$1</span>')

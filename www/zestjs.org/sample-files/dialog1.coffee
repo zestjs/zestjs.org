@@ -1,25 +1,18 @@
-define ['zest', 'cs!app/button', 'css!./dialog'], ($z, Button) ->
+define ['cs!app/button', 'css!./dialog'], (Button) ->
   type: 'SimpleDialog'
-  options:
-    closeButton: false
-  render: (o) -> """
+  render: """
     <div>
       {`content`}
-      <div class='footer'>{`footer`}</div>
+      <div class='button'>{`button`}</div>
     </div>
   """
-  footer: (o) ->
-    if !o.closeButton
-      null
-    else
-      render: Button
-      options:
-        text: 'Close'
-  
-  pipe: (o) ->
-    closeButton: o.closeButton
-    
-  attach: (o, els) ->
-    if o.closeButton
-      $z('MyButton', els).setClickCallback ->
-        $z.dispose els
+
+  button: (o) ->
+    render: Button
+    options:
+      text: o.confirmText
+
+  attach: (el, o) ->
+    MyButton = $z.select '>.button MyButton', el
+    MyButton.click.on -> 
+      $z.dispose el
