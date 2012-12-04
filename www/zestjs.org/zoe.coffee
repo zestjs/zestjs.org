@@ -31,8 +31,7 @@ define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
           The documentation here is primarily for those interested in creating extensible base classes for components, and understanding
           the details of this process.
           
-          For a more basic introduction, see the zest.Component documentation, which explains the basics of this inheritance model from
-          a more practical perspective.
+          For a more basic introduction, see the Zest documentation on [Creating Extensible Components](/docs#Creating%20Extensible%20Components), which explains the basics of this inheritance model from a more practical perspective.
         """
       ]
     ,
@@ -1054,6 +1053,7 @@ define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
   * By default, the construct function gets extended by chaining (zoe.Constructor provides this as an _extend rule).
   * By default, the prototype object gets extended.
   * Additionally, standard JavaScript classes written natively can also be included as implementors.
+  * Instances are compatible with `instanceOf` and their `constructor` property will be the object constructor as expected.
   
   #### Example
   
@@ -1091,6 +1091,53 @@ define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
   
   This Constructor model is the inheritance model used for Zest components.
         """
+      ,
+        sectionName: 'zoe.InstanceChains'
+        markdown: """
+
+  _An inheritor to be included after `zoe.Constructor` that reinstantiates and binds any `zoe.fn`'s from the prototype to the instance. This allows events to be attached to an instance without affecting the prototype, while still allowing initial event attachments from the prototype._
+
+  On construction, it searches through the prototype for any `zoe.fn` instances, and when found they are recreated and bound to the instance with: `this.fn = zoe.fn(this.fn).bind(this)`.
+
+  #### Example
+
+  ```jslive
+    var myClass = zoe.create([zoe.Constructor, zoe.InstanceChains], {
+      prototype: {
+        __event: function() {
+          alert('base event chain');
+        }
+      }
+    });
+
+
+    var instance1 = new myClass();
+
+    // events added to an instance dont get added to the prototype
+    instance1.event.on(function() {
+      alert('instance 1 event');
+    });
+
+    // events can be added to the prototype, affecting all instances
+    myClass.prototype.event.on(function() {
+      alert('extra base event');
+    });
+
+    instance1.event();
+
+    // the instance events are all bound, even when out of context
+    // so they can be passed into listeners
+    var instance2 = new myClass();
+    instance2.event.on(function() {
+      alert('instance 2 - ' + (this == instance2 ? 'bound correctly' : 'unbound'));
+    });
+    
+    var instance2Event = instance2.event;
+
+    instance2Event();
+  ```
+        """
+
       ]
     ]
     

@@ -655,7 +655,32 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       });
     ```
 
-    This event is generated from the `$z.fn()` function provided by `zoe.js`, which is a small optional library included with Zest for object extension, inheritance and this simple event model. It is covered in more detail in the next chapter, $z.Component.
+    ### zoe.fn
+
+    The `$z.fn()` generator is provided by `zoe.js` as `zoe.fn()`. When `zoe.js` is loaded in the site (it is loaded by default but can be removed to save ~6KB), Zest copies all of the `zoe.js` functions for ease of use. These include the object extension functions `zoe.create` and `zoe.extend` used for inheritance, which we will cover later. It's entirely optional to use.
+
+    To demonstrate the use of `zoe.fn`:
+
+    ```jslive
+      // create the function chain
+      var myClickEvent = $z.fn();
+
+      // attach some functions
+      myClickEvent.on(function() {
+        alert('its an event handler');
+      });
+      myClickEvent.first(function() {
+        alert('this happens first');
+      });
+      myClickEvent.on(function() {
+        alert('and another');
+      });
+
+      // fire the chain
+      myClickEvent();
+    ```
+
+    Read more about this at the [ZOE documentation page](/docs/zoe).
 
         """
       ,
@@ -1162,143 +1187,147 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     ### Next Steps
 
-    The next chapter covers the eventing model in more detail and how to create components that can be extented. 
+    The next chapter covers the eventing model in more detail and how to create components that can be extended. 
 
     There's no need to read the chapters in order. Feel free to jump to the [Server Rendering](#Zest%20Server) chapter to render these components on the server, or the [Building](#Building) chapter to optimize the site for production.
 
         """
       ]
     ,
-      chapterName: 'Zest Object Extension'
+      chapterName: 'Creating Extensible Components'
       sections: [
-        sectionName: 'Its all about Objects'
+        sectionName: 'Zest Object Extension'
         markdown: """
 
-    Zoe provides a natural JavaScript inheritance framework that was designed with dynamic controller interactions from the
-    start. It is a small dependency of Zest, but using it in your own code is entirely optional.
+    Zest Object Extension ([`zoe.js`](/docs/zoe)) is provided as a separate library and can be used optionally. By default it is included in the `zest/zest` module bundle, and the `zoe` methods are copied over onto the `$z` object for convenience.
 
-    The idea is that Render Component controllers should use extensible prototypal inheritance.
+    ZOE provides a natural JavaScript inheritance framework that was designed for dynamic controller interactions from the start.
 
-    In this way, Render Components can be extended - I can have a very abstract slideshow render component and controller, 
-    that gets extended into something more specific, say with a specific toolbar and colour scheme.
+    The idea is that render component controllers should use extensible prototype inheritance.
 
-    The entire process is designed around natural JavaScript object extension.
+    In this way, render components can be extended - an abstract slideshow render component and controller can be extended into a more specific slideshow with a toolbar and colour scheme.
 
     The inheritance model is based on three functions:
 
-    * **zoe.fn**: _Generates a function chain event instance. Used for eventing and many other purposes as well._
-    * **zoe.extend**: _Extends a host object with properties from a new object. Uses extension rules to provide 
+    * [**zoe.fn**](/docs/zoe#zoe.fn): _Generates a function chain event instance. Used for eventing and many other purposes as well._
+    * [**zoe.extend**](/docs/zoe#zoe.extend): _Extends a host object with properties from a new object. Uses extension rules to provide 
       different extension for different properties._
-    * **zoe.create**: _The inheritance model. Creates a class instance from a definition, using the object extension system
-      with some extra hooks as well._
+    * [**zoe.create**](/docs/zoe#zoe.create): _The inheritance model. Creates a class instance from a definition, using the object extension system with some hooks._
 
-    For component controllers, the inheritor, `$z.Component` is provided to easily create Render Components.
+    For component controllers, the ZOE inheritor, [`$z.Component`](#$z.Component) is provided to easily create Render Components.
+
+    If you prefer not to use this object model, this section still includes some useful patterns for object extension regardless of the underlying model.
 
         """
       ,
-        sectionName: 'Controllers as Object Constructors'
+        sectionName: 'Controller Constructors'
         markdown: """
 
-    Previously, the attach function from our `button` Render Component was the following:
+    Consider the controller pattern in the `attach` function we've been using up until now for the button:
 
     ```javascript
-      function (els, o) {
-        _clickCallback = function(){}
-        $(els).click(function() {
-          _clickCallback()
-        });
-
-        return {      
-          setClickCallback: function (callback) {
-            _clickCallback = callback
-          },
+      function attach(el, o) {
+        var clickEvent = $z.fn();
+        $(el).click(clickEvent);
+        
+        return {
+          click: clickEvent,
           dispose: function() {
-            $(els).unbind()
+            $(el).unbind();
           }
         };
       }
     ```
 
-    It's quite difficult to read the above, because we've hidden the controller itself right inside this function call. The controller is **implicitly** created
-    through code, instead of being **explicitly** written and easy to read.
+    The controller is **implicitly** defined by the return function. It is hidden away, with no way for us to extend this button component into anything more than the `click` and `dispose` events as above.
 
-    The other thing we can do better is save memory between controllers. If we have many buttons on the page, there is no reason we can't share the button controller
-    class between all the buttons at the same time. This is exactly what the JavaScript Object Constructor is for.
+    Additionally, every single controller is a new object, with new functions. There is no memory-sharing between instances of the same controller.
 
-    So let's create a nicer-looking controller then. For now, lets see how we'd define it when using the separate attach module:
+    We can solve both of the above by providing a **Controller Constructor** function, a standard JavaScript object constructor, as the `attach` method.
 
-    button-controller.js
+    The button `attach` method can then be written in a separate controller module as:
+
     ```javascript
-    define(['jquery'], function($) {
-      var buttonController = function(els, o) {
-        this.$button = $(els);
-        var self = this;
-        this.$button.click(function() {
-          self.clickCallback();
-        });
-      }
-      buttonController.prototype.setClickCallback = function(callback) {
-        this.clickCallback = callback;
-      };
-      buttonController.prototype.dispose = function() {
-        this.$button.unbind();
-      }
-      return buttonController;
-    });
-    ```
+      define(['zest', 'jquery'], function($z, $) {
+        function attach(el, o) {
+          this.$button = $(el);
+          this.click = $z.fn();
 
-    We can then reference our attach property on the render component to `'./button-controller'`.
-
-    Now when attachment happens, the attach function itself is a `constructor`. It constructs an instance of `buttonController`, with the prototype methods provided, and the
-    `this` keyword referencing the new instance. The `setClickCallback` and `dispose` methods are shared between all class instances saving memory.
-
-    ### Sugaring the Object Constructor
-
-    There are many ways to sugar the constructor creation above. ZOE provides one way, using a `$z.Constructor` inheritor.
-
-    So we can rewrite our button controller as:
-
-    button-controller.js
-    ```javascript
-      define(['zoe', 'jquery'], function(zoe, $) {
-        return zoe.create([zoe.Constructor], {
-          construct: function(els, o) {
-            this.$button = $(els);
-            var self = this;
-            this.$button.click(function() {
-              self.clickCallback();
-            });
-          },
-          prototype: {
-            setClickCallback: function(callback) {
-              this.clickCallback = callback;
-            },
-            dispose: function() {
-              this.$button.unbind();
-            }
-          }
-        });
+          this.$button.click(this.click);
+        }
+        attach.prototype.dispose = function() {
+          this.$button.unbind();
+        }
+        return attach;
       });
     ```
 
-    We've changed the controller from an **implicit definition** through code to an **explicit** definition object now. 
-    At a glance it is much easier to see what the `button-controller` object will look like during runtime.
+    We can then reference this `attach` module using the relative controller module ID string `'./button-attach'` in the button render component. The constructor is instantiated by the natural running of the `attach` method.
 
-    `zoe.create` creates a new JavaScript object, and then extends it with properties from inheritors, including some hooks for allowing changes
-    such as mapping the `construct` method to be the constructor itself. The prototype is added to the button controller simply through standard
-    object extension. The `zoe.Constructor` inheritor specifies the extension rules and hooks for this to happen.
+    It's not a massive saving for now, but we've opened up the controller prototype so that the button can be extended, and we're also sharing the same dispose function between multiple buttons on the same page.
 
-    ### Combining the Render Component and Controller Constructor
+    ### Controller Constructors in Render Components
 
-    As one last trick, it is quite convenient to be able to write the controller and render component in the same file. It also
-    makes it easier to show as examples here.
+    The above **Controller Constructor** can also be used as the `attach` function in a mixed render component, instead of referencing the controller separately. For this, we can use a trick to blend the render component object with the controller constructor.
 
-    So we can actually combine the render component and controller above back into a single button:
-
-    button11.js
+    button10.js:
     ```javascript
-      define(['zest', 'is!browser?jquery', 'css!./button'], function($z, $) {
-        return zoe.create([zoe.Constructor], {
+      define(['zest', 'jquery', 'css!./button'], function($z, $) {
+        // attachment
+        function ButtonComponent(el, o) {
+          this.$button = $(el);
+          this.click = $z.fn();
+
+          this.$button.click(this.click);
+        }
+        ButtonComponent.prototype.dispose = function() {
+          this.$button.unbind();
+        }
+
+        // rendering
+        ButtonComponent.attach = function(el, o) {
+          return new this(el, o);
+        }
+        ButtonComponent.type = 'MyButton';
+        ButtonComponent.options = {
+          text: 'Button'
+        };
+        ButtonComponent.render = function(o) {
+          return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
+        }
+        
+        return ButtonComponent;
+      });
+    ```
+
+    > If you find yourself becoming suspicious that all these buttons are just the same code, while we pretend to update it, feel free to inspect it yourself with `require('app/button10')` in the JavaScript console!
+
+    ```jslive
+      $z.render('@app/button10', {
+        text: 'Ok'
+      }, document.querySelector('.container-22'));
+    ```
+    <div class='container-22' style='margin: 20px'></div>
+
+    We've written the render component itself as the controller constructor as well, and the `attach` method instantiates an instance of the controller. There are no property clashes, since the render properties are sitting outside of the constructor prototype, on what is otherwise an unused space on the object.
+
+    What does this give us? It allows us to deal with our entire component as a single object if we wish, supporting extension and making for easy-reading. When prototyping components, everything can be in one place, allowing for quick development.
+
+    There is a minor issue with the above - we had to suddenly switch into a procedural definition. In order to allow for the nicer looking object definitions we've been using up until now, we need some class sugar.
+
+        """
+      ,
+        sectionName: 'Object Constructor Sugar'
+        markdown: """
+
+    There are many different libraries providing class sugar in JavaScript. ZOE comes with one model based on object extension. We demonstrate it here, but you can use your own as well.
+
+    To use the object constructor, we extend from the base `zoe.Constructor` class, using the extension function `zoe.create`. This allows us to explicitly write our `constructor` and `prototype` properties in the object definition to get our sugar-coated class.
+
+    button11.js:
+    ```javascript
+      define(['zest', 'jquery', 'css!./button'], function($z, $) {
+        return $z.create([$z.Constructor], {
           type: 'MyButton',
           options: {
             text: 'Button'
@@ -1306,455 +1335,271 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
-          attach: function(els, o) {
-            return new this(els, o);
+          attach: function(el, o) {
+            return new this(el, o);
           },
-          construct: function(els, o) {
-            this.$button = $(els);
-            var self = this;
-            this.$button.click(function() {
-              self.clickCallback();
-            });
+          construct: function(el, o) {
+            this.$button = $(el);
+            this.click = $z.fn();
+
+            this.$button.click(this.click);
           },
           prototype: {
-            setClickCallback: function(callback) {
-              this.clickCallback = callback;
-            },
             dispose: function() {
               this.$button.unbind();
             }
-          }
-        };
+          });
+        });
+    ```
+
+    ```jslive
+      $z.render('@app/button11', {
+        text: 'Ok'
+      }, document.querySelector('.container-23'));
+    ```
+    <div class='container-23' style='margin: 20px'></div>
+
+    We've thus created an **explicit** definition of our component, making code much easier to read.
+
+    Read more about `zoe.create` and `zoe.Constructor` in the zoe documentation.
+
+        """
+      ,
+        sectionName: 'Event Binding'
+        markdown: """
+
+    By directly adding the `click` event on the prototype to the event listener on the button, we lose our natural `this` reference to the button controller instance in the event callback.
+
+    It can be useful for events to be able to reference the main controller from the `this` reference, just like the methods on the prototype itself.
+
+    Typically, one would define the event callback with a `self` closure to enable the reference.
+
+    In place of the construct method on the previous button:
+
+    ```javascript
+      construct: function(el, o) {
+        this.$button = $(el);
+        this.click = $z.fn();
+
+        var self = this;
+        this.$button.click(function() {
+          self.click();
+        });
+      },
+    ```
+
+    #### function.bind
+
+    Ideally, we could just use the `bind` function method, which is still not supported in many browsers. There are [polyfills that can be used](https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function/bind#Compatibility) to allow working with this.
+
+    #### zoe.fn Binding
+
+    The event handler provided by `zoe.fn` supports the `bind` method allowing us to bind the `this` scope of the click
+    callback function if we like.
+
+    We can then write:
+
+    ```javascript
+      construct: function(el, o) {
+        this.$button = $(el);
+        this.click = $z.fn().bind(this);
+
+        this.$button.click(this.click);
+      }
+
+    ```
+
+    Now the `this` reference of the click event will always be the controller. The `bind` function can be called at any time to bind an event function.
+
+    #### zoe.fn Initial Functions
+
+    If we wanted the button to come with some click handler functions already provided, we can pass the initial array of event listeners into our `zoe.fn` method:
+
+    ```javascript
+      construct: function(el, o) {
+        this.$button = $(el);
+
+        // add a click counter
+        this.clickCnt = 0;
+        var countClick = function() {
+          this.clickCnt++;
+        }
+
+        this.click = $z.fn([countClick]).bind(this);
+
+        this.$button.click(this.click);
+      }
+    ```
+
+    We must pass an array into `$z.fn`, otherwise the function will be read as an execution function instead of an instance function.
+
+    #### Prototype Initial Functions
+
+    If we really want to get into this extensibility thing, we can maintain the `countClicks` method on the prototype so that even this method could be extended or changed.
+
+    ```javascript
+      construct: function(el, o) {
+        this.$button = $(el);
+
+        this.clickCnt = 0;
+
+        this.click = $z.fn([this.countClick]).bind(this);
+        this.$button.click(this.click);
+      },
+      prototype: {
+        countClick: function() {
+          this.clickCnt++;
+        },
+        dispose: function() {
+          this.$button.unbind();
+        }
       });
     ```
 
-    The controller Object Constructor now also has the Render Component properties. We use the `attach` function to 
-    generate an instance of the constructor itself.
-
-    It's pure convenience that we can combine them this way without property collissions since the `prototype` 
-    forms a natural separation between the two.
+    Read more about `zoe.fn` in the [ZOE documentation](/docs/zoe#zoe.fn).
 
         """
       ,
         sectionName: 'Extending the Button'
         markdown: """
 
-    So now we can easily extend the button to give it more functionality:
+    We can extend the button to give it more functionality by extending the class object.
 
-    button11-extend.js
+    > The `toggle` function defined in the constructor is just a fancy way of binding the function to the instance, leaving the prototype unchanged - the instance function is created from the prototype function as a `zoe.fn` chain.
+
+    button-unclickable.js:
     ```javascript
-      define(['zoe', './button11'], function(zoe, Button) {
-        return zoe.create([Button], {
-          construct: function(els, o) {
-            var self = this;
-            this.$button.mouseenter(function() {
-              self.hide();
-            });
-            this.$button.mouseleave(function() {
-              self.show();
-            });
+      define(['zest', './button11'], function($z, Button) {
+        return $z.create([Button], {
+          construct: function(el, o) {
+            this._visible = true;
+
+            this.toggle = $z.fn([this.toggle]).bind(this);
+
+            this.$button.mouseenter(this.toggle);
+            this.$button.mouseleave(this.toggle);
           },
           prototype: {
+            toggle: function() {
+              if (this._visible)
+                this.hide();
+              else
+                this.show();
+            },
             hide: function() {
-              this.$button.stop().fadeOut();
+              this.$button.stop().animate({ opacity: 0 }, 50);
+              this._visible = false;
             },
             show: function() {
-              this.$button.stop().fadeIn();
+              this.$button.stop().animate({ opacity: 100}, 50);
+              this._visible = true;
+            }
+          }
+        });
+      });
+    ```
+    ```jslive
+      $z.render('@app/button-unclickable', {
+        id: 'unclickable-button',
+        text: 'Ok'
+      }, document.querySelector('.container-24'));
+    ```
+    <div class='container-24' style='margin: 20px'></div>
+
+    Note that the `prototype` property was automatically extended and the `construct` property was automatically amended to run after the previous construct property. These **extension rules** were defined up by the `zoe.Constructor` base class.
+
+    Since our `toggle` method was lovingly rebound to the instance, we can in fact click the button by switching
+    the toggle externally:
+
+    ```jslive
+      $z.select('#unclickable-button').toggle();
+    ```
+
+    If we were using separate files for the render component and controller modules of the button, we could have extended both parts separately, with the `attach` property of the extended render component referencing the extended controller module ID.
+
+    We could also have included some extra CSS or other dependencies as part of the extension. Because the button is a dependency, we can still build the extended button into a single file, with full dependency tracing from the r.js optimizer.
+
+        """
+      ,
+        sectionName: 'Extension Rules'
+        markdown: """
+
+    If we want to extend or override a property that already exists, we need to specify an **Extension Rule** for `zoe.create` to use. If there is a property clash with no extension rule provided, an error will be thrown.
+
+    For example we can extend the button to change its hide function, making it transparent instead.
+
+    button-clickable.js:
+    ```javascript
+      define(['zest', './button-unclickable'], function($z, Button) {
+        return $z.create([Button], {
+          prototype: {
+            __hide__: function() {
+              this.$button.stop().animate({ opacity: 0.5 }, 50);
             }
           }
         });
       });
     ```
 
-    Note also that we could have included some extra CSS or other dependencies as part of the extension, which would then also
-    be naturally included in the build.
-
-    [try it here]
-
-    When we added the `construct` property again in the extension, it was automatically added after the previous construct function, instead
-    of overriding. Also the `prototype` was extended as an object with the new methods. These extension rules are all specified by the
-    `zoe.Constructor` inheritor, and carry through for each successive inheritor after.
-
-    If we still had separate Render Component and Controller parts for the button, we could have extended both parts separately,
-    with the `attach` property of the extended Render Component referencing the extended controller.
-
-        """
-      ,
-        sectionName: 'Controller Events'
-        markdown: """
-
-    Let's have another look at the click event on the button. Rather than a `setClickCallback` method, it makes much more sense
-    to provide a dynamic hookable click event that can be triggered and listened to.
-
-    `zoe.fn` is provided for this sort of eventing. An event handler is simply a list of functions to run when the event is triggered.
-    `zoe.fn` generates a single function, which stores a list of functions in the background. When we run the function, each of
-    the functions is then run in turn. We add a function to the list with the use of the `on` method.
-
-    For example:
+    The use of `__hide__` above indicates that we are using the `REPLACE` rule to replace the previous hide function with the new hide function.
 
     ```jslive
-      var clickEvent = zoe.fn();
-
-      //add event functions
-      clickEvent.on(function() {
-        alert('look, its an event');
-      });
-      clickEvent.on(function() {
-        alert('or is it a function?');
-      });
-      clickEvent.on(function() {
-        console.log('no, its zoe.fn');
-      });
-
-      //fire the event
-      clickEvent();
+      $z.render('@app/button-clickable', {
+        text: 'Ok'
+      }, document.querySelector('.container-25'));
     ```
+    <div class='container-25' style='margin: 20px'></div>
 
-    It's a very simple eventing mechanism, but can also be used with different execution functions to perform
-    many other tasks such as asynchronous step functions as well.
+    It is also possible to provide **Default Extension Rules**, which will be used for all future implementors. Default extension rules are given by the `_extend` property on the object and used by `zoe.create`.
 
-    Let's add this click event to our button:
+    When we initially created the `hide` and `show` methods, we could have added the extension rules object:
 
-    button12.js
     ```javascript
-      define(['zest', 'is!browser?jquery', 'css!./button'], function($z, $) {
-        return zoe.create([zoe.Constructor], {
-          type: 'MyButton',
-          options: {
-            text: 'Button'
-          },
-          render: function(o) {
-            return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
-          },
-          attach: function(els, o) {
-            return new this(els, o);
-          },
-          construct: function(els, o) {
-            this.$button = $(els);
-            this.clickEvent = zoe.fn();
-
-            var self = this;
-            this.$button.click(function() {
-              self.clickEvent();
-            });
-          },
-          prototype: {
-            dispose: function() {
-              this.$button.unbind();
-            }
-          }
-        };
-      });
+      _extend: {
+        'prototype.hide': 'REPLACE',
+        'prototype.show': 'REPLACE'
+      }
     ```
 
-    ```jslive
-      // hooks the clicke event
-    ```
+    This is exactly how the `zoe.Constructor` base inheritor indicates that the `prototype` and `construct` properties are extended.
 
-    It would also be quite nice if we could define the click event directly on the prototype itself.
+    `zoe.Constructor` provides the extension rules:
 
-    `zoe.Constructor` automatically detects these and creates them as instances (so that events added
-    to one Button don't get added to all buttons due to our shared prototype).
-
-    `zoe.fn` also provides a `bind` function which allows us to bind the `this` property.
-    `zoe.Constructor` also binds the events directly to the constructor instance.
-
-    The benefits of all this being that we can now write the following:
-
-    button13.js
     ```javascript
-      define(['zest', 'is!browser?jquery', 'css!./button'], function($z, $) {
-        return zoe.create([zoe.Constructor], {
-          type: 'MyButton',
-          options: {
-            text: 'Button'
-          },
-          render: function(o) {
-            return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
-          },
-          attach: function(els, o) {
-            return new this(els, o);
-          },
-          construct: function(els, o) {
-            this.$button = $(els);
-            this.$button.click(this.clickEvent);
-          },
-          prototype: {
-            clickEvent: zoe.fn(),
-            dispose: function() {
-              this.$button.unbind();
-            }
-          }
-        };
-      });
+      _extend: {
+        'construct': 'CHAIN',
+        'prototype': 'EXTEND'
+      }
     ```
 
-    Since the event is automatically bound, we no longer need to do our own ugly binding.
+    This is only meant to be a brief overview - normally when extending a component, the main rules would already be defined.
 
-    ```jslive
-      [demo]
-    ```
-
-        """
-      ,
-        sectionName: 'Extension Notation & Rules'
-        markdown: """
-
-    To specify extend rules, like `zoe.Constructor` does, `zoe.extend` provides
-    extension syntax, based on double underscores either side of the property name.
-
-    The forms are the following:
-
-    * **__propertyName**: _Appends the property to the existing property._
-    * **propertyName__**: _Prepends the property before the existing property._
-    * **__propertyName__**: _Replaces the existing property with the new property._
-
-    The **append rule** will chain together functions just like the eventing above, it will extend objects and append
-    strings and arrays.
-
-    Similarly, the **prepend rule** will do the reverse operation.
-
-    This is the simplest way to set inheritance extension rules.
-
-    For example:
-
-    ```jslive
-      var Base = $z.create({
-        items: ['dog', 'cat'],
-        // specifies that this property should always be appended
-        data: {
-          some: 'data'
-        },
-        run: function() {
-          alert(JSON.stringify(this.items));
-          alert(JSON.stringify(this.data));
-        }
-      });
-
-      var Extended = $z.create([Base], {
-        // appends array
-        __items: ['aardvark'],
-        
-        // object already under an append rule so these properties are added:
-        __data: {
-          more: 'data'
-        },
-
-        // prepend this function to go first using `zoe.fn`
-        run__: function() {
-          alert('this goes first');
-        }
-      });
-
-      Extended.run();
-
-    ```
-
-    ### Extension Rules
-
-    To specify the extension rules explicitly, add them to the `_extend` object when using `$z.create`:
-
-    ```jslive
-      var Base = $z.create({
-        _extend: {
-          'items': 'APPEND',
-          'data': 'APPEND',
-          'data.subobject': 'APPEND',
-          'run': 'PREPEND'
-        }
-      });
-    ```
-
-    In this way, all implementations of base will follow the same extend rules, without needing
-    the explicity '__' notation.
-
-    Many other extend rules can be defined. Read the ZOE documentation for more information.
-
-    When there is a property collision and no extension rule is specified, `zoe.extend` will display a warning
-    in the console log. This should always be resolved with a rule specification as above.
-
-    ### Using Extension Rules for the Click Event
-
-    button14.js
-    ```javascript
-      define(['zest', 'is!browser?jquery', 'css!./button'], function($z, $) {
-        return zoe.create([zoe.Constructor], {
-          type: 'MyButton',
-          _extend: {
-            'prototype.clickEvent': 'APPEND'
-          }
-          options: {
-            text: 'Button'
-          },
-          render: function(o) {
-            return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
-          },
-          attach: function(els, o) {
-            return new this(els, o);
-          },
-          construct: function(els, o) {
-            this.$button = $(els);
-            this.$button.click(this.clickEvent);
-          },
-          prototype: {
-            clickEvent: function() {
-              // an initial function can be optionally provided
-            },
-            dispose: function() {
-              this.$button.unbind();
-            }
-          }
-        };
-      });
-    ```
-
-    By including the `_extend` rule for the clickEvent, it can now be automatically extended
-    by inheritors as well as having an initial function provided.
-
-    We could also have defined the clickEvent using the `__clickEvent:` notation instead of
-    writing `zoe.fn`.
-
-        """
-      ,
-        sectionName: 'Private Functions'
-        markdown: """
-
-    The most reliable and efficient way to do private methods in JavaScript is simply to define
-    them as private variables.
-
-    For private instance variables, there is no way to do this within the Object Constructor
-    as variables are shared between all instances of the Constructor.
-
-    Rather use prefixing of a with '_', to indicate a private property as is commonly accepted practise.
-
-    Here is an example:
-
-    button13.js
-    ```javascript
-      define(['zest', 'is!browser?jquery', 'css!./button'], function($z, $) {
-
-        var privateSquare = function(num) {
-          return num * num;
-        }
-
-        return zoe.create([zoe.Constructor], {
-          type: 'MyButton',
-          options: {
-            text: 'Button'
-          },
-          render: function(o) {
-            return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
-          },
-          attach: function(els, o) {
-            return new this(els, o);
-          },
-          construct: function(els, o) {
-            // as private as we can get
-            this._pvtNum = privateSquare(5);
-
-            this.$button = $(els);
-            this.$button.click(this.clickEvent);
-          },
-          prototype: {
-            clickEvent: zoe.fn(),
-            dispose: function() {
-              this.$button.unbind();
-            }
-          }
-        };
-      });
-    ```
-
-    This is the recommended way of going about dealing with private methods and variables.
-
-    Note though that private methods are inaccessible from any inheritors, making them
-    very inflexible.
-
-    If a private method may be needed by an inheritor, rather provide it on the prototype or
-    instance with the underscore prefixing as above.
+    If you are interested in creating extensible components like this, read more on the [extension rules in the ZOE documentation](http://localhost:8082/docs/zoe#zoe.extend).
 
         """
       ,
         sectionName: '$z.Component'
         markdown: """
 
-    $z.Component is a small base class wrapping the above concepts and also including:
+    `$z.Component` is a small base class wrapping up these extension concepts including:
 
-    * Contextual DOM and component selectors for controllers
-    * Extension rules for Render Components
+    * Controllers as constructors
+    * Automatic reinstancing and rebinding of `zoe.fn` chains from the prototype to the instance
+    * Contextual DOM and component selectors on the controller prototype
+    * Standard extension rules for render component properties
 
-    It can be used by controllers, to just provide the construction and contextual selectors,
-    or it can be used by Render Components, to provide the easy extension rules, or it can
-    be used by mixed Render Components and controllers.
+    It can be used by controllers to provide easy construction contextual selectors, it can be used by render components to provide extension rules for the render component properties, or it can
+    be used by combined render components and controllers for both of these.
+
+    It can also be extended further to provide whatever utilities you may need in your classes.
 
     In this way, a simple flexible inheritance model is provided.
 
-    Here is the code in all its glory:
+    We can now rewrite the button component with `$z.Component`.
 
+    button12.js:
     ```javascript
-      $z.Component = {
-        _implement: [zoe.Constructor],
-        
-        _extend: {
-          'options': 'APPEND',
-          'type': 'REPLACE',
-          'pipe': zoe.fn.executeReduce(function(){ return {} }, function(out1, out2) {
-            return zoe.extend(out1, out2, {
-              '*': 'REPLACE',
-              'global': 'APPEND'
-            });
-          }),
-          'load': zoe.extend.makeChain('ASYNC')
-        },
-
-        _integrate: function(def) {
-          if (def.construct || def.prototype)
-            this.attach = this.attach || function(els, o) {
-              return new this(o, els);
-            }
-        },
-        
-        construct: function(els, o) {
-          this.o = o;
-        },
-        
-        prototype: {
-          $: $z.$,
-          $z: $z.$z,
-          dispose: zoe.fn()
-        }
-      };
-    ```
-
-    Don't worry too much about understanding all of the above. We haven't discussed the `_implement`, `_extend` and `_integrate` hooks.
-    To delve deeper into the workings of this, read the full ZOE documentation here.
-
-    Reading the code from top to bottom it:
-    1. Implements `zoe.Constructor` for us.
-    2. Provides the most obvious extension rules for the Render Component properties.
-    3. Automatically gives the `attach` function as providing the instance of the component constructor.
-    4. Stores the controller instance options for us on the prototype (how nice).
-    5. Provides our contextual DOM selector, `this.$` and the contextual component selector, `this.$z`.
-
-    ### Contextual Selectors
-
-    The **contextual DOM selector** is a standard CSS selector, but restricted to the elements of the current component only.
-
-    Elements belonging to a sub-component child of the main component will also not be picked up by the contextual selector.
-
-    The **contextual component selector** behaves exactly as the component selector, detailed before, but again it is entirely
-    restricted to the current component. It will only select first-level component children of the current component, and not
-    components within a dynamic child component.
-
-
-    Now is the time to mention that the entire `zoe` API (all four functions) is replicated on the `zest` object
-    for convenience. So we can replace all instances of `zoe` with our `$z` object.
-
-    So let's update our button:
-
-    button14.js
-    ```javascript
-      define(['zest', 'is!browser?jquery', 'css!./button'], function($z, $) {
+      define(['zest', 'jquery', 'css!./button'], function($z, $) {
         return $z.create([$z.Component], {
           type: 'MyButton',
           options: {
@@ -1763,13 +1608,14 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
-          construct: function(els, o) {
-            this.$button = $(els);
-
-            this.$button.click(this.clickEvent);
+          construct: function(el, o) {
+            this.$button = this.$(el);
+            this.$button.click(this.click);
           },
           prototype: {
-            clickEvent: $z.fn(),
+            __click: function() {
+              alert('a prototype event function');
+            },
             dispose: function() {
               this.$button.unbind();
             }
@@ -1777,41 +1623,52 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         };
       });
     ```
+    ```jslive
+      $z.render('@app/button12', {
+        id: 'button-component',
+        text: 'Ok'
+      }, document.querySelector('.container-26'), function() {
 
-    #### Common Pattern
+        $z.select('#button-component').click.on(function() {
+          alert('a bound instance event function');
+          this.dispose();
+        });
 
-    The above pattern becomes ridiculously common. The `construct` function "picks up" the components and elements
-    we need to communicate with from this component. Then the `construct` function attaches events to the DOM and
-    sub components, the events triggering through private callbacks or global events in turn on this Object Constructor.
+      });
+    ```
+    <div class='container-26' style='margin: 20px'></div>
 
-    This pattern works very nicely for complex front ends.
+    We get the `attach` method created for us to instantiate the constructor, as well as the `zoe.Constructor implementor included.
 
-    ### Render Component Extension
+    #### Function Instance Chains
 
-    The extension rules provided for the Render Component properties allow the automatic appending of
-    `options`, `pipe` functions and `load` functions.
+    The `click` function is defined with `__click` to indicate that it should be extended with the `CHAIN` rule. This means that the `click` function is created as an instance of `zoe.fn()`, including the `on` method support.
 
-    In this way, a component can be extended with new options and new pipe properties, without conflicting
-    with the previous options and pipe properties - it merely has to define these properties as if they
-    weren't already there.
+    When constructed, all `zoe.fn()` instances on the prototype are automatically recreated on the constructor instance and bound to the constructor. This way we don't need to worry about binding for events and event listeners are always added to the instance not the prototype (which would affect all buttons on the page).
 
-    Similarly, the asynchronous load function is combined so that asynchronous loads get chained together
-    one after the other into a single asynchronous load function.
+    This functionality is provided by the ZOE inheritor, [`zoe.InstanceChains`].
 
-    All of this is provided by `zoe.fn` execution rules as part of `zoe.extend` extension rules.
+    #### Contextual Selectors
+
+    The prototype has two contextual selectors defined:
+
+    ```javascript
+      this.$(querySelector)
+      this.$z(componentSelector)
+    ```
+
+    These selectors are restricted to within the containing element of the component and both support the leading direct child selector (`>`) so that selectors can be carefully written to be exactly scoped to the component regardless of the contents of their regions.
 
     ***
-        """
-      ,
-        sectionName: 'Diving Deeper'
-        markdown: """
 
-    Typically one can implement `$z.Component` when it suits, and not worry too much about the implementation
-    details.
+    ### Next Steps
 
-    If you are looking to provide extensible component parts and base classes, and want to use `zoe` as
-    the inheritance system then read more about it at the ZOE documentation page.
+    Typically one can implement `$z.Component` when it suits, and follow the basic patterns here without worrying too much about the implementation details.
 
+    If you are looking to provide extensible component parts and base classes and want to use `zoe` as
+    the inheritance system then read more about it at the [ZOE documentation page](/docs/zoe).
+
+    ***
         """
       ]
     ,

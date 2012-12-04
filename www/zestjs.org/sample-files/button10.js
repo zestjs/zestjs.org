@@ -1,20 +1,26 @@
-define(['zest', 'css!./button'], function($z) {
-  return $z.create([$z.Component], {
-    type: 'MyButton',
-    options: {
-      text: 'Button'
-    },
-    render: function(o) {
-      return '<button>' + $z.esc(o.text, 'htmlText') + '</button>';
-    },
-    construct: function(o) {
-      this.$('button')[0].addEventListener('click', this.click);
-    },
-    prototype: {
-      __click: function() {},
-      dispose: function() {
-        this.$('button')[0].removeEventListener('click', this.click);
-      }
-    }
-  });
+define(['zest', 'jquery', 'css!./button'], function($z, $) {
+  // attachment
+  function ButtonComponent(el, o) {
+    this.$button = $(el);
+    this.click = $z.fn();
+
+    this.$button.click(this.click);
+  }
+  ButtonComponent.prototype.dispose = function() {
+    this.$button.unbind();
+  }
+
+  // rendering
+  ButtonComponent.attach = function(el, o) {
+    return new this(el, o);
+  }
+  ButtonComponent.type = 'MyButton';
+  ButtonComponent.options = {
+    text: 'Button'
+  };
+  ButtonComponent.render = function(o) {
+    return '<button>' + $z.esc(o.text, 'htmlText') + '</button>';
+  }
+
+  return ButtonComponent;
 });
