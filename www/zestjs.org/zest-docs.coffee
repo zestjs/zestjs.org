@@ -1214,7 +1214,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       different extension for different properties._
     * [**zoe.create**](/docs/zoe#zoe.create): _The inheritance model. Creates a class instance from a definition, using the object extension system with some hooks._
 
-    For component controllers, the ZOE inheritor, [`$z.Component`](#$z.Component) is provided to easily create Render Components.
+    For component controllers, the ZOE inheritor [`$z.Component`](#$z.Component) is provided to easily create dynamic render components.
 
     If you prefer not to use this object model, this section still includes some useful patterns for object extension regardless of the underlying model.
 
@@ -1677,117 +1677,161 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         sectionName: 'Server Rendering Overview'
         markdown: """
 
-    > If you only need browser rendering, skip this section and read about the build and configuration.
+    > If you only need to use browser rendering, skip this section and [read about the production build](#Building).
 
-    As demonstrated in the Quick Start, Zest Server can be run from the single global command, `zest`. The nature of this
-    execution is that the server is entirely constructed from a JSON configuration file. This makes managing RequireJS configuration
-    and server parameters very simple, and allows immediate natural modularisation through server modules.
+    As demonstrated in the Quick Start, Zest Server can be run from the single global command, `zest`. When run, this seeks out the server configuration file, `zest.json` or `zest.cson` (the CoffeeScript equivalent) in the current folder and creates the server.
 
-    Zest Server doesn't provide anything more than rendering. 
+    The configuration defines all aspects of the server application, with routing and server application code loaded via server modules.
 
-    Zest Server can communicate with data services either through the application or directly within component load functions
-    using the provided http module.
+    This is the easiest way to start using Zest server rendering. Zest encourages the use of service APIs to provide data services, with Zest itself providing a rendering service.
 
-    Alternatively, simply write a standard NodeJS application with Zest purely handling rendering. To use Zest Server outside
-    of NodeJS, Zest Server can become a private HTTP rendering service.
+    There are a couple of other ways to utilize the Zest rendering service:
 
     ### Using Zest Server within a NodeJS Application
 
-    If you are a NodeJS developer and would rather create a conventional NodeJS application, using Zest within say Connect, there
-    is a NodeJS example file called `~node-server.js` provided in the basic server template. This then consumes Zest Server
-    as a dependency.
+    Zest Server can also be used for rendering within an existing NodeJS application. A sample NodeJS application is included in the basic server template as `~node-server.js`. 
 
-    Read about the NodeJS server format below.
+    Within NodeJS, Zest Server can used as a request handler to provide the full routing and rendering service, or simply as a rendering function without using routing or modules.
 
-    ### Using Zest Server from Outside NodeJS
+    Zest Server NodeJS API Reference
 
-    The other way that Zest Server can be used is as a **rendering service**. At its core, Zest Server is simply a mapping
-    from render options to the rendered HTML, with some careful path configuration in the output to ensure URLs match to the
-    correct file server. Another server application can send render requests to Zest as local HTTP requests, and 
-    then in turn piping the reponse as part of its output.
+    ### Using Zest Server in other Applications
 
-    Ideally this would be packaged as a module within the other framework to make this process seamless, just as if communicating
-    with a database server or session server.
+    To use the Zest Server render function in other applications, it can be provided as a service.
 
-    Zest Server provides a rendering mode for this purpose, which is detailed below.
+    _The Zest Server render service provides a mapping from a render structure moduleID with render options to its rendered HTML._
+
+    This HTML can then be included on any page that is configured with the base Zest RequireJS settings, and the HTML will dynamically load its own CSS and scripts with the included script tags.
+
+    This render service is provided as an HTTP service in Zest by the server module, render-service.
+
+    When run without any modules provided, this module is loaded by default in Zest, so that Zest Server can be used as such a render server out of the box.
+
+    A basic HTTP adapter library in another framework can then provide a Zest rendering API within the application, allowing for JavaScript rendering as a service in other environments.
 
         """
       ,
-        sectionName: 'Setting Routes'
+        sectionName: 'Server Configuration Basics'
         markdown: """
-    
-    With Zest Server, all server code is split up into modules and all server configuration is contained in the `zest.json` or `zest.cson`
-    (the CoffeeScript equivalent) server configuration file.
-    
-    So first, we need to include our module in the configuration:
-    
-    > Note: `zest.json` is a loosely written JSON file, so double quotes can be ommitted where not needed.
-    
-    zest.json
+
+    The server configuration file is a loosely written JSON or CSON configuration file, providing options for:
+
+    > The default RequireJS configuration needed for running Zest is always added. Configurations are extended sensibly, with arrays appending and objects extending.
+
+    * **port** _(optional)_: _The port to run the server on, defaults to 8080._
+    * **hostname** _(optional)_: _The hostname of the server, if not set listens on all hostnames._
+    * **modules**: _The array of server modules to load. Referenced by RequireJS ModuleIDs (which by default fall back to NodeJS module requires if not found)._
+    * **require**: _Base RequireJS configuration, exactly as in the [RequireJS API documentation](http://requirejs.org/docs/api.html)._
+      * **require.server**: _Server-only RequireJS configuration, extending the base configuration._
+      * **require.client**: _Client-only RequireJS configuration, extending the base configuration._
+      * **require.build**: _Build-only RequireJS configuration, extending the base configuration._
+    * **environments**: _Allows for environment-specific configuration overrides, with `'dev'` and `'production'`
+      supported by default. The environment name is the key and the environment configuration override object its value on the environments object._
+    * **environment**: _The default environment name string to use._
+
+    There are a number of other configurations that can be specified, which are mentioned along with the applicable section here, such as build configuration. Any module can also define its own configuration as well.
+        """
+      ,
+        sectionName: 'Minimal Server Configuration'
+        markdown: """
+
+    Zest Server provides default configuration as much as possible. This includes the default RequireJS configuration and page templates needed to run Zest in the browser. The file server is set to the public folder `www` and the baseUrl module folder for RequireJS to `www/lib`.
+
+    It is assumed that there is an install of Zest client (`volo add zestjs/zest`) in the public folder, which is included by default in the server templates.
+
+    When run with the `zest` command, the server is started in the `dev` environment by default, on port 8080.
+
+    For a typical application, we place the public application scripts in `www/app`, and use a Zest Server module to define our page routes.
+
+    To set this up, we need the following configuration in `zest.json`:
+
     ```javascript
-    {
-      port: 8080,
       modules: ['$/app'],
       require: {
         paths: {
           app: '../app'
         }
       }
-    }
     ```
 
-    By default, the server port is set to `8080`, so this can be ommitted.
-    
-    The '$' path is a path made by Zest which automatically maps to the route application folder. So the above tells Zest to load the
-    module `[server-root]/app.js`.
-    
-    In app.js, we can write:
+    The `modules` array is an array of RequireJS Module IDs to load for the server. The `$` path is a Zest Server path referencing the root application folder. So the module file is loaded from '/app.js' in the server root outside the public folder.
+
+    The `require` object allows RequireJS configuration to specified just as in the [RequireJS API Documentation](http://requirejs.org/docs/api.html). In this case, we specify that the `app` folder should reference `www/app`.
+        """
+      ,
+        sectionName: 'Routing'
+        markdown: """
+
+    To define a route, we add a `routes` property to the `app.js` module file.
+
+    > Note that if you view source, you will see the HTML of our dialog, previously created as a client render, is being rendered directly as HTML on the server. Auto-generated attachment scripts carefully ensure the rendering experience is optimized and behaves identically.
+
+    app.js:
     ```javascript
     define({
       routes: {
-        '/dialog1': 'cs!app/dialog'
+        '/dialog1': {
+          title: 'Dialog',
+          body: '@cs!app/dialog'
+        }
       }
     });
     ```
     
-    Navigate to [/dialog1](/dialog1) to see the above in action.
-    
-    So modules simply map URL patterns to components.
+    Navigate to [/dialog1](/dialog1) to see this route.
 
-    The server is entirely built up from the zest.json or zest.cson file config. It is assumed that `www/lib` is the main RequireJS baseUrl, but this
-    can be customized with configuration. In the `www/lib` folder, it is expected that there is an install of zest client and its dependencies
-    (done with `volo add zest-client`). When using the site templates, this is already set up as required.
-    
+    The route is a URL pattern, which maps to a partial **Page Render Component**. In the above case, we are simply setting the `body` region and `title` property of the page render component. The `render` property on the page component is set for us to the default page template, hence why this is a partial render component. We are extending the base page render component with properties for our current page.
+
+    ### Page Component Modules
+
+    Instead of referencing the page component directly in the route, we can also specify a module ID to load the partial page component from.
+    Eg:
+    ```javascript
+    define({
+      routes: {
+        '/dialog1': '$/pages/dialog-page'
+      }
+    })
+    ```
+
+    With /pages/dialog-page.js:
+    ```javascript
+    define({
+      body: '@cs!app/dialog'
+    });
+    ```
         """
       ,
         sectionName: 'URL patterns'
         markdown: """
     
-    For dynamic content, typically we want part of the URL to become data parameters for the component render.
+    For dynamic content we want to use information from the URL to become data parameters for the component render.
     
     For example, to allow the width and height to be set from the URL, we can use:
     
     ```javascript
     routes: {
-      '/dialog2/{width}/{height}': 'cs!app/dialog'
+      '/dialog2/{width}/{height}': {
+        title: 'Dialog Page',
+        body: '@cs!app/dialog'
+      }
     }
     ```
     
-    Navigate to [/dialog2/1024/768](/dialog2/1024/768) or try some variations of the URL as well.
+    Navigate to [/dialog2/1024/768](/dialog2/1024/768) or try some variations of the URL as well to see this.
+
+    Page components are rendered with options, just like any other render. The options used are created from the route itself. Since the region of a render component is rendered with the same options as the render component, the `body` render structure is passed these page options when rendering.
     
-    URL patterns allow us to automatically map parts of the URL to the render options that we provide. In the above example,
-    whenever the URL has three arguments, with the first set to `dialog2`, the initial options are set as:
+    URL patterns allow us to automatically map parts of the URL to these route render options that we provide. In the above example, whenever the URL has three arguments, with the first set to `dialog2`, the route is triggered with the initial options are set as:
     
     ```javascript
     {
-      width: [second url argument],
-      height: [third url argument]
+      width: [second URL argument],
+      height: [third URL argument]
     }
     ```
     
-    This is why we took so much care with escaping the CSS in our dialog component properly. There are no URL variations that
-    can result in injection attacks here so we are safe. But be very careful when piping options directly from the URL into the
-    component, as this is a very real risk.
+    This is why we took so much care with escaping the CSS in our dialog component properly. There are no URL variations that can result in injection attacks here so we are safe. But be very careful when piping options directly from the URL into the component, as this is a very real risk.
     
     ### Soaking up arguments
     
@@ -1798,7 +1842,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       /my/{property*}
     ```
     
-    _Will map the URL `/my/full/url/string` to the options:_
+    will map the URL `/my/full/url/string` to the options:
     
     ```javascript
     {
@@ -1810,8 +1854,13 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     When a query string is provided, it is populated on the options properties **_queryString** and as a parsed object at **_query**.
     
-    For example, the URL `/my/full/url/string?some=test&object=stuff&some=arraystoo`, for the previous route, will populate onto the options
-    as:
+    For example, the URL `/my/full/url/string?some=test&object=stuff&some=arraystoo`, will trigger the route:
+
+    ```
+      /my/{property*}
+    ```
+    
+    and will populate the options as:
     
     ```javascript
     {
@@ -1828,264 +1877,102 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       ,
         sectionName: 'Dynamically Setting Render Options'
         markdown: """
-    There is only so much that can be done with direct options mapping. Typically we need a page component that
-    will be able to read the options, load the data and populate the page accordingly.
+    There is only so much that can be done with direct options mapping. Typically we need the page component to also do its own loading and populate the data accordingly.
 
-    We can save this page component as a separate file and load it instead, or we can write it inline within
-    the routes file in the following form:
+    For this, we can use the `load` and `options` render component properties, just like any other render component:
 
     ```javascript
       routes: {
         '/dialog3': {
-          structure: Dialog,
-          options:
-            closeButton: true,
-            content: ['&lt;p>dialog&lt;/p>'],
+          title: 'Dialog Page',
+          body: '@cs!app/dialog2',
+          options: {
             width: 400,
-            height: 100
+            height: 300,
+            confirmText: 'Ok'
+          },
+          load: function(o) {
+            o.content = '&lt;p>The time is ' + (new Date()).toLocaleTimeString() + '&lt;/p>'
+          }
         }
       }
     ```
-
-    Notice that instead of `render` we are using the keyword `structure`. This is the only place we do this.
-
-    The reason is that the object here is not a renderable, but the **page template render options**.
-
-    The page template sets up the RequireJS configuration, in the HTML template, and loads the `structure`
-    option as the body of the page.
 
     Try this out here: [/dialog3](/dialog3).
 
         """
       ,
-        sectionName: 'Setting Page Meta-Information'
+        sectionName: 'Page Component Reference'
         markdown: """
 
-    We can use the page options object to alter the page meta information as well.
-
-    Some useful options are:
+    The full list of properties on the page render component are:
 
     * **title**, String: _Sets the title of the page._
-    * **requireMain**, String: _Sets the `data-main` entry point for RequireJS._
-    * **typeAttribute**, String: _Sets the main attribute to use for component type attribute names. Set this to `data-component` to switch
-      to XHTML-compatible syntax._
-    * **requireConfig**: By setting properties here, page-specific RequireJS configuration can be provided, over
-      the defaults already set by Zest.
-    
-    So we can now set the title on our dialog page:
+    * **meta**, Render Structure: _Sets the meta region of the page._
+    * **body**, Render Structure: _Sets the body region of the page._
+    * **lang**, String: _Sets the HTML `lang` attribute for the page language._
+    * **scripts**, Array: _Any **blocking** scripts to load into the page. URLs are relative to the RequireJS baseUrl. Not recommended to use unless absolutely necessary. Typically scripts are built and [@loaded as layers](), not blocking the page unnecessarily._
+    * **requireMain**, String: _Sets the RequireJS `data-main` entry point for the page._
+    * **requireConfig**, Object: By setting properties here, page-specific RequireJS configuration can be provided, extending the defaults set by Zest.
 
-    ```javascript
-      routes: {
-        '/dialog4':
-          title: 'Dialog Page',
-          structure: {
-            render: Dialog,
-            options: {
-              closeButton: true,
-              content: ['&lt;']
-            }
-          }
-      }
-    ```
+    All of these properties support intelligent extension (the page component is generated by an internal `zoe.create` call).
 
-    Live demo: [/dialog4](/dialog4).
+    ### Overriding the Page Template
+
+    The page template is roughly based on the [HTML5 boilerplate](http://html5boilerplate.com/), and in most cases the properties above provide all necessary customization. If you still really need to alter the HTML template for the page render component, then set the `render` property on the page component. Read the page component definition at `node_modules/zest-server/html.coffee` as a reference for this.    
 
         """
       ,
-        sectionName: 'RequireJS Configuration'
+        sectionName: 'Base Page Template'
         markdown: """
 
-    ### Global Configuration
+    Modules form a collection of routes that may share similar RequireJS configuration and other properties.
 
-    To add RequireJS configuration such as `map` and `paths` configs, simply ammend the `require` configuration object
-    in the `zest.cson` or `zest.json` configuration file.
+    To avoid repetition, modules can specify a **Base Page Component** that can provide base page component properties, before being extended by a specific page component for a route.
 
-    This RequireJS configuration is identical to the RequireJS documentation. Zest Server will then populate the minimum
-    defaults necessary on top of this, such as `baseUrl` and the Zest Client paths.
+    The base page component is set as the `page` property on the module, and will apply whenever a route from the module is matched.
 
-    So for example, to add a custom map config, add the following to `zest.json`:
+    For example, a module-specific shared `map` config could be provided with:
 
     ```javascript
-    {
-      require: {
-        map: {
-          '*': {
-            'custom-alias': 'my/custom/module'
-          }
-        }
-      }
-    }
-    ```
-
-    ### Environment Configuration
-
-    This configuration will be shared equally between the _client_, _server_ and _build_ environments. To add specific
-    configuration for these environments, the special properties `client`, `server` and `build` on the require object 
-    can be set to custom RequireJS configurations.
-
-    The configuration is extended from the base defaults up to the most specific environment settings.
-
-    Thus, to entirely ignore our module above when running on the server, we can add the following to `zest.json`:
-
-    ```javascript
-    {
-      require: {
-        server: {
+      page: {
+        requireConfig: {
           map: {
             '*': {
-              'custom-alias': 'empty'
+              'my/module': 'something'
             }
           }
         }
       }
-    }
     ```
 
-    ### Route Configuration
-
-    The RequireJS configuration can also be varied at the route-level, using the `requireConfig` page meta option.
-
-    For example, to set a map config for our dialog page only:
-
-    ```javascript
-      routes: {
-        '/dialog5':
-          title: 'Dialog Page',
-          requireConfig: {
-            map: {
-              '*': {
-                'custom-alias': 'my/module'
-              }
-            }
-          },
-          structure: {
-            render: Dialog,
-            options: {
-              closeButton: true,
-              content: ['&lt;']
-            }
-          }
-      }
-    ```
-
-    This configuration will then in turn be merged with the default and client global configurations.
+    set as a property on the module, and similarly for other properties and configurations.
 
         """
       ,
-        sectionName: 'Server Module Route Handlers'
+        sectionName: 'Module Request Handlers'
         markdown: """
 
-    Zest Server is simply a NodeJS server. We can write request handlers within modules using the standard NodeJS 
-    style.
+    Modules can also provide NodeJS-style request handlers, allowing direct access to the `request` and `response` NodeJS objects.
 
-    The module property for this is:
-    
-    ```javascript
-      routeHandler: function(req, res, next);
-    ```
-
-    This function sits on the module object and will be triggered **only** if the module is responsible for the current
-    page.
-
-    To add global handlers that trigger for all requests in the entire application, use:
+    The handler module properties are:
 
     ```javascript
-      handler: function(req, res, next);
+      handler: function(req, res, next)
+      globalHandler: function(req, res, next)
     ```
 
-    `req` and `res` are the standard NodeJS request and response objects. `next` is the callback for the next handler,
-    that must be called otherwise the server will hang.
+    and are set directly on the module object, just like the `routes` property. They are just standard NodeJS request handlers.
 
-    There are three `req` properties that are set by Zest Server:
-    * **redirect**: _The URL to 301 redirect to. Takes precedence over the page render._
-    * **pageOptions**: _The page meta options used for rendering the page component, exactly as in the page meta section before.
-    * **pageTemplate**: _The page template module ID, as loaded from configuration._
+    * The **handler** function runs only when one of this module's routes has been matched. This makes it most suitable for data loading, module-specific middleware and minor page component adjustments.
+    * The **globalHandler** function runs on any request, regardless of what route may or may not have been matched. This is more suitable for service API requests and global middleware.
 
-    The handlers are triggered after performing routing, so that the above properties are all populated already.
-    The handlers can then make any adjustments to these properties giving them full control of the server.
+    These handlers are run after routing but before rendering, allowing the handler the ability to entirely intercept the page output (by never calling `next` and sending a response), or to modify the page render component or page options before rendering.
 
-    When none of `redirect`, `pageOptions` and `pageTemplate` are set, the next fallback is the file server, followed by
-    a page not found notice. This should always be avoided using a final catch-all route of the form `/{404*}` in the
-    application.
+    The page is rendered from the following request properties, which are the only request properties created or read by Zest Server:
 
-    For example, we can set RequireJS configuration from the routeHandler:
-
-    ```javascript
-      routes: {
-        '/dialog5':
-          title: 'Dialog Page',
-          structure: {
-            render: Dialog,
-            options: {
-              closeButton: true,
-              content: ['&lt;']
-            }
-          }
-      },
-      routeHandler: (req, res, next) {
-        if (req.pageOptions)
-          req.pageOptions.requireConfig.map['*']['my-alias'] = 'my/module';
-      }
-    ```
-
-        """
-      ,
-        sectionName: 'Overriding the Page Template'
-        markdown: """
-
-    To allow for more changes in the underlying page template (meta properties, etc), we need to override the existing 
-    page template with a custom one.
-
-    The page template used by Zest Server is by default `cs!$zest-server/html`. This is a CoffeeScript component, called
-    `html.coffee` located in the Zest Server folder under `node_modules`.
-
-    The page is on GitHub here - <https://github.com/zestjs/zest-server/blob/master/html.coffee>.
-
-    ### Global Page Template
-
-    We make a copy of this into our base application folder with the same name.
-
-    Then set the `pageTemplate` configuration option in Zest:
-
-    zest.json:
-    ```javascript
-    {
-      pageTemplate: 'cs!$/html',
-      modules: ['$/app'],
-      require: {
-        paths: {
-          app: '../app'
-        }
-      }
-    }
-    ```
-
-    This will now use out local `html.coffee` as the main page template component.
-
-    We can now modify the HTML and add meta properties and extra options as necessary, treating it just like any other
-    component.
-
-
-    ### Module Page Templates
-
-    The page template is available for changes by modules within the routeHandler, as documented previously.
-
-    Thus to change the page template for a specific module, override it directly:
-
-    ```javascript
-    define({
-      routes: {
-        '/': 'some/component'
-      },
-      routeHandler: function(req, res, next) {
-        req.pageTemplate = 'cs!$/module-html'
-      }
-    });
-    ```
-
-    If the page template is a relative dependency to the module, load it as a dependency and then pass the object
-    directly as the page template, instead of as a string.
-
+    * **`req.pageComponent`**: _The partial page component to render, before extension. If not present, a 404 not found page is provided._
+    * **`req.pageOptions`**: _The page component render options, as provided from the routing output._
 
         """
       ,
