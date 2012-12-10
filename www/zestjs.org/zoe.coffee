@@ -3,16 +3,16 @@ define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
   options:
     section: 'zoe'
     data: [
-      chapterName: 'Zoe - Zest object extension'
+      chapterName: 'ZOE - Zest object extension'
       sections: [
         sectionName: 'Introduction'
         markdown: """
-          Zoe developed out of a need to manage the inheritance of dynamic components.
+          ZOE developed out of a need to manage the inheritance of dynamic components.
           Many JavaScript inheritance systems bring classical inheritance systems, while
           the approach taken here is to create an inheritance model that naturally works with JavaScript objects.
           
           The basic principle is that inheritance is a form of object extension, thus the inheritance system of [`zoe.create`](#zoe.create) builds directly
-          out of the extension system in `zoe.extend`. Zoe is a relatively small library (6KB minified, unzipped), for the inheritance power it brings.
+          out of the extension system in `zoe.extend`. ZOE is a relatively small library (6KB minified, unzipped), for the inheritance power it brings.
           
           In plain English, `zoe.extend` simply extends one object with the properties of another. The rest of its code deals with how to
           manage property clashes. The idea being that you can specify property extension rules on a per-property basis. A sub object might
@@ -32,6 +32,27 @@ define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
           the details of this process.
           
           For a more basic introduction, see the Zest documentation on [Creating Extensible Components](/docs#Creating%20Extensible%20Components), which explains the basics of this inheritance model from a more practical perspective.
+        """
+      ,
+        sectionName: 'Installing'
+        markdown: """
+
+      If using Volo (`npm install volo -g`), install zoe with:
+
+      ```
+        volo add zestjs/zoe
+      ```
+
+      Alternatively, [download `zoe.js` directly](https://github.com/zestjs/zoe/blob/master/zoe.js).
+
+      If using NodeJS, zoe can also be installed as a server module with:
+
+      ```
+        npm install zoe
+      ```
+
+      ZOE is compatible with both AMD and non-AMD environments.
+
         """
       ]
     ,
@@ -58,9 +79,8 @@ define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
   ### Usage:
   
   ```javascript
-    var f = zoe.fn(executionFunction, initialFunctions);
+    var f = zoe.fn(executionFunction);
   ```
-    * **initialFunctions, Array** (optional): _an array of the inital functions to be provided_
     * **executionFunction, string / function** (optional): _the main execution function to handle function execution and output
        when no executionFunction is provided. Defaults to [`zoe.fn.LAST_DEFINED`](#zoe.fn.LAST_DEFINED). When a string `FUNCTION_NAME` is provided, the function is loaded from `zoe.fn.FUNCTION_NAME`. These provided execution functions are detailed below._
       
@@ -70,6 +90,8 @@ define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
     * **f.first(fn)**: _add a new function at the beginning of the list of functions_
     * **f.bind(thisVar)**: _used to permanently bind this instance to the given 'this' reference. **By default, and when passed the value `undefined`, binding is identical to natural function scope binding.**_
     * **f()**: _executes the current function list based on the given executionFunction_
+
+  All of the above instance methods fully support chaining.
       
   #### What it does:
   * zoe.fn is a factory function returning a function instance acting as a wrapper around an array of functions.
@@ -217,29 +239,42 @@ define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
       alert('complete');
     });
   ```
+
+  #### Example - Chaining:
+
+  ```jslive
+    zoe.fn('ASYNC')
+      .on(function(message, next) {
+        setTimeout(next, 2000);
+      })
+      .on(function(message, next) {
+        alert(message)
+      })
+    ('howdy');
+  ```
   
-  #### Example - NodeJS Server Handler
+  #### Example - NodeJS Server Handler:
   
   Server handlers in NodeJS are also simply step functions of this form. Thus we can write a server in NodeJS as:
   
   ```javascript
     var http = require('http');
-    var handler = zoe.fn('ASYNC');
     
-    http.createServer(handler).listen(8080);
-    
-    handler.on(function(req, res, next) {
-      if (req.headers['Content-Type'].indexOf('application/json') != -1) {
-        //handle an application request
-      }
-      else
-        next();
-    });
-    handler.on(function(req, res, next) {
-      if (req.url == '/') {
-        //handle a page request
-      }
-    });
+    http.createServer(
+      zoe.fn('ASYNC')
+      .on(function(req, res, next) {
+        if (req.headers['Content-Type'].indexOf('application/json') != -1) {
+          //handle an application request
+        }
+        else
+          next();
+      })
+      .on(function(req, res, next) {
+        if (req.url == '/') {
+          //handle a page request
+        }
+      })
+    ).listen(8080);
   ```
   
   This handler mechanism is used by zest server. Handlers can then also be added and removed dynamically at runtime.
@@ -258,18 +293,35 @@ define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
   ```jslive
     var f = zoe.fn(zoe.fn.ASYNC_SIM);
   
-    f.on(function(next) {
+    f.on(function(done) {
       alert('first starting');
       setTimeout(next, 3000);
     });
   
-    f.on(function(next) {
+    f.on(function(done) {
       alert('second starting');
       setTimeout(next, 500);
     });
   
     f(function() {
       //complete function optional
+      alert('both completed after 3 seconds');
+    });
+  ```
+
+  #### Example - Chaining:
+
+  ```jslive
+    zoe.fn('ASYNC_SIM')
+      .on(function(done) {
+        alert('first starting');
+        setTimeout(done, 3000);        
+      })
+      .on(function(done) {
+        alert('second starting');
+        setTimeout(done, 500);
+      })
+    (function() {
       alert('both completed after 3 seconds');
     });
   ```
@@ -687,6 +739,7 @@ define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
   _Performs a deep copy of the properties from objB onto objA._
   
     * Replaces all properties, except objects which get in turn extended based on replacement.
+    * Useful for deep copying of objects, either cloning or extending onto another.
         """
       ,
         sectionName: 'zoe.extend.DFILL'
@@ -755,6 +808,8 @@ define ['cs!./doc-page/doc-page', 'zoe'], (DocPage, zoe) ->
         sectionName: 'zoe.extend.DAPPEND'
         markdown: """
   _Applies an APPEND rule, but with depth on objects._
+
+  * This can be used to deep clone an object including its arrays, or deep extend configurations that need arrays to combine.
         """
       ,
         sectionName: 'zoe.extend.DPREPEND'

@@ -208,7 +208,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     > If you'd rather write valid XHTML, you can configure
       Zest to use the attribute `data-component` instead. To enable this, add the configuration option `typeAttribute: 'data-component'`
-      to the Zest Server configuration file, or under the `zest/zest-render` RequireJS configuration in the browser template.
+      to the Zest Server configuration file, or under the `zest/zest-render` [RequireJS configuration](http://requirejs.org/docs/api.html#config-moduleconfig) in the browser template.
     
     When rendering, the `type` name is automatically added as the `component` attibute on the element, so the HTML will render as the element:
     
@@ -502,7 +502,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     dialog2.js:
     ```javascript
-      define(['app/button6', 'css!./dialog'], function(Button) {
+      define(['com!./button6', 'css!./dialog'], function(Button) {
         return {
           type: 'SimpleDialog',
           render: "&lt;div>{&#96;content&#96;}&lt;div class='button'>{&#96;button&#96;}&lt;/div>&lt;/div>",
@@ -510,7 +510,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         };
       });
     ```
-    By importing the Button component directly, (instead of setting the region to `'@app/button6'`), when we build the dialog into a single file, this will then automatically include the button styles and scripts along with it.
+    To load the button component, we use the `com!` plugin loader. This provides flexible build support for the dialog so that it can have just its attachment scripts built, or all its render scripts built as well. Effectively the `com!` plugin creates a form of component branching indicator in the code.
+
+    In this case, the button is assumed to be in the same folder as the dialog for portability.
     
     ```jslive
       $z.render('@app/dialog2', {
@@ -554,7 +556,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     dialog3.js:
     ```javascript
-      define(['app/button6', 'css!./dialog'], function(Button) {
+      define(['com!./button6', 'css!./dialog'], function(Button) {
         return {
           type: 'SimpleDialog',
           render: "&lt;div>{&#96;content&#96;}&lt;div class='button'>{&#96;button&#96;}&lt;/div>&lt;/div>",
@@ -829,7 +831,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     dialog4.js:
     ```javascript
-      define(['app/button8', 'css!./dialog'], function(Button) {
+      define(['com!./button8', 'css!./dialog'], function(Button) {
         return {
           type: 'SimpleDialog',
           render: "&lt;div>{&#96;content&#96;}&lt;div class='button'>{&#96;button&#96;}&lt;/div>&lt;/div>",
@@ -1040,7 +1042,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     dialog1.coffee:
     ```coffeescript
-      define ['cs!app/button', 'css!./dialog'], (Button) ->
+      define ['com!cs!./button', 'css!./dialog'], (Button) ->
         type: 'SimpleDialog'
         render: &quot;&quot;&quot;
           &lt;div>
@@ -1087,7 +1089,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     dialog2.coffee:
     ```coffeescript
-      define ['zest', 'cs!app/button', 'css!./dialog'], ($z, Button) ->
+      define ['zest', 'com!cs!./button', 'css!./dialog'], ($z, Button) ->
         type: 'SimpleDialog'
         options:
           width: 400
@@ -1413,7 +1415,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     #### zoe.fn Initial Functions
 
-    If we wanted the button to come with some click handler functions already provided, we can pass the initial array of event listeners into our `zoe.fn` method:
+    If we wanted the button to come with some click handler functions already provided, we can add initial event listeners into our `zoe.fn` method:
 
     ```javascript
       construct: function(el, o) {
@@ -1425,13 +1427,13 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           this.clickCnt++;
         }
 
-        this.click = $z.fn([countClick]).bind(this);
+        this.click = $z.fn().on(countClick).bind(this);
 
         this.$button.click(this.click);
       }
     ```
 
-    We must pass an array into `$z.fn`, otherwise the function will be read as an execution function instead of an instance function.
+    `$z.fn` supports chaining, allowing us to apply the next method in the same line rather than writing separate lines. It doesn't matter if we bind the chain or add the listener first.
 
     #### Prototype Initial Functions
 
@@ -1443,7 +1445,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
         this.clickCnt = 0;
 
-        this.click = $z.fn([this.countClick]).bind(this);
+        this.click = $z.fn().bind(this).on(this.countClick);
         this.$button.click(this.click);
       },
       prototype: {
@@ -1469,12 +1471,12 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     button-unclickable.js:
     ```javascript
-      define(['zest', './button11'], function($z, Button) {
+      define(['zest', 'com!./button11'], function($z, Button) {
         return $z.create([Button], {
           construct: function(el, o) {
             this._visible = true;
 
-            this.toggle = $z.fn([this.toggle]).bind(this);
+            this.toggle = $z.fn().bind(this).on(this.toggle);
 
             this.$button.mouseenter(this.toggle);
             this.$button.mouseleave(this.toggle);
@@ -1530,7 +1532,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     button-clickable.js:
     ```javascript
-      define(['zest', './button-unclickable'], function($z, Button) {
+      define(['zest', 'com!./button-unclickable'], function($z, Button) {
         return $z.create([Button], {
           prototype: {
             __hide__: function() {
@@ -1685,7 +1687,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     This is the easiest way to start using Zest server rendering. Zest encourages the use of service APIs to provide data services, with Zest itself providing a rendering service.
 
-    There are a couple of other ways to utilize the Zest rendering service:
+    There are a couple of other ways to utilize the Zest render service:
 
     ### Using Zest Server within a NodeJS Application
 
@@ -1714,7 +1716,17 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         sectionName: 'Server Configuration Basics'
         markdown: """
 
-    The server configuration file is a loosely written JSON or CSON configuration file, providing options for:
+    The server is easily started with the command:
+
+    ```
+      zest start [environmentName]
+    ```
+
+    * This must be run from the base folder of the application, where the `zest.cson` or `zest.json` configuration file is.
+    * The `start` parameter is entirely optional.
+    * The environment name is typically `dev` or `production`. This allows for environment-specific configurations to be loaded. When not provided, the default environment is loaded from the configuration. Any custom environments can also be defined.
+
+    The `zest.cson` or `zest.json` server configuration file is a loosely written JSON or CSON configuration file, providing options for:
 
     > The default RequireJS configuration needed for running Zest is always added. Configurations are extended sensibly, with arrays appending and objects extending.
 
@@ -1872,6 +1884,21 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       }
     }
     ```
+
+    ### 404 Pages
+
+    When no route is matched, and no pageComponent is set for rendering, the request is passed to the file server. If the request isn't a valid file in the `www` folder, then the 404 Not Found page is shown. By default this is the 404 page from the [HTML5 Boilerplate](http://html5boilerplate.com/), but it can be customized to any partial page component just like any route.
+
+    To set the 404 not found page, add the `404` property in the configuration file:
+
+    ```javascript
+    {
+      404: {
+        title: 'Page Not Found',
+        body: '<p>No page here</p>'
+      }
+    }
+    ```
     
         """
       ,
@@ -1950,54 +1977,109 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
         """
       ,
-        sectionName: 'Module Request Handlers'
+        sectionName: 'Browser Modules'
         markdown: """
 
-    Modules can also provide NodeJS-style request handlers, allowing direct access to the `request` and `response` NodeJS objects.
+    When we wrote the [button component originally](#CoffeeScript%20Components), we didn't separate the `attach` function into a controller module to allow for easier reading. 
 
-    The handler module properties are:
+    As a result, the button component has a dependency on jQuery, which is not designed to be loaded on the server. Yet, we need to load this file to get access to the render component.
 
+    To make this possible, there is a configuration for **Browser Modules**, which are automatically loaded as empty dependencies.
+
+    To inform Zest Server that jQuery is a browser module, we add the `browserModules` configuration array in the configuration file:
+
+    > Note that if jQuery is [mapped to the `selector` module](#Using%20jQuery%20and%20Other%20Client%20Frameworks), then it is already a browser module since the `selector` module is automatically stubbed.
+
+    zest.json:
     ```javascript
-      handler: function(req, res, next)
-      globalHandler: function(req, res, next)
+    {
+      browserModules: ['jquery']
+    }
     ```
 
-    and are set directly on the module object, just like the `routes` property. They are just standard NodeJS request handlers.
+    This can be a list of any number of RequireJS module IDs.
 
-    * The **handler** function runs only when one of this module's routes has been matched. This makes it most suitable for data loading, module-specific middleware and minor page component adjustments.
-    * The **globalHandler** function runs on any request, regardless of what route may or may not have been matched. This is more suitable for service API requests and global middleware.
-
-    These handlers are run after routing but before rendering, allowing the handler the ability to entirely intercept the page output (by never calling `next` and sending a response), or to modify the page render component or page options before rendering.
-
-    The page is rendered from the following request properties, which are the only request properties created or read by Zest Server:
-
-    * **`req.pageComponent`**: _The partial page component to render, before extension. If not present, a 404 not found page is provided._
-    * **`req.pageOptions`**: _The page component render options, as provided from the routing output._
+    If we had written the button with the `attach` property pointing to separate controller module ID, then this wouldn't be necessary as the render component can still be loaded without loading the jQuery dependency at all.
 
         """
       ,
-        sectionName: 'Asynchronous Streaming and Deferred Titles'
+        sectionName: 'Quick Refresh'
         markdown: """
 
-    To demonstrate the asynchronous streaming used by Zest Server, lets stream our dialog now:
+    > To install Nodemon, use npm:  
+      `npm install nodemon -g`
 
+    When developing, [nodemon](https://github.com/remy/nodemon) is great for automatically refreshing the server allowing quick reloading.
 
+    The Zest Server command supports Nodemon by starting the server with the argument:
 
+    ```
+      zest start-nodemon [environmentName]
+    ```
 
-    
-    For testing the latency of rendering for a slow page load, there is also the `renderDelay` configuration option.
-    This specifies a delay in ms to wait before each Render Component is rendered. Useful for inspecting how the site
-    will behave with partial loading.
+    The `environmentName` is optional.
 
-    For slow file loading, a `staticLatency` configuration option can also be set allowing for a delay in the file
-    server as well.
+    All file changes will then restart the server.
 
-    So an example slow page test configuration could be:
+        """
+      ,
+        sectionName: 'Asynchronous Streaming'
+        markdown: """
 
+    To demonstrate the asynchronous streaming used by Zest Server, lets mimic a heavy loading function in the content of the dialog, taking 3 seconds to load data:
+
+    ```javascript
+      routes: {
+        '/dialog4': {
+          title: 'Dialog Page',
+          body: '@cs!app/dialog2',
+          options: {
+            width: 400,
+            height: 300,
+            confirmText: 'Ok'
+            content: {
+              load: function(o, done) {
+                setTimeout(done, 3000);
+              },
+              render: function(o) {
+                return '&lt;p>Heavy data load complete&lt;/p>';
+              }
+            }
+          }
+        }
+      }
+    ```
+
+    [See this running here](/dialog4). Wait 3 seconds to see the content display. To see what is going on, try viewing the source and refreshing the source code view.
+
+    The content region of the dialog is set through the options (a public region), allowing us to set it to any render structure we like. In this case we set it to a render component and use the asynchronous load of the render component.
+
+    When rendering, Zest Server will render as much as it can, until it reaches a loading render component. It will then pause the stream while the load completes.
+
+    During loading, the styles of partially loaded components will always be fully active, and the interactions of components with all their HTML rendered will already be attached.
+
+    The attachment for the dialog is only run on completion of the loading of all HTML of the dialog. If the button was rendered before the content region, it would display during this loading time and have its own attachment already run so that it would be interactive, but the dialog would not have attached to the button yet so that clicking the button while the dialog HTML is still rendering would have no effect until the dialog had fully loaded, at which point the button would properly close the dialog again.
+
+    ### Testing Slow Page Loads
+
+    It can be useful to test partial page loads at this level quite thoroughly in order to optimize the page loading experience.
+
+    There are two configuration options that can be used to provide artificial load delays:
+
+    * **renderDelay**: _A time interval in milliseconds to delay any render component rendering._
+    * **staticLatency**: _A time interval in milliseconds to delay any file server download._
+
+    #### Example Configuration Environment
+
+    It can be useful to define a `dev-delay` environment with these options enabled.
+
+    We can include the environment override in the Zest Server configuration with:
+
+    zest.json:
     ```javascript
     {
       environments: {
-        'dev-slow': {
+        'dev-delay': {
           staticLatency: 500,
           renderDelay: 500
         }
@@ -2005,93 +2087,109 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     }
     ```
 
+    Then we can start the environment with:
+
+    ```
+      zest start dev-delay
+    ```
         """
       ,
-        sectionName: 'Quick Refresh'
+        sectionName: 'Production Environment'
         markdown: """
 
-    When developing, one often makes regular changes to files and the server needs to be reloaded. Nodemon is a great
-    application for allowing automatic server refreshing.
-
-    Zest Server supports nodemon for a quick development cycle.
-
-    Install Nodemon with NPM:
+    Once development is complete, the site can be started in the production environment by passing the `production` environment name into Zest Server:
 
     ```
-      npm install nodemon -g
+      zest start production
     ```
 
-    Then start Zest Server with the special nodemon form:
-
+    The production environment is a default environment specified in the default server configuration as:
     ```
-      zest start-nodemon
+    environments: {
+      production: {
+        build: true
+      }
+    }
     ```
 
-    Now Zest Server will automatically restart everytime a component file is changed. The server is quick enough that this
-    can allow a fast refresh cycle.
+    When started, the site will run a whole project build with the RequireJS Optimizer and then switch to the built public folder to serve the site, from minified layers. Details of the build settings are provided in the [build section](#Building).
 
+    Alternative production environments can be made by setting `build: true` on any environment.
+
+    ### File Server Cache Expiry
+
+    A useful configuration for production is the file server cache expires header.
+
+    This can be set with the `fileExpires` configuration option, which takes a value in milliseconds.
+
+    An alternative file server can also be set up separately to Zest Server, and the file server disabled with `serveFiles: false`.
+
+        """
+      ,
+        sectionName: 'Module Request Handlers'
+        markdown: """
+
+    Modules can provide NodeJS-style request handlers, allowing direct access to the `request` and `response` NodeJS objects.
+
+    The handler module properties are:
+
+    * **handler, function(req, res, next)**: _Runs only when one of this module's routes has been matched by the current request. Suitable for data loading, module-specific middleware and minor page component adjustments.
+    * **globalHandler, function(req, res, next)**: _Runs on all application requests, regardless of what route may or may not have been matched. Suitable for service API requests and global middleware.
+
+    These handler properties are set directly on the module object, just like the `routes` property. They are just standard NodeJS request handlers.
+
+    The handlers are run after routing but before rendering, allowing the handler the ability to entirely intercept the page output (by never calling `next` and sending a response), or to modify the page render component or page options before rendering.
+
+    The page is rendered from the following request properties, which are the only request properties created or read by Zest Server:
+
+    * **`req.pageComponent`**: _The partial page component to render, before the base page component extensions have been applied. If not present, a 404 not found page is provided._
+    * **`req.pageOptions`**: _The page component render options, as provided from the routing output._
         """
       ,
         sectionName: 'Adding Middleware'
         markdown: """
 
-    With full access to the request and response objects, the modules can thus add Middleware to the application if necessary.
+    With full access to the request and response objects, the modules can thus add middleware to the application if necessary.
 
-    If using connect, add this as a module dependency. As long as there is no RequireJS module called 'connect', RequireJS
-    will fall back to loading this as a NodeJS dependency.
+    If using connect, add this as a module dependency. As long as there is no RequireJS module called 'connect', RequireJS will fall back to loading this as a NodeJS dependency.
 
     For example, to load Connect middleware and session management (after installing connect - `npm install connect`)
     within a module, one can do:
 
+    > Note this code use of Connect is currently pending Connect pull request [#701](https://github.com/senchalabs/connect/pull/701), which should be approved shortly.
+
     ```javascript
       define(['zest', 'connect'], function($z, connect) {
-        // create the step function for combining handlers
-        var urlHandler = $z.fn('ASYNC');
-
-        // connect needs the 'originalUrl' property to be set
-        urlHandler.on(function(req, res, next) {
-          req.originalUrl = req.url;
-          next();
-        });
-        
-        // add middleware
-        urlHandler.on(connect.limit, '5.5mb');
-        urlHandler.on(connect.cookieParser());
-        
-        sessionStore = new connect.session.MemoryStore();
-        urlHandler.on(connect.session, {key: 'sid', secret: 'secret', store: sessionStore});
-        
-        urlHandler.on(connect.json());
-        urlHandler.on(connect.urlencoded());
-        urlHandler.on(connect.multipart());
-
-        urlHandler.on(function(req, res, next) {
-          // do something with the session data
-          req.pageOptions.sessionVar = req.session.var;
-        });
-        
         return {
-          routeHandler: function(req, res, next) {
-            // run route handler
-            urlHandler(req, res, next);
-          }
+          routes: {
+            '/some/route': 'my/module'
+          },
+          handler: $z.fn('ASYNC')
+            .on(
+              connect()
+                .use(connect.cookieParser())
+                .use(connect.session, {key: 'sid', secret: 'secret', store: (new connect.session.MemoryStore())})
+            )
+            .on(function(req, res, next) {
+              // copy the session data into the page render options
+              req.pageOptions.session = req.session;
+            });
+          );
         };
       });
     ```
 
-    The `req.session` will then be populated with modifiable session data, whenever the page route is matched by this module.
-
+    The ZOE async function chain allows for easy creation of server handler functions - [read its documentation here](/docs/zoe#zoe.fn.ASYNC).
+    ***
         """
       ,
-        sectionName: 'Using Zest Server within a NodeJS Application'
+        sectionName: 'NodeJS API'
         markdown: """
 
-    To execute Zest Server from the basic server template, first install `connect` with the following:
-    ```
-      npm install connect
-    ```
+    > If you are not needing to integrate Zest Server within your own existing framework, [skip to the build section](#Building).
 
-    Then simply type:
+    To use Zest Server within NodeJS instead of through the `zest` command, there is an example in the basic server template. First ensure that Connect is installed, then start the NodeJS application with:
+    
     ```
       node ~node-server.js
     ```
@@ -2110,77 +2208,133 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       });
     ```
 
-    The `zest.init` method loads the zest configuration in the 'dev' environment from the Zest configuration file 
-    and also configures RequireJS.
+    * **zest.init(environment, callback)**: _Loads the server configuration file from `zest.json` or `zest.cson` in the application folder with the environment string specified. The callback function is called when loading is complete._
+    * **zest.server**: _The NodeJS request handler of the form `function(req, res, next)` that performs all Zest Server operations. It runs routing, hooks the Zest Server modules, renders the output into the response and provides file serving._
 
-    The configured RequireJS loader can be accessed from the `zest.require` function:
+    #### Disabling the 404 Page
+
+    To have the Zest Server route handler call the `next` callback when used within NodeJS, the 404 not found page must be disabled. Simply set `404: null` in the Zest Server configuration file to disable the 404 catch-all, then additional handlers can be used after `zest.server`.
+
+    To disable the file server, [see the next section](#File%20Server%20and%20Paths%20Configurations).
+
+    ### Rendering APIs
+
+    Instead of using `zest.server` as the handler, it is also possible to use the Zest Server rendering function directly, skipping the module and routing support entirely.
+
+    It is still necessary to run the `zest.init` method to load the configuration before using any of these API methods.
+
+    #### zest.render
+
     ```javascript
-      zest.require([deps], callback);
+      zest.render(structure, [options], res, [complete])
     ```
 
-    To access the zest render function directly and bypassing the routing, one can use:
-    
+    * **structure**: _The render structure to render. Any render structure may be provided._
+    * **options**, optional: _The render options to provide. If not provided, an empty options object is used._
+    * **res**: _The NodeJS response object to write to. Zest Server will write the headers, stream the response and close the connection on completion._
+    * **complete**: _An optional complete callback._
+
+    `zest.render` expects to write the headers and close the response stream, and so can't be used for partial output within a template.
+
+    > If you are interested in partial rendering within a page template, please [post an issue to Zest Server](https://github.com/zestjs/zest-server). It is trivial to provide, but harder to justify, so it would be appreciated to hear about any use cases.
+
+    Thus, `zest.render` should typically be used with a full page component, that renders the HTML template as we do with standard routing.
+
+    #### zest.renderPage
+
+    **This is the most suitable render function for use within a NodeJS application.**
+
     ```javascript
-      zest.render(pageTemplate, pageOptions, res);
+      zest.renderPage(pageComponent, [options], res, [complete])
     ```
 
-    The render function will render the provided page template, with the provided page options, into the response object,
-    as documented previously.
+    The options are all identical to the above `zest.render`, except that by default it is assumed that the render structure is a partial page render component.
 
-    Note that it will close the response after rendering, so that it should always be rendering an entire page template.
+    The partial page component is extended to provide the page template `render` function as well as the standard RequireJS configuration. In this way the partial page component is extended identically to the standard route rendering system.
 
+    Example:
+
+    ```javascript
+      zest.renderPage({
+        title: 'My Page'
+        body: '@body/component/id'
+      }, pageDataOptions, res);
+    ```
+
+    #### zest.require
+
+    Zest also provides direct access to the correctly configured RequireJS `require` function at `zest.require`, which can be used to load modules from the `www/lib` folder or other paths with all the correct RequireJS configuration.
         """
       ,
-        sectionName: 'Changing File Paths and File Server Settings'
+        sectionName: 'File Server and Paths Configurations'
         markdown: """
 
-    When using Zest Server from within NodeJS you may wish to change the file folders around.
+    When using Zest Server from within NodeJS or another framework you may wish to change the folder paths around.
 
     The following configuration options are provided for this:
 
     * **publicDir**: _The public folder. Defaults to 'www'._
     * **publicBuildDir**: _The public built folder. Defaults to 'www-built'._
-    * **baseDir**: _The base js folder relative to the public folder. Defaults to 'lib'_.
-
-    The file server provides the following options:
-
-    * **serveFiles**: _Boolean indicating if file server is enabled. Defaults to true._
-    * **fileExpires**: _The cache duration time for the files in seconds._
-    * **staticLatency**: _An optional delay when serving files. Useful for a 'dev' environment when testing with latency._
+    * **baseDir**: _The base js folder relative to the public folder. Defaults to 'lib'._
+    * **serveFiles, boolean**: _If set to false, the Zest Server file serving is disabled assuming there is another file server providing the `publicDir` file requests. Defaults to true._ 
 
         """
       ,
-        sectionName: 'Using Zest Server as a Rendering Service'
+        sectionName: 'Render Service Module'
         markdown: """
 
-    There is a `core-module` provided with Zest Server, that simply acts as a rendering service. Note that if your application
-    contains unsecure components (directly writing unescaped HTML from options), then this service will be unsecure. Typically
-    this service should only be enabled on a private server or during development.
+    There is a **Render Service Module** provided with Zest Server, that simply acts as an HTTP rendering service. Think of it like a local database or search server. This service should only be enabled on a private server as it provides access to the file system. The moduleIDs that get requested should always be from a set list of secure modules.
 
-    The core module is loaded with the following:
+    To enable the render service module, it would be enabled with the following configuration:
 
     zest.json
     ```javascript
     {
-      modules: ['$zest-server/core-module']
+      modules: ['$render-module']
     }
     ```
 
-    Once enabled, it responds to the following route:
+    But if the `modules` array in `zest.json` is empty, this module is loaded as a fallback module, allowing Zest Server to be a provide the render service by default.
+
+    Once enabled, it responds to the service request:
+
+    <code>**POST** /render:{moduleId*}</code>
+
+    * **moduleId**: _The render structure module ID to render._
+    * **POST body**: _The strictly encoded JSON render options._
+    * **POST response**: _The rendered HTML, as an efficiently streamed output._
+
+    If the module ID is not found, or there is an error loading, a 500 header will be returned, with the body containing the error message.
+
+    For example, if I run the following:
 
     ```
-      /component/...componentId...?...componentOptions...
+      curl --data '{"width":50}' 'http://localhost:8082/render:cs!app/dialog2'
     ```
 
-    For example, our lovely dialog component can be viewed at:
+    the response is:
 
     ```
-      /component/cs!app/dialog?closeButton=true&content=hello%20world
+      <script src='/lib/require-inline.js' data-require='css!app/button,css!app/dialog'></script>
+      <div id="z1" component="SimpleDialog" style="
+        width: 50px;
+        height: 300px;
+      ">
+        <div class='button'>
+          <button id="z2" component="MyButton">Button</button>
+          <script src='/lib/require-inline.js' data-require='zest,cs!app/button'></script> 
+          <script src='/lib/zest/attach.js' data-zid='z2' data-controllerid='cs!app/button'></script> 
+        </div>
+      </div>
+      <script src='/lib/require-inline.js' data-require='zest,cs!app/dialog2'></script> 
+      <script src='/lib/zest/attach.js' data-zid='z1' data-controllerid='cs!app/dialog2'></script>
     ```
 
-    If query strings aren't your thing, there is also a POST service available to the same URL. The POST data should then
-    contain the JSON rendering options.
+    > If you use this service to create a render library for any other frameworks, [create an issue](https://github.com/zestjs/zestjs.org) to post the link here.
 
+    The attachment scripts are all designed to work so long as the rendering page `lib` folder is found as expected, and the module IDs match up to what is expected. This includes instant CSS injection without flashing and script loading with instant enhancements. 
+
+    In production, the only difference in the HTML is that the `require-inline.js` and `attach.js` requests will be mapped to the single built file name. This is automatically changed when running Zest Server in the production environment. With paths mappings, the RequireJS module IDs get mapped to their correct built layer to load from.
         """
       ]
     ,
@@ -2189,41 +2343,36 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         sectionName: 'Running the Build'
         markdown: """
 
-    As mentioned in the Quick Start, running the build in the _client template_ involves typing:
+    As mentioned in the Quick Start, running the build in the Zest Client template involves running:
 
     ```
       r.js -o build.js
     ```
 
-    and running the build on the _server template_ is to simply start the server in the production environment:
+    and running the build in Zest Server is to simply start the server in the production environment:
 
     ```
       zest start production
     ```
 
-    If loading Zest Server in NodeJS, then pass the "production" environment name to the `zest.init` method.
-
-    The RequireJS optimizer will display the build log detailing all files built and their contained dependencies.
-
     The build involves copying the entire public folder, `www` to a new built public folder, `www-built` containing
-    the minified and built equivalents of all files. This is entirely handled by the RequireJS Optimizer.
+    the minified and built equivalents of necessary files. This is entirely handled by the RequireJS Optimizer.
 
         """
       ,
         sectionName: 'Configuring the Build'
         markdown: """
 
-    To understand the build process it is recommended to read the RequireJS Optimizer documentation. A very brief overview
-    is given here.
+    In the Zest Client template, the build configuration is located in the file `build.js`.
 
-    In the _client template_, the build configuration is located in the file `build.js`.
+    In Zest Server, the build configuration is located as the configuration item `require.build` in the
+    `zest.cson` or `zest.json` server configuration file.
 
-    In the _server template_, the build configuration is located as the configuration item `require.build` in the
-    `zest.cson` or `zest.json` configuration file.
+    ### RequireJS Optimization Process
 
-    The primary build specifier is the `modules` array which specifies the array of modules to build to the r.js Optimizer.
+    To understand the build process it is recommended to read the [RequireJS Optimizer documentation](http://requirejs.org/docs/optimization.html) for whole project builds. A very brief overview is given here.
 
-    Each array item typically contains the following properties:
+    The primary build specifier is the `modules` array in the RequireJS build configuration. Each array item typically contains the following properties:
     
     ```javascript
     modules: [
@@ -2236,28 +2385,40 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ]
     ```
 
-    The `moduleName` is a RequireJS module ID for a module to build. When a module is built, its file is minified and ammended
-    along with all of its dependencies so that the entire module can be loaded from that single file.
+    * **name**: _The RequireJS module ID to be built. This module will have all its dependencies traced and included along with it in the built file, all minified nicely into the single file._
+    * **create**: _When the file corresponding to the module ID doesn't already exist, this specifies that it should be created._
+    * **include**: _An array of module IDs to add into this built file (in addition to any traced from the `name` module ID), also to have their dependencies traced and included._
+    * **exclude**: _An array of module IDs to exclude from this build file, including all their dependencies._
 
-    To create a custom build module the `create: true` parameter can be set, which allows the ability to specific exactly
-    which modules to build.
+    Exclude items can also be other layers in the modules list that have been created. In this way, we can have a core module containing the scripts used by most pages of the application, and then page-specific modules which contain just the extra scripts needed for pages.
 
-    `include` and `exlude` then provide arrays of moduleIds to include and exclude from the built module. Both of these are done
-    recursively - each include module is included along with all its dependencies, and exclude modules excluded along with all 
-    their dependencies.
+    The easiest build that's suitable for most small applications is simply to build everything into a single script file.
 
-    Exclude items can also be other layers in the modules list. In this way, we can have a core module containing the
-    scripts used by most pages of the application, and then page-specific modules which contain just the extra scripts
-    needed for pages.
+    For multi-page applications that share varying code between pages and applications that may load modular functionality after the page load, different layers can be used to tier the loading process.
+        """
+      ,
+        sectionName: 'Single File Build - Zest Client'
+        markdown: """
 
-    Let's create the build for our dialog:
+    > If using Zest Server, [skip to the Zest Server Single File Build](#Single%20File%20Build%20-%20-Zest%20Server).
+
+    In the Zest Client template, 
+
+        """
+      ,
+        sectionName: 'Single File Build - Zest Server'
+        markdown: """
+
+
+
+    To create a build of the dialog component, we want to include the dialog and all its dependencies (which will include the button, CSS, jQuery and the Zest Client library)
 
     in `require.build` configuration for the server, or `build.js` for the client example:
     ```javascript
     {
       modules: [
         {
-          name: 'dialog'
+          name: 'cs!app/dialog'
         }
       ]
     }
@@ -2265,6 +2426,36 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     include the exclude of coffee script etc. and then include an example test page (the site will be!)
 
+    #### Core Zest Layer
+
+    If using Zest Server, the core layer is already created automatically, containing the build of the Zest files.
+
+    This layer is called `zest/build-layer`.
+
+    We can add to this layer using the specical configuration items:
+
+    ```javascript
+    {
+      zestLayerInclude: [moduleIds]
+      zestLayerExclude: [moduleIds]
+      zestLayerExcludeShallow: [moduleIds]
+    }
+    ```
+
+    #### Exclude Layer Helper
+
+    Another layer is also generated, called `zest/excludes`. This is an exclusion-only layer which should be applied to
+    all layers you create in order to 
+
+
+
+    In this way we can ammend the core build to ensure that our entire site is loaded from a single file, while having
+    the standard build configurations automatically populated.
+
+    Typically one only needs to add the following in the server configuration for it all to just work:
+    ```javascript
+      zestLayerInclude: ['$attach!my/page/component']
+    ```
         """
       ,
         sectionName: 'Render Component Controller-Only Attachment Builds'
@@ -2304,42 +2495,6 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     When there isn't a separate controller Id as above, the attachment build will be the same as the full build anyway,
     although component dependencies will also be included with their attachment builds.
-
-        """
-      ,
-        sectionName: 'Zest Server Layering'
-        markdown: """
-
-    #### Core Zest Layer
-
-    If using Zest Server, the core layer is already created automatically, containing the build of the Zest files.
-
-    This layer is called `zest/build-layer`.
-
-    We can add to this layer using the specical configuration items:
-
-    ```javascript
-    {
-      zestLayerInclude: [moduleIds]
-      zestLayerExclude: [moduleIds]
-      zestLayerExcludeShallow: [moduleIds]
-    }
-    ```
-
-    #### Exclude Layer Helper
-
-    Another layer is also generated, called `zest/excludes`. This is an exclusion-only layer which should be applied to
-    all layers you create in order to 
-
-
-
-    In this way we can ammend the core build to ensure that our entire site is loaded from a single file, while having
-    the standard build configurations automatically populated.
-
-    Typically one only needs to add the following in the server configuration for it all to just work:
-    ```javascript
-      zestLayerInclude: ['$attach!my/page/component']
-    ```
 
         """
       ,

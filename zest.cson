@@ -1,4 +1,4 @@
-modules: ['cs!$zest-server/core-module', 'cs!$/zestjs.org', 'cs!$/samples']
+modules: ['cs!$/zestjs.org', 'cs!$/samples']
 
 port: 8082
 
@@ -12,6 +12,22 @@ environments:
     renderDelay: 200
 ###
 
+
+404: 
+  title: 'Page Not Found'
+  body: (o) ->
+    render: '@cs!site/doc-page/doc-page'
+    options:
+      section: ''
+      data: [
+        chapterName: 'Not Found'
+        sections: [
+          sectionName: 'There isn\'t a page called ' + o._url
+          markdown: """
+            [Return to the Homepage](/)
+          """
+        ]
+      ]
 
 require:
   paths:
