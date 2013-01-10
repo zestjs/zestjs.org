@@ -449,7 +449,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     #### Next Steps
 
-    Will will come back to this button example shortly to demonstrate [@controller registration](#controller). But first we will cover creating hierarchies of components using **Regions**.
+    We will come back to this button example shortly to demonstrate [@controller registration](#controller). But first we will cover creating hierarchies of components using **Regions**.
 
         """
       ,
@@ -537,7 +537,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     The render structures are:
 
     * **Module ID, String**: _A string prefixed with `@` indicating a RequireJS Module ID to load the render structure from._
-    * **HTML, String**: _A string of HTML to render, supporting regions with the syntax <code>&#96;{RegionName}&#96;</code> from the render options._
+    * **HTML, String**: _A string of HTML to render, supporting regions with the syntax <code>{&#96;RegionName&#96;}</code> from the render options._
     * **Render Component, Object**: _An object with a `render` property. It can have default options (`options`), a type name (`type`), an attachment function (`attach`), attachment options generation (`pipe`) as well as public and private region support._
     * **Render Function, Function**: _A function that returns another render structure, with one argument containing the render options. The returned structure is rendered with an empty options object._
     * **Render Array, Array**: _An array of render structures to render one after another. Useful for regions with multiple items. Each render structure is rendered with a clone of the options provided to the array render._
@@ -842,7 +842,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
                 text: o.confirmText,
               }
             };
-          }
+          },
           attach: function(el, o) {
             var MyButton = $z.select('> .button MyButton', el);
             MyButton.click.on(function() {
@@ -1114,7 +1114,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           MyButton.click.on -> $z.dispose el
     ```
     
-    Notice the use of the second escaping argument, `@options.width`. This is the equivalent of writing `this.options.width` in JavaScript. We are
+    Notice the use of the third escaping argument, `@options.width`. This is the equivalent of writing `this.options.width` in JavaScript. We are
     passing the default options width from the component into the escaping function, so that if the value is not a number, the default
     can still be used.
     
@@ -1350,8 +1350,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
             dispose: function() {
               this.$button.unbind();
             }
-          });
+          }
         });
+      });
     ```
 
     ```jslive
