@@ -365,8 +365,8 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     To do this, we would write the button attachment module in `button-controller.js` as:
     ```javascript
       define([], function() {
-        return function(els, o) {
-          els[0].addEventListener('click', function() {
+        return function(el, o) {
+          el.addEventListener('click', function() {
             alert('click');
           });
         }
@@ -410,7 +410,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           type: 'MyButton',
           options: {
             text: 'Button',
-            message: 'Message'
+            msg: 'Message'
           },
           render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
@@ -422,7 +422,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           },
           attach: function(els, o) {
             els[0].addEventListener('click', function() {
-              alert(o.message);
+              alert(o.msg);
             });
           }
         };
@@ -455,7 +455,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       ,
         sectionName: 'Regions'
         markdown: """
-    Any template can define a named region using the syntax <code>&#96;{RegionName}&#96;</code>. 
+    Any template can define a named region using the syntax <code>{&#96;RegionName&#96;}</code>. 
 
     For example, we can create a dialog render component, permitting any content:
 
@@ -972,14 +972,14 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     In the asynchronous case, the load function must call the `done` function otherwise rendering will pause indefinitely.
     
-    > To install [rest](https://github.com/guybedford/rest) with Volo, use `volo add guybedford/rest`.
+    > To install [http-amd](https://github.com/guybedford/http-amd) with Volo, use `volo add guybedford/http-amd`.
 
-    The asynchronous load is very useful when combined with the an HTTP module like [rest](https://github.com/guybedford/rest). This provides an HTTP implementation which works with the same API on both the browser and the server.
+    The asynchronous load is very useful when combined with the an HTTP module like [http-amd](https://github.com/guybedford/http-amd). This provides an HTTP implementation which works with the same API on both the browser and the server.
     
     As a very rough example, consider a component which uses a local server service to load data:
     
     ```javascript
-      define(['rest/json'], function(json) {
+      define(['http-amd/json'], function(json) {
         return {
           options: {
             dataUrl: '/products'
@@ -989,7 +989,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
               o.productList = data.products;
               done();
             }, function(err) {
-              o.error = 'Error loading products!'
+              o.error = 'Error loading products!';
               done();
             });
           },
