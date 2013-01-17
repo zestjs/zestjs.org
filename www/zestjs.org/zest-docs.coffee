@@ -1694,9 +1694,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     Zest Server can also be used for rendering within an existing NodeJS application. A sample NodeJS application is included in the basic server template as `~node-server.js`. 
 
-    Within NodeJS, Zest Server can used as a request handler to provide the full routing and rendering service, or simply as a rendering function without using routing or modules.
+    Within NodeJS, Zest Server can be used as a request handler to provide the full routing and rendering service, or simply as a rendering function without using routing or modules.
 
-    Zest Server NodeJS API Reference
+    Zest Server NodeJS API Reference <- Link or heading maybe?
 
     ### Using Zest Server in other Applications
 
@@ -1769,7 +1769,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     The `modules` array is an array of RequireJS Module IDs to load for the server. The `$` path is a Zest Server path referencing the root application folder. So the module file is loaded from '/app.js' in the server root outside the public folder.
 
-    The `require` object allows RequireJS configuration to specified just as in the [RequireJS API Documentation](http://requirejs.org/docs/api.html). In this case, we specify that the `app` folder should reference `www/app`.
+    The `require` object allows RequireJS configuration to be specified just as in the [RequireJS API Documentation](http://requirejs.org/docs/api.html). In this case, we specify that the `app` folder should reference `www/app`.
         """
       ,
         sectionName: 'Routing'
@@ -1835,7 +1835,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     Page components are rendered with options, just like any other render. The options used are created from the route itself. Since the region of a render component is rendered with the same options as the render component, the `body` render structure is passed these page options when rendering.
     
-    URL patterns allow us to automatically map parts of the URL to these route render options that we provide. In the above example, whenever the URL has three arguments, with the first set to `dialog2`, the route is triggered with the initial options are set as:
+    URL patterns allow us to automatically map parts of the URL to these route render options that we provide. In the above example, whenever the URL has three arguments, with the first set to `dialog2`, the route is triggered with the initial options set as:
     
     ```javascript
     {
@@ -2425,7 +2425,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     }
     ```
 
-    include the exclude of coffee script etc. and then include an example test page (the site will be!)
+    include the exclude of coffee script etc. and then include an example test page (the site will be!) <- Yoda like, this line's a little confusing :)
 
     #### Core Zest Layer
 
@@ -2446,7 +2446,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     #### Exclude Layer Helper
 
     Another layer is also generated, called `zest/excludes`. This is an exclusion-only layer which should be applied to
-    all layers you create in order to 
+    all layers you create in order to ... <- maybe ends prematurely
 
 
 
@@ -2463,7 +2463,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         markdown: """
 
     When running a build of a Render Component, the build will typically contain the template (compiled if using a template
-    loader plugin), CSS or compiled LESS, the compiled CoffeeScript it was written in CoffeeScript, as well as any dependencies.
+    loader plugin), CSS or compiled LESS, (the compiled CoffeeScript it was written in CoffeeScript <- maybe remove last CoffeeScript mention), as well as any dependencies.
 
     This is all assuming that we want the **entire** Render Component. That is, the ability to render that Render Component
     on the client.
@@ -2484,7 +2484,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     This doesn't conflict with a full build of the component, so that if another module needs the full component there will
     be no build conflict or duplication.
 
-    Note that the attachment can only separate the render code from the controller code, when the components have been
+    Note that the attachment can only separate the render code from the controller code, when the components have been written
     with separate `attach` modules of the form:
 
     ```javascript
