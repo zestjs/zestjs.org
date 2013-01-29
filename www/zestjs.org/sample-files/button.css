@@ -1,4 +1,4 @@
-button[component="MyButton"] {
+.MyButton {
   font-size: 12px;
   font-family: verdana;
   color: #fff;
@@ -27,7 +27,7 @@ button[component="MyButton"] {
   background-image: linear-gradient(to bottom, #EDAE3D, #f0b95b);
 }
 
-button[component="MyButton"]:hover {
+.MyButton:hover {
   /* -webkit-box-shadow: 2px 2px 5px 0px #969696;
   box-shadow: 2px 2px 5px 0px #969696; */
   
@@ -39,7 +39,7 @@ button[component="MyButton"]:hover {
   background-image: linear-gradient(to bottom, #f0b95b, #edb03d);
 }
 
-button[component="MyButton"]:active {
+.MyButton:active {
   top: 1px;
   left: 1px;
   

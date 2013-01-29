@@ -7,7 +7,6 @@ define [], () ->
     
     # routes
     '/why-zest':    'cs!site/why-zest'
-    '/docs/zoe':    'cs!site/zoe'
     '/docs':        'cs!site/zest-docs'
     '/start':       'cs!site/start'
     '/components':  'cs!site/components'

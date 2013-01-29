@@ -1,6 +1,6 @@
 define(['css!./dialog'], function() {
   return {
-    type: 'SimpleDialog',
+    'class': 'SimpleDialog',
     render: function(o) {
       return "<div>{`content`}</div>"
     }

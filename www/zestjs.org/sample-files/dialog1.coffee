@@ -1,5 +1,5 @@
 define ['cs!app/button', 'css!./dialog'], (Button) ->
-  type: 'SimpleDialog'
+  'class': 'SimpleDialog'
   render: """
     <div>
       {`content`}
@@ -13,6 +13,6 @@ define ['cs!app/button', 'css!./dialog'], (Button) ->
       text: o.confirmText
 
   attach: (el, o) ->
-    MyButton = $z.select '>.button MyButton', el
+    MyButton = $z.select '>.button .MyButton', el
     MyButton.click.on -> 
       $z.dispose el

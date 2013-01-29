@@ -1,5 +1,5 @@
 define ['zest', 'cs!app/button', 'css!./dialog'], ($z, Button) ->
-  type: 'SimpleDialog'
+  'class': 'SimpleDialog'
   options:
     width: 400
     height: 300
@@ -19,5 +19,5 @@ define ['zest', 'cs!app/button', 'css!./dialog'], ($z, Button) ->
       text: o.confirmText
 
   attach: (el, o) ->
-    MyButton = $z.select '>.button MyButton', el
+    MyButton = $z.select '>.button .MyButton', el
     MyButton.click.on -> $z.dispose el

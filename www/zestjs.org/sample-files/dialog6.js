@@ -1,6 +1,6 @@
 define(['zest', 'app/button9', 'css!./dialog'], function($z, Button) {
   return $z.create([$z.Component], {
-    type: 'SimpleDialog',
+    'class': 'SimpleDialog',
     options: {
       closeButton: false
     },

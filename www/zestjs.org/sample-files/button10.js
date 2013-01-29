@@ -14,7 +14,7 @@ define(['zest', 'jquery', 'css!./button'], function($z, $) {
   ButtonComponent.attach = function(el, o) {
     return new this(el, o);
   }
-  ButtonComponent.type = 'MyButton';
+  ButtonComponent['class'] = 'MyButton';
   ButtonComponent.options = {
     text: 'Button'
   };

@@ -1,6 +1,6 @@
 define(['zest', 'jquery', 'css!./button'], function($z, $) {
   return {
-    type: 'MyButton',
+    'class': 'MyButton',
     options: {
       text: 'Button'
     },

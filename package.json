@@ -11,7 +11,7 @@
   },
   "volo": {
     "dependencies": {
-      "require": "github:jrburke/requirejs/2.1.1",
+      "require": "github:jrburke/requirejs/2.1.4",
       "zest": "github:zestjs/zest/master",
       "require-less": "github:guybedford/require-less/master",
       "cs": "guybedford/require-coffee",

@@ -38,19 +38,11 @@ require:
   map:
     '*':
       selector: 'jquery'
-      
-      
+
   build:
-    stubModules: ['cs']
     zestLayer:
       include: [
-        
-        # Includes the 'attachment' of cs!site/doc-page/doc-page.
-        # ie All assets needed just for the attachment of this component and
-        # its dependencies instead of rendering, ignoring the module itself.
-        
-        '$attach!cs!site/doc-page/doc-page'
-        
+        '^!cs!site/doc-page/doc-page'
         'app/button1'
         'app/button2'
         'app/button3'
@@ -60,23 +52,23 @@ require:
         'app/button7'
         'app/button8'
         'app/button9'
+        'app/button10'
+        'app/button11'
+        'app/button12'
+        'app/button-clickable'
+        'app/button-unclickable'
+
         'app/dialog1'
         'app/dialog2'
         'app/dialog3'
         'app/dialog4'
         'app/dialog5'
         'app/dialog6'
-        'cs!app/dialog'
+        'app/dialog7'
       ]
-      exclude: ['jquery']
-    
-    # this technique can be used to separate build layers instead of having one:
-    ###
-      modules: [
-        name: 'site/build'
-        create: true
-        include: ['$attach!cs!site/doc-page/doc-page']
-        exclude: ['zest/excludes']
-      ]
-      # nb need to add layers: ['site/build'] to page as well
-    ###
+
+
+        ###
+          'app/button-clickable'
+          'app/button-unclickable'
+        ###

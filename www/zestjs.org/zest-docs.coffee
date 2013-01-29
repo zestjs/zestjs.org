@@ -192,7 +192,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```javascript
       define(['css!./button'], function() {
         return {
-          type: 'MyButton',
+          'class': 'MyButton',
           render: function(o) {
             return '&lt;button>' + o.text + '&lt;/button>';
           }
@@ -204,30 +204,11 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     `button.css` from the same folder as `button.js`.
     
     We need a unique class on the component to ensure our CSS is properly scoped. We can either add a class name into the template HTML,
-    or we can give the component a **Component Type** name, which is specified with the `type` property above. The `type` property must always start with a capital letter.
-    
-    > If you'd rather write valid XHTML, you can configure
-      Zest to use the attribute `data-component` instead. To enable this, add the configuration option `typeAttribute: 'data-component'`
-      to the Zest Server configuration file, or under the `zest/zest-render` [RequireJS configuration](http://requirejs.org/docs/api.html#config-moduleconfig) in the browser template.
-    
-    When rendering, the `type` name is automatically added as the `component` attibute on the element, so the HTML will render as the element:
-    
-    ```
-      <button component='MyButton'>
-    ```
-    
-    The `component` attribute makes it easier to see Render Components when inspecting the DOM.
-
-    Many components with the same `type` name can be rendered on the same page, allowing CSS inheritance. It is worth ensuring this name is chosen carefully not to be shared unintentionally though.
-
-    We can then use the attribute selector in our CSS as the main scope. Attribute-equals selectors are supported in IE7+ and on mobile devices.
-    If you need IE6 support, rather add a class to the template HTML and style the class instead.
-
-    > Styling by class or component type is highly recommended. If you know for certain the component will only be rendered once in the page, and really want to use an ID, this will work fine.
+    or we can specify a class string or array on the component to be added to the HTML automatically.
 
     We create `button.css` in the same folder:
     ```css
-      button[component="MyButton"] {
+      .MyButton {
         font-size: 12px;
         font-family: verdana;
         color: #fff;
@@ -243,8 +224,8 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         text: 'Click Me!'
       }, document.querySelector('.container-6'));
     ```          
-    <div class='container-6' style='margin: 20px;'></div>
-          
+    <div class='container-6' style='margin: 20px;'></div>      
+
     **By having a separate CSS file for each component we are forced to write properly modular CSS, making maintenance and portability much easier.**
   
     Again, since this component is built into the script file loaded with this page, the CSS is already present in the browser before we even render the component.
@@ -265,7 +246,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```javascript
       define(['zest', 'css!./button'], function($z) {
         return {
-          type: 'MyButton',
+          'class': 'MyButton',
           options: {
             text: 'Button'
           },
@@ -327,7 +308,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```javascript
       define(['zest', 'css!./button'], function($z) {
         return {
-          type: 'MyButton',
+          'class': 'MyButton',
           options: {
             text: 'Button'
           },
@@ -377,7 +358,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```javascript
       define(['zest', 'css!./button'], function($z) {
         return {
-          type: 'MyButton',
+          'class': 'MyButton',
           options: {
             text: 'Button'
           },
@@ -407,7 +388,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```javascript
       define(['zest', 'css!./button'], function($z) {
         return {
-          type: 'MyButton',
+          'class': 'MyButton',
           options: {
             text: 'Button',
             message: 'Message'
@@ -463,7 +444,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```javascript
       define(['css!./dialog'], function() {
         return {
-          type: 'SimpleDialog',
+          'class': 'SimpleDialog',
           render: "&lt;div>{&#96;content&#96;}&lt;/div>"
         };
       });
@@ -471,7 +452,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     dialog.css:
     ```css
-      div[component="SimpleDialog"] {
+      .SimpleDialog {
         background-color: #fff;
         padding: 20px;
         margin: 50px;
@@ -502,15 +483,14 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     dialog2.js:
     ```javascript
-      define(['com!./button6', 'css!./dialog'], function(Button) {
+      define(['./button6', 'css!./dialog'], function(Button) {
         return {
-          type: 'SimpleDialog',
+          'class': 'SimpleDialog',
           render: "&lt;div>{&#96;content&#96;}&lt;div class='button'>{&#96;button&#96;}&lt;/div>&lt;/div>",
           button: Button
         };
       });
     ```
-    To load the button component, we use the `com!` plugin loader. This provides flexible build support for the dialog so that it can have just its attachment scripts built, or all its render scripts built as well. Effectively the `com!` plugin creates a form of component branching indicator in the code.
 
     In this case, the button is assumed to be in the same folder as the dialog for portability.
     
@@ -556,9 +536,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     dialog3.js:
     ```javascript
-      define(['com!./button6', 'css!./dialog'], function(Button) {
+      define(['./button6', 'css!./dialog'], function(Button) {
         return {
-          type: 'SimpleDialog',
+          'class': 'SimpleDialog',
           render: "&lt;div>{&#96;content&#96;}&lt;div class='button'>{&#96;button&#96;}&lt;/div>&lt;/div>",
           button: function(o) {
             return {
@@ -630,7 +610,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```javascript
       define(['zest', 'css!./button'], function($z) {
         return {
-          type: 'MyButton',
+          'class': 'MyButton',
           options: {
             text: 'Button'
           },
@@ -682,7 +662,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       myClickEvent();
     ```
 
-    Read more about this at the [ZOE documentation page](/docs/zoe).
+    Read more about this at the [zoe.js website](http://zoejs.org).
 
         """
       ,
@@ -720,16 +700,16 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```javascript
       // returns array of all 'MyButton' components
       // query selector: '*[component="MyButton"]'
-      $z('MyButton');
+      $z('.MyButton');
       
       // returns array of all 'MyButton' components inside any 'SimpleDialog' component
       // query selector: '*[component="SimpleDialog"] *[component="MyButton"]'
-      $z('SimpleDialog MyButton');
+      $z('.SimpleDialog .MyButton');
       
       // returns array of all 'MyButton' components inside the container 'myDiv'
       // that are the direct child of a form element
       // query selector: 'form > *[component="MyButton"]'
-      $z('form > MyButton', myDiv); 
+      $z('form > .MyButton', myDiv); 
     ```
 
     The component in the selector must always be referred to with its capitalized type name. The distinction is made that HTML tags are lowercase, while components start with an uppercase. The final item in the selector will be restricted to a component only. All other standard CSS selector syntax can be used.
@@ -831,7 +811,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     dialog4.js:
     ```javascript
-      define(['com!./button8', 'css!./dialog'], function(Button) {
+      define(['./button8', 'css!./dialog'], function(Button) {
         return {
           type: 'SimpleDialog',
           render: "&lt;div>{&#96;content&#96;}&lt;div class='button'>{&#96;button&#96;}&lt;/div>&lt;/div>",
@@ -1042,7 +1022,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     dialog1.coffee:
     ```coffeescript
-      define ['com!cs!./button', 'css!./dialog'], (Button) ->
+      define ['cs!./button', 'css!./dialog'], (Button) ->
         type: 'SimpleDialog'
         render: &quot;&quot;&quot;
           &lt;div>
@@ -1089,7 +1069,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     dialog2.coffee:
     ```coffeescript
-      define ['zest', 'com!cs!./button', 'css!./dialog'], ($z, Button) ->
+      define ['zest', 'cs!./button', 'css!./dialog'], ($z, Button) ->
         type: 'SimpleDialog'
         options:
           width: 400
@@ -1201,9 +1181,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         sectionName: 'Zest Object Extension'
         markdown: """
 
-    Zest Object Extension ([`zoe.js`](/docs/zoe)) is provided as a separate library and can be used optionally. By default it is included in the `zest/zest` module bundle, and the `zoe` methods are copied over onto the `$z` object for convenience.
+    Zest Object Extension ([`zoe.js`](http://zoejs.org)) is provided as a separate library and can be used optionally. By default it is included in the `zest/zest` module bundle, and the `zoe` methods are copied over onto the `$z` object for convenience.
 
-    ZOE provides a natural JavaScript inheritance framework that was designed for dynamic controller interactions from the start.
+    zoe.js provides a natural JavaScript inheritance framework that was designed for dynamic controller interactions from the start.
 
     The idea is that render component controllers should use extensible prototype inheritance.
 
@@ -1216,7 +1196,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       different extension for different properties._
     * [**zoe.create**](/docs/zoe#zoe.create): _The inheritance model. Creates a class instance from a definition, using the object extension system with some hooks._
 
-    For component controllers, the ZOE inheritor [`$z.Component`](#$z.Component) is provided to easily create dynamic render components.
+    For component controllers, the zoe.js inheritor [`$z.Component`](#$z.Component) is provided to easily create dynamic render components.
 
     If you prefer not to use this object model, this section still includes some useful patterns for object extension regardless of the underlying model.
 
@@ -1322,7 +1302,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         sectionName: 'Object Constructor Sugar'
         markdown: """
 
-    There are many different libraries providing class sugar in JavaScript. ZOE comes with one model based on object extension. We demonstrate it here, but you can use your own as well.
+    There are many different libraries providing class sugar in JavaScript. zoe.js comes with one model based on object extension. We demonstrate it here, but you can use your own as well.
 
     To use the object constructor, we extend from the base `zoe.Constructor` class, using the extension function `zoe.create`. This allows us to explicitly write our `constructor` and `prototype` properties in the object definition to get our sugar-coated class.
 
@@ -1471,7 +1451,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     button-unclickable.js:
     ```javascript
-      define(['zest', 'com!./button11'], function($z, Button) {
+      define(['zest', './button11'], function($z, Button) {
         return $z.create([Button], {
           construct: function(el, o) {
             this._visible = true;
@@ -1532,7 +1512,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     button-clickable.js:
     ```javascript
-      define(['zest', 'com!./button-unclickable'], function($z, Button) {
+      define(['zest', './button-unclickable'], function($z, Button) {
         return $z.create([Button], {
           prototype: {
             __hide__: function() {

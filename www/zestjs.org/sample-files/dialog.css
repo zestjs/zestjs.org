@@ -1,4 +1,4 @@
-div[component="SimpleDialog"] {  
+.SimpleDialog {  
   font-family: georgia;
   font-size: 13px;
   font-style: italic;
@@ -12,11 +12,11 @@ div[component="SimpleDialog"] {
   position: relative;
   padding-bottom: 50px;
 }
-div[component="SimpleDialog"] p {
+.SimpleDialog p {
   margin: 20px;
 }
 
-div[component="SimpleDialog"] .button {
+.SimpleDialog .button {
   position: absolute;
   bottom: 10px;
   right: 10px;

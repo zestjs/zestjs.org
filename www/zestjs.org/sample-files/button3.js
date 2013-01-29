@@ -1,6 +1,6 @@
 define(['css!./button'], function() {
   return {
-    type: 'MyButton',
+    'class': 'MyButton',
     render: function(o) {
       return '<button>' + o.text + '</button>';
     }
