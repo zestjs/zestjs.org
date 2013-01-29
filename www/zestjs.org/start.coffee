@@ -9,7 +9,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         sectionName: 'Getting Started'
         markdown: """
 
-          There are two template applications provided to quickly get start with Zest.
+          There are two template applications provided to quickly get started with Zest.
 
           The [Zest Client Quick Start](#Install%20Zest%20Client) template demonstrates browser rendering and builds.
 
@@ -38,7 +38,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         markdown: """
           The best way to start an application is by installing one of the application templates with Volo.
 
-          > [Volo](http://volojs.org) is package manager that allows for creating project templates and installing project dependencies such as jQuery (`volo add jquery`).
+          > [Volo](http://volojs.org) is a package manager that allows for creating project templates and installing project dependencies such as jQuery (`volo add jquery`).
             It's a convenient way to get started with Zest and manage project dependencies. There are many package managers which would also work just as well.
 
           1. * Either use Volo to install the client template, by ensuring you have [NodeJS installed](http://nodejs.org), then installing Volo

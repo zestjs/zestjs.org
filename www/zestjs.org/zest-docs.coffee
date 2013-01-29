@@ -346,8 +346,8 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     To do this, we would write the button attachment module in `button-controller.js` as:
     ```javascript
       define([], function() {
-        return function(els, o) {
-          els[0].addEventListener('click', function() {
+        return function(el, o) {
+          el.addEventListener('click', function() {
             alert('click');
           });
         }
@@ -391,7 +391,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           'class': 'MyButton',
           options: {
             text: 'Button',
-            message: 'Message'
+            msg: 'Message'
           },
           render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
@@ -403,7 +403,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           },
           attach: function(els, o) {
             els[0].addEventListener('click', function() {
-              alert(o.message);
+              alert(o.msg);
             });
           }
         };
@@ -430,13 +430,13 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     #### Next Steps
 
-    Will will come back to this button example shortly to demonstrate [@controller registration](#controller). But first we will cover creating hierarchies of components using **Regions**.
+    We will come back to this button example shortly to demonstrate [@controller registration](#controller). But first we will cover creating hierarchies of components using **Regions**.
 
         """
       ,
         sectionName: 'Regions'
         markdown: """
-    Any template can define a named region using the syntax <code>&#96;{RegionName}&#96;</code>. 
+    Any template can define a named region using the syntax <code>{&#96;RegionName&#96;}</code>. 
 
     For example, we can create a dialog render component, permitting any content:
 
@@ -517,7 +517,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     The render structures are:
 
     * **Module ID, String**: _A string prefixed with `@` indicating a RequireJS Module ID to load the render structure from._
-    * **HTML, String**: _A string of HTML to render, supporting regions with the syntax <code>&#96;{RegionName}&#96;</code> from the render options._
+    * **HTML, String**: _A string of HTML to render, supporting regions with the syntax <code>{&#96;RegionName&#96;}</code> from the render options._
     * **Render Component, Object**: _An object with a `render` property. It can have default options (`options`), a type name (`type`), an attachment function (`attach`), attachment options generation (`pipe`) as well as public and private region support._
     * **Render Function, Function**: _A function that returns another render structure, with one argument containing the render options. The returned structure is rendered with an empty options object._
     * **Render Array, Array**: _An array of render structures to render one after another. Useful for regions with multiple items. Each render structure is rendered with a clone of the options provided to the array render._
@@ -822,7 +822,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
                 text: o.confirmText,
               }
             };
-          }
+          },
           attach: function(el, o) {
             var MyButton = $z.select('> .button MyButton', el);
             MyButton.click.on(function() {
@@ -952,14 +952,14 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     In the asynchronous case, the load function must call the `done` function otherwise rendering will pause indefinitely.
     
-    > To install [rest](https://github.com/guybedford/rest) with Volo, use `volo add guybedford/rest`.
+    > To install [http-amd](https://github.com/guybedford/http-amd) with Volo, use `volo add guybedford/http-amd`.
 
-    The asynchronous load is very useful when combined with the an HTTP module like [rest](https://github.com/guybedford/rest). This provides an HTTP implementation which works with the same API on both the browser and the server.
+    The asynchronous load is very useful when combined with the an HTTP module like [http-amd](https://github.com/guybedford/http-amd). This provides an HTTP implementation which works with the same API on both the browser and the server.
     
     As a very rough example, consider a component which uses a local server service to load data:
     
     ```javascript
-      define(['rest/json'], function(json) {
+      define(['http-amd/json'], function(json) {
         return {
           options: {
             dataUrl: '/products'
@@ -969,7 +969,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
               o.productList = data.products;
               done();
             }, function(err) {
-              o.error = 'Error loading products!'
+              o.error = 'Error loading products!';
               done();
             });
           },
@@ -1094,7 +1094,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           MyButton.click.on -> $z.dispose el
     ```
     
-    Notice the use of the second escaping argument, `@options.width`. This is the equivalent of writing `this.options.width` in JavaScript. We are
+    Notice the use of the third escaping argument, `@options.width`. This is the equivalent of writing `this.options.width` in JavaScript. We are
     passing the default options width from the component into the escaping function, so that if the value is not a number, the default
     can still be used.
     
@@ -1330,8 +1330,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
             dispose: function() {
               this.$button.unbind();
             }
-          });
+          }
         });
+      });
     ```
 
     ```jslive
