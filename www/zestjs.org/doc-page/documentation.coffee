@@ -44,3 +44,4 @@ define ['marked', 'is!browser?jquery', 'zoe', 'less!./documentation'], (marked, 
     __
   
   attach: 'cs!./documentation.controller'
+  attachAsync: true

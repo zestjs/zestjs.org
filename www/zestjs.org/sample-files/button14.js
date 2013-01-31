@@ -1,5 +1,5 @@
 define(['zest', 'css!./button'], function($z) {
-  return {
+  return $z.create([$z.Component], {
     className: 'MyButton',
     options: {
       text: 'Button'
@@ -7,6 +7,6 @@ define(['zest', 'css!./button'], function($z) {
     render: function(o) {
       return '<button>' + $z.esc(o.text, 'htmlText') + '</button>';
     },
-    attach: './button8-controller'
-  };
+    attach: './button14-controller'
+  });
 });

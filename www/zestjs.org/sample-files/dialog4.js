@@ -1,6 +1,6 @@
 define(['app/button8', 'css!./dialog'], function(Button) {
   return {
-    'class': 'SimpleDialog',
+    className: 'SimpleDialog',
     render: "<div>{`content`}<div class='button'>{`button`}</div></div>",
     button: function(o) {
       return {
@@ -10,11 +10,6 @@ define(['app/button8', 'css!./dialog'], function(Button) {
         }
       };
     },
-    attach: function(el, o) {
-      var Button = $z.select('>.button .MyButton', el);
-      Button.click.on(function() {
-        $z.dispose(el);
-      });
-    }
+    attach: './dialog4-attach'
   };
 });

@@ -1,5 +1,5 @@
-define ['cs!app/button', 'css!./dialog'], (Button) ->
-  'class': 'SimpleDialog'
+define ['cs!./button', 'css!./dialog'], (Button) ->
+  className: 'SimpleDialog'
   render: """
     <div>
       {`content`}
@@ -12,7 +12,4 @@ define ['cs!app/button', 'css!./dialog'], (Button) ->
     options:
       text: o.confirmText
 
-  attach: (el, o) ->
-    MyButton = $z.select '>.button .MyButton', el
-    MyButton.click.on -> 
-      $z.dispose el
+  attach: 'cs!./dialog1-controller'

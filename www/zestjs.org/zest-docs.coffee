@@ -154,7 +154,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     #### CoffeeScript for Templating
     
     CoffeeScript is easily supported by RequireJS and allows multi-line strings and interpolation.
-    This allows for writing template in-line and keeping Render Components nicely readable.
+    This allows an easy way for writing templates in-line while keeping Render Components nicely readable.
     
     #### Template Plugins
     
@@ -192,7 +192,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```javascript
       define(['css!./button'], function() {
         return {
-          'class': 'MyButton',
+          className: 'MyButton',
           render: function(o) {
             return '&lt;button>' + o.text + '&lt;/button>';
           }
@@ -203,10 +203,12 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     The use of `./` in the dependency name is the RequireJS syntax for a relative path so our code remains completely portable. It loads
     `button.css` from the same folder as `button.js`.
     
-    We need a unique class on the component to ensure our CSS is properly scoped. We can either add a class name into the template HTML,
-    or we can specify a class string or array on the component to be added to the HTML automatically.
+    The `MyButton` class is added to the `<button>` HTML element for us when we specify the `className` property on the component.
 
-    We create `button.css` in the same folder:
+    * className can be space-separated just like the DOM className property.
+    * The className option allows for adding extra classes during instantiation, without overriding the component `className`.
+
+  We create `button.css` in the same folder:
     ```css
       .MyButton {
         font-size: 12px;
@@ -246,7 +248,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```javascript
       define(['zest', 'css!./button'], function($z) {
         return {
-          'class': 'MyButton',
+          className: 'MyButton',
           options: {
             text: 'Button'
           },
@@ -292,7 +294,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     * **$z.esc(val, 'html', [allowedTagsArray], [allowedAttrArray])**: _Filters HTML to allowed tags and attributes. If not specified,
       allowedTags contains all safe, non-script-injecting tags and similarly for allowedAttr, including HTML5 tags and attributes._
     * **$z.esc(val, 'url')**: _Escapes any `javascript:` urls and performs URI encoding._
-    * **$z.esc(val, 'num', [NaNVal])**: _Parses the value as a number, providing the NaNVal if not a number._
+    * **$z.esc(val, 'num', [NaNVal])**: _Parses the value as a number, providing the NaNVal if not a number (which is 0 by default)._
     * **$z.esc(val, 'cssAttr')**: _Ensures the value is a single CSS attribute, escaping `:`, `{`, `}` and `"`. Single quotes are not escaped,
       so that using this in a single-quoted HTML style attribute will not be safe. It can only be safely used within a double quoted HTML style attribute tag, such as demonstrated in the [dynamic CSS]() section._
 
@@ -301,49 +303,31 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         sectionName: 'Dynamic Attachment'
         markdown: """
 
-    Render components can be both static and dynamic. For any form of interaction, we can provide an `attach` method
-    which creates a dynamic render component.
+    Render components can be both static and dynamic. For dyanmic interaction, we provide an `attach` module for the render component.
+
+    * The attach property is a moduleID to load the attachment from.
+    * The attach module returns a function taking two arguments: `el` and `o`, the DOM element to attach and the options respectively.
+
+    > Note that dynamic render components should always have a single wrapper HTML tag, so that they can be properly
+      attached.
 
     button5.js:
     ```javascript
       define(['zest', 'css!./button'], function($z) {
         return {
-          'class': 'MyButton',
+          className: 'MyButton',
           options: {
             text: 'Button'
           },
           render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
-          attach: function(el, o) {
-            el.addEventListener('click', function() {
-              alert('click');
-            });
-          }
+          attach: './button5-attach'
         };
       });
     ```
 
-    > Note that dynamic render components should always have a single wrapper HTML tag, so that they can be properly
-      attached.
-    
-    ```jslive
-      $z.render('@app/button5', {
-        text: 'Click Me!'
-      }, document.querySelector('.container-9'));
-    ```
-    <div class='container-9' style='margin: 20px'></div>
-    
-    The first argument of the `attach` function, `el`, is the main wrapper DOM element from the template. 
-    Hence `el` is the `<button>` DOM element.
-        """
-      ,
-        sectionName: 'Separate Attachment'
-        markdown: """
-
-    The attach property can also be a Module ID string to reference a separate module to load the attachment function from.  This allows for the attachment code to be built separately to the render code when components are only going to be rendered on the server. Note that the CSS is always a dependency of the render code.
-
-    To do this, we would write the button attachment module in `button-controller.js` as:
+    button5-attach.js:
     ```javascript
       define([], function() {
         return function(el, o) {
@@ -353,42 +337,47 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         }
       });
     ```
-
-    And then update the `attach` property in the button render component to be:
-    ```javascript
-      define(['zest', 'css!./button'], function($z) {
-        return {
-          'class': 'MyButton',
-          options: {
-            text: 'Button'
-          },
-          render: function(o) {
-            return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
-          },
-          attach: './button-controller'
-        };
-      });
+    
+    ```jslive
+      $z.render('@app/button5', {
+        text: 'Click Me!'
+      }, document.querySelector('.container-9'));
     ```
-    to reference the module as a relative module ID.
-    
-    It is advisable to use a separate attach module for server render components (layouts / menus etc), but an inline attach module
-    is nicer to work with during prototyping and can be used for components only ever rendered in the browser such as popups or in single-page applications.
-    
+    <div class='container-9' style='margin: 20px'></div>
+
+    In this case, `el` is the `<button>` element and `o` is the attachment options.
+
+    #### Mixed Render Components
+
+    Typically attachment should always be a separate module for code clarity and also to be most compatible with server rendering.
+
+    For components that will typically only render on the client, or during prototyping, it is possible to include the attachment in the same file using:
+
+    ```javascript
+      attach: function(el, o) {
+        // ... attachment ...
+      }
+    ```
+
+    directly within the render component instead of providing a moduleID string.
+
         """
       ,
         sectionName: 'Piping Attachment Options'
         markdown: """
   
-    The second argument sent to the attach function is the **Attachment Options** object. By default, the attachment options provided to the attachment function is an empty object. We need to manually
-    populate the attachment options from the render options by providing a **Pipe Function**.
+    The second argument sent to the attach function is the **Attachment Options** object. 
 
-    As an example, let's provide an option to customize a message when the button is clicked.
+    * By default, the attachment options provided to the attachment function is an empty object. 
+    * We need to manually populate the attachment options from the render options by providing a **Pipe Function**.
+
+  As an example, let's provide an option to customize a message when the button is clicked.
     
     button6.js:
     ```javascript
       define(['zest', 'css!./button'], function($z) {
         return {
-          'class': 'MyButton',
+          className: 'MyButton',
           options: {
             text: 'Button',
             msg: 'Message'
@@ -401,17 +390,21 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
               msg: o.msg
             };
           },
-          attach: function(els, o) {
-            els[0].addEventListener('click', function() {
-              alert(o.msg);
-            });
-          }
+          attach: './button6-attach'
         };
       });
     ```
-    
-    Pipe is a function, taking the render options object and outputting the options object to use for
-    attachment. These options are then sent to the `attach` function.
+
+    button6-attach.js:
+    ```javascript
+      define([], function() {
+        return function(els, o) {
+          els[0].addEventListener('click', function() {
+            alert(o.msg);
+          });
+        }
+      });
+    ```
     
     ```jslive
       $z.render('@app/button6', {
@@ -426,11 +419,24 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     component that renders images from raw image data, there is no reason to send all this raw JSON image data to the client once its been generated
     into HTML.
 
-    When writing components for client rendering only, setting `pipe: true` will pipe all options by default.
+    ### Pipe Shorthands
+
+    It can be a little laborious typing out the pipe function, so there are a couple of helpers:
+
+    1. When wanting to specify specific properties to pipe directly, pipe can be set to an array of properties to pipe:
+
+      ```javascript
+      {
+        pipe: ['property', 'sub.property', 'items.*.title']
+      }
+      ```
+
+    2. When writing components for client rendering only, setting `pipe: true` will pipe all options by default.
+
 
     #### Next Steps
 
-    We will come back to this button example shortly to demonstrate [@controller registration](#controller). But first we will cover creating hierarchies of components using **Regions**.
+    We will come back to this button example shortly to demonstrate [Controller Attachment](#Attaching%20Controllers). But first we will cover creating hierarchies of components using **Regions**.
 
         """
       ,
@@ -444,7 +450,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```javascript
       define(['css!./dialog'], function() {
         return {
-          'class': 'SimpleDialog',
+          className: 'SimpleDialog',
           render: "&lt;div>{&#96;content&#96;}&lt;/div>"
         };
       });
@@ -485,7 +491,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```javascript
       define(['./button6', 'css!./dialog'], function(Button) {
         return {
-          'class': 'SimpleDialog',
+          className: 'SimpleDialog',
           render: "&lt;div>{&#96;content&#96;}&lt;div class='button'>{&#96;button&#96;}&lt;/div>&lt;/div>",
           button: Button
         };
@@ -507,6 +513,67 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     An entire page can be a render component, allowing it to be modular, rendered on both the client or server and including natural build support.
         
+        """
+      ,
+        sectionName: 'Dynamic Regions'
+        markdown: """
+
+    Often the component options need to be processed before being rendered by the template function. It is best to move any data-processing code
+    into the load function in this case.
+
+    The load function is a hook on any render component, taking the following forms (this is the last hook - there are only 6 in total!):
+
+    ```javascript
+      // 1. synchronous
+      load: function(o) { ... }
+
+      // 2. asynchronous
+      load: function(o, done) { ... done() }
+    ```
+
+    Consider a component which renders a list of buttons:
+
+    button-list.js
+    ```javascript
+      define(['./button6'], function(Button) {
+        return {
+          options: {
+            buttonList: ['default', 'buttons']
+          },
+          load: function(o) {
+            o.listStructure = o.buttonList.map(function(title) {
+              return {
+                render: Button,
+                options: {
+                  text: title,
+                  msg: 'clicked ' + title
+                }
+              };
+            });
+          },
+          render: function(o) {
+            return "&lt;div>{&#96;listStructure&#96;}&lt;/div>"
+          }
+        };
+      });
+    ```
+
+    We map the options data into a render structure (an array of render structures being an allowed render structure itself),
+    which is then stored as a dynamically generated region on the options object, before being rendered.
+    
+    ```jslive
+      $z.render('@app/button-list', {
+        buttonList: ['here', 'are', 'some', 'buttons']
+      }, document.querySelector('.container-13'));
+    ```
+    <div class='container-13' style='margin: 20px'></div>
+
+    Note that when rendering lists where each item has mouse events or attachments, it is often better for performance for the list component 
+    itself to handle the  attachment through a single event handler delegate, than having individual attachments for each sub-component.
+
+    `$z.render` should never be called within the render cycle - regions should always be used for sub-rendering. `$z.render` can be used
+    in component attachment functions as part of client-side dynamic rendering though.
+
         """
       ,
         sectionName: 'Render Structures'
@@ -538,7 +605,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```javascript
       define(['./button6', 'css!./dialog'], function(Button) {
         return {
-          'class': 'SimpleDialog',
+          className: 'SimpleDialog',
           render: "&lt;div>{&#96;content&#96;}&lt;div class='button'>{&#96;button&#96;}&lt;/div>&lt;/div>",
           button: function(o) {
             return {
@@ -561,9 +628,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       $z.render('@app/dialog3', {
         confirmText: 'Ok',
         content: '&lt;p>some content&lt;/p>'
-      }, document.querySelector('.container-13'));
+      }, document.querySelector('.container-14'));
     ```
-    <div class='container-13' style='margin: 20px'></div>
+    <div class='container-14' style='margin: 20px'></div>
 
     This is the standard pattern for populating a region, using a region render function to pass the options down
     to the child render.
@@ -578,9 +645,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         options: {
           text: 'Ok'
         }
-      }, document.querySelector('.container-14'));
+      }, document.querySelector('.container-15'));
     ```
-    <div class='container-14' style='margin: 20px'></div>
+    <div class='container-15' style='margin: 20px'></div>
 
     The above **Instance Render** allows us to specify a structure to render and with what options.
 
@@ -595,53 +662,73 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         sectionName: 'Attaching Controllers'
         markdown: """
 
-    To be able to communicate with the button component we need a controller object that we can talk to.
+    To be able to communicate with the button component we need a controller object for the button.
 
-    The controller forms a public interface, allowing for the button to provide methods, properties and events.
-
-    The controller is just a JavaScript object, and the interface is whatever is put on that object.
+    * The controller forms a public interface, allowing for the button to provide methods, properties and events.
+    * The controller is just a JavaScript object, and the interface is whatever is put on that object.
     
     **The return value of the `attach` function is the controller for that render component.**
     
-    Let's add a controller to our button with a click event hook. The previous popup message and pipe
+    For example, we can add a controller to the button with a click event hook. The previous popup message and pipe
     function have been removed.
 
     button7.js:
     ```javascript
       define(['zest', 'css!./button'], function($z) {
         return {
-          'class': 'MyButton',
+          className: 'MyButton',
           options: {
             text: 'Button'
           },
           render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
-          attach: function(el, o) {
-            var clickEvent = $z.fn();
-            el.addEventListener('click', clickEvent);
-            
-            return {
-              click: clickEvent
-            };
-          }
+          attach: './button7-controller'
         };
       });
     ```
 
-    The button controller returned from the attach function provides a single property, `click`, which can be used to attach click event handlers to the button by simply writing:
-
+    button7-controller.js:
     ```javascript
-      buttonController.click.on(function() {
-        // custom click event handler
+      define(['zest'], function($z) {
+        return function(el, o) {
+          var clickEvent = $z.fn();
+          el.addEventListener('click', clickEvent);
+          
+          return {
+            click: clickEvent
+          };
+        }
       });
     ```
 
-    ### zoe.fn
+    The button controller returned from the attach function provides a single property, `click`, which can be used to attach click event handlers to the button by writing:
 
-    The `$z.fn()` generator is provided by `zoe.js` as `zoe.fn()`. When `zoe.js` is loaded in the site (it is loaded by default but can be removed to save ~6KB), Zest copies all of the `zoe.js` functions for ease of use. These include the object extension functions `zoe.create` and `zoe.extend` used for inheritance, which we will cover later. It's entirely optional to use.
+    ```jslive
+      $z.render('@app/button7', {
+        text: 'controller button'
+      }, document.querySelector('.container-16'), function(ButtonController) {
+        ButtonController.click.on(function() {
+          // custom click event handler
+          alert('button click')
+        });
+      });
+    ```
+    <div class='container-16' style='margin: 20px'></div>
+
+    The render completion callback only provides the controller from the initial renderable passed into `$z.render`. If we had rendered a list
+    of buttons, we wouldn't have had the reference to the individual button controllers.
+
+    In order to get a reference to any controller, we can use **Component Selection**.
+
+
+    ### zoe.fn - Event Chains
+
+    The `$z.fn()` generator is provided by zoe.js as `zoe.fn()`, which comes bundled with Zest (although it can be replaced with an alternative event model if required).
 
     To demonstrate the use of `zoe.fn`:
+
+    > The [full documentation for zoe.fn](http://zoejs.org#zoe.fn) can be found on the zoe.js website.
 
     ```jslive
       // create the function chain
@@ -655,72 +742,53 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         alert('this happens first');
       });
       myClickEvent.on(function() {
-        alert('and another');
+        alert('"this" scope is ' + this);
       });
+
+      // bind the 'this' scope
+      myClickEvent.bind('hello');
 
       // fire the chain
       myClickEvent();
     ```
 
-    Read more about this at the [zoe.js website](http://zoejs.org).
+    It makes for a simple eventing model, where the functon is the event trigger and listeners are added with the `on` method.
 
         """
       ,
         sectionName: 'Component Selection'
         markdown: """
 
-    Zest registers all dynamic components under their unique ID (matching the HTML ID), along with their (non-unique) component type name.
-
-    The standard way of getting access to the component controller is by using the Zest **Component Selector**.
+    Zest registers all dynamic components under their unique ID, which matches the HTML ID.
     
-    The component ID can be selected just like a HTML ID, and the component type name can be selected just like a tag name in HTML.
-      
+    The component selector is identical to a standard DOM selector, except that whenever an element is matched that is a render component
+    with a controller, the controller is returned instead of the DOM element.
+
     The selector functions are:
 
     ```javascript
-      $z.select(selectorString, context);
+      $z.select(selectorString, context, callback);
     ```
     and
     ```javascript
-      $z.selectAll(selectorString, context);
+      $z.selectAll(selectorString, context, callback);
     ```
 
-    As a shortcut to `$z.selectAll`, `$z` is an alias to this selector function just like jQuery.
-    
-    `select` is the analogue of `document.querySelector`, and `selectAll` is the analogue of `document.querySelectorAll`.
+    * **selectorString**: _Identical to a standard query selector._
+    * **context**, (optional): _An optional container DOM element within which to do the selection._
+    * **callback**, (optional): _Optionally when rendering on the server and the component has **progressive
+        enhancement** enabled, this allows a callback to be fired once the attachment has been done. 
+        This is only necessary for components with the `progressive` property set to true, but will work for all component selection.
 
-    The component selector gets converted into a normal DOM selector, with its output returning the component controller instead of its elements.
-
-    The context is an optional container DOM element within which to do the selection.
-    
-    Examples:
-      
-    > Zest will automatically polyfill the browser selection engine by downloading Sizzle from cdn if the browser doesn't support attribute-equals selectors. This is provided by the [selector](https://github.com/guybedford/selector) RequireJS module.
-
-    ```javascript
-      // returns array of all 'MyButton' components
-      // query selector: '*[component="MyButton"]'
-      $z('.MyButton');
-      
-      // returns array of all 'MyButton' components inside any 'SimpleDialog' component
-      // query selector: '*[component="SimpleDialog"] *[component="MyButton"]'
-      $z('.SimpleDialog .MyButton');
-      
-      // returns array of all 'MyButton' components inside the container 'myDiv'
-      // that are the direct child of a form element
-      // query selector: 'form > *[component="MyButton"]'
-      $z('form > .MyButton', myDiv); 
-    ```
-
-    The component in the selector must always be referred to with its capitalized type name. The distinction is made that HTML tags are lowercase, while components start with an uppercase. The final item in the selector will be restricted to a component only. All other standard CSS selector syntax can be used.
-    
-    Let's create a button with a given ID and then use the component selector to get its controller:
+    As a shortcut to `$z.selectAll`, `$z` is an alias to this selector function.
+        
+    For example, we can create a button with a given ID and then use the component selector to get its controller:
     
     ```jslive
       $z.render('@app/button7', {
         id: 'button7',
         text: 'Button 7'
-      }, document.querySelector('.container-15'), function() {
+      }, document.querySelector('.container-17'), function() {
       
         $z.select('#button7').click.on(function() {
           alert('hooked click!');
@@ -728,43 +796,81 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         
       });
     ```
-    <div class='container-15' style='margin: 20px'></div>
+    <div class='container-17' style='margin: 20px'></div>
     
     Note that because rendering is asynchronous, we've put the interaction code in the complete callback for the render function to ensure that rendering is completed before we run the component selector.
-        
+
+        """
+      ,
+        sectionName: 'Asynchronous Attachment'
+        markdown: """
+
+    When we render a component on the server, we need to decide if we want to block the page until it
+    has fully loaded its dynamic attachment scripts, or if we want to continue displaying the page and then 
+    **progressively enhance** the component once its scripts have completed loading asychronously with RequireJS.
+
+    By default, the attachment for a component rendered on the server will block the HTML page render stream until the dynamic component has been fully attached. 
+    This is to ensure synchronous component selectors will behave as expected between client and server.
+
+    To indicate that a component should be progressively enhanced with asynchronous attachment, set the `progressive`
+    property on the render component:
+
+    ```javascript
+    define(['./WidgetTemplate'], function(WidgetTemplate) {
+      return {
+        className: 'ProgressiveWidget'
+        render: WidgetTemplate,
+        attach: './WidgetAttachment',
+        progressive: true
+      };
+    });
+    ```
+
+    Other components or scripts needing access to the component controller will then need to use asynchronous component
+    selection in case the component is still being attached.
+
+    parent-widget-attach.js (for example):
+    ```javascript
+    define([], function() {
+      return function(el, o) {
+        $z.select('> .ProgressiveWidget', el, function(EnhancedWidgetController) {
+          // now we know the controller for the child component, 
+          // ProgressiveWidget has been attached
+        });
+      }
+    })
+    ```
+
+    If the component has already attached, the callback will trigger immediately. The selector still requires the HTML
+    to be present in the page before it will work. This is ensured naturally for any parent component as its attachment
+    will come after any child component in the HTML.
+
+    [Read more about the server load process here](#Server%20Rendering%20Mechanics).
+
         """
       ,
         sectionName: 'Disposal'
         markdown: """
         
-    The controller can have any properties at all. The only method that Zest makes assumptions about is the **dispose** method.
-    If it exists, this method is called when the element is disposed.
+    The controller can have any properties at all. The only methods that Zest makes assumptions about are the 
+    **dispose** and **init** methods. If the `dispose` method exists, this method is called when the element is disposed.
     
     We can add a dispose method to the button controller to correctly detach our events to prevent memory leaks.
 
-    button8.js:
+    button8-controller.js (button8.js identical to button7.js):
     ```javascript
-      define(['zest', 'css!./button'], function($z) {
-        return {
-          type: 'MyButton',
-          options: {
-            text: 'Button'
-          },
-          render: function(o) {
-            return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
-          },
-          attach: function(el, o) {
-            var clickEvent = $z.fn();
-            el.addEventListener('click', clickEvent);
-            
-            return {
-              click: clickEvent,
-              dispose: function() {
-                el.removeEventListener('click', clickEvent);
-              }
-            };
-          }
-        };
+      define(['zest'], function($z) {
+        return function(el, o) {
+          var clickEvent = $z.fn();
+          el.addEventListener('click', clickEvent);
+          
+          return {
+            click: clickEvent,
+            dispose: function() {
+              el.removeEventListener('click', clickEvent);
+            }
+          };
+        }
       });
     ```
     
@@ -774,7 +880,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       $z.render('@app/button8', {
         id: 'button8a',
         text: 'Dispose Me'
-      }, document.querySelector('.container-16'), function() {
+      }, document.querySelector('.container-18'), function() {
       
         var button8a = $z.select('#button8a');
         button8a.click.on(function() {
@@ -783,37 +889,35 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         
       });
     ```
-    <div class='container-16' style='margin: 20px'></div>
+    <div class='container-18' style='margin: 20px'></div>
     
     There is also a global dispose method, `$z.dispose` which can be called on any DOM element or element collection to find and dispose all components within that HTML, including running their disposal hooks:
     ```jslive
       $z.render('@app/button8', {
         id: 'button8b',
         text: 'Dispose Me'
-      }, document.querySelector('.container-17'), function() {
+      }, document.querySelector('.container-19'), function() {
       
         $z.select('#button8b').click.on(function() {
-          $z.dispose(document.querySelector('.container-17').childNodes);
+          $z.dispose(document.querySelector('.container-19').childNodes);
         });
         
       });
     ```
     
-    <div class='container-17' style='margin: 20px'></div>
+    <div class='container-19' style='margin: 20px'></div>
         """
       ,
         sectionName: 'Controller Communication'
         markdown: """
 
-    We can now hook the button click method from the dialog component.
-
-    Let's set it up to close the dialog when the button is clicked:
+    We can now hook the button click method from the dialog component to close the dialog when the button is clicked:
     
     dialog4.js:
     ```javascript
       define(['./button8', 'css!./dialog'], function(Button) {
         return {
-          type: 'SimpleDialog',
+          className: 'SimpleDialog',
           render: "&lt;div>{&#96;content&#96;}&lt;div class='button'>{&#96;button&#96;}&lt;/div>&lt;/div>",
           button: function(o) {
             return {
@@ -823,13 +927,20 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
               }
             };
           },
-          attach: function(el, o) {
-            var MyButton = $z.select('> .button MyButton', el);
-            MyButton.click.on(function() {
-              $z.dispose(el);
-            });
-          }
+          attach: './dialog4-attach'
         };
+      });
+    ```
+
+    dialog4-attach.js:
+    ```javascript
+      define(['zest'], function($z) {
+        return function(el, o) {
+          var MyButton = $z.select('> .button .MyButton', el);
+          MyButton.click.on(function() {
+            $z.dispose(el);
+          });
+        }
       });
     ```
     
@@ -838,29 +949,42 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       $z.render('@app/dialog4', {
         content: '&lt;p>content&lt;/p>',
         confirmText: 'Ok'
-      }, document.querySelector('.container-18'));
+      }, document.querySelector('.container-20'));
     ```
-    <div class='container-18' style='margin: 20px'></div>
+    <div class='container-20' style='margin: 20px'></div>
 
-    We use the component selector, contextualized to the dialog component. The initial direct child selector (`>`) allows us to ensure we select direct children of the master component element only, and not some `.button` contained within the content region.
+    We use the component selector, contextualized to the dialog component. 
 
-    **The selectors on the component are always based on the component context and carefully written to work no matter what content is in the other regions. The exact same applies to normal DOM selectors as well. This allows components to maintain modularity and portability.**
-
-    This way, if there was a MyButton component in the content area, we wouldn't select that one by mistake. We could also have used a more unique class name than `.button` for the region div, and then selected the component as `.my-very-unique-button-class MyButton`.
+    **The initial direct child selector (`>`) allows us to ensure we select direct children of the master component element only, and not some other `.button` contained within the content region. Ensuring selectors are well-defined is important for component modularity and portability.**
     
     ***
         """
       ,
-        sectionName: 'Using jQuery and Other Client Frameworks'
+        sectionName: 'DOM Selectors'
         markdown: """
-        
-    Zest is built natively without any client framework. The one you use is entirely up to you.
 
-    ### Selector Library
+    Typically, the first things an attachment function will do is select components and elements within the component to attach its dynamic functionality to.
 
-    By default, Zest will test the native selector engine and dynamically include Sizzle if it is not up to standard. This can be used from `$z.$` for convenience. It also supports the leading direct child selector (`>`), as demonstrated in the previous section, allowing for properly contextualized DOM queries on components.
+    To select components, we use the component selector from the previous section.
 
-    If using a different library such as jQuery, reference this library as the main selector library with the RequireJS configuration:
+    To select elements, we use the standard query selector.
+
+    Zest provides a cross-browser compatible selector shortcut at `$z.$`:
+
+    ```javascript
+      $z.$(selector, context);
+    ```
+
+    This supports the leading direct child selector (`>`, as demonstrated with the component selector) for direct selection within containers
+    ensuring well-defined selection modularity.
+
+    The cross-browser behavior is provided by the RequireJS [selector module](https://github.com/guybedford/selector). It will:
+
+    1. Check for CSS3 support with the native query selector.
+    2. If compatible, the native query selector is used.
+    3. If not compatible, Sizzle will be download from CDN dynamically.
+
+    If using your own library which provides a selector engine, direct Zest to this selector with the configuration:
 
     ```javascript
     {
@@ -872,60 +996,59 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     }
     ```
 
-    This way Sizzle doesn't need to be loaded twice unnecessarily. `$z.$` will then reference jQuery instead and it will be included in the core build.
-
-    ### Adding jQuery
+    `$z.$` will then reference jQuery, and `jQuery` can also be loaded directly.
+        """
+      ,
+        sectionName: 'Adding jQuery'
+        markdown: """
     
     An easy way to install jQuery is with Volo - just type the following from the base project folder:
     ```
       volo add jquery
     ```
     
-    Then add jQuery as a RequireJS dependency to the components that need it:
+    Next we add the selector configuration from the previous section into our RequireJS configuration.
+
+    Then just include jQuery as a RequireJS dependency to the components that need it:
     
-    button9.js:
+    button9-controller.js (button9.js as expected):
     ```javascript
-      define(['zest', 'jquery', 'css!./button'], function($z, $) {
-        return {
-          type: 'MyButton',
-          options: {
-            text: 'Button'
-          },
-          render: function(o) {
-            return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
-          },
-          attach: function(el, o) {
-            var clickEvent = $z.fn();
-            $(el).click(clickEvent);
-            
-            return {
-              click: clickEvent,
-              dispose: function() {
-                $(el).unbind();
-              }
-            };
-          }
-        };
+      define(['zest', 'jquery'], function($z, $) {
+        return function(el, o) {
+          var clickEvent = $z.fn();
+          $(el).click(clickEvent);
+          
+          return {
+            click: clickEvent,
+            dispose: function() {
+              $(el).unbind();
+            }
+          };
+        }
       });
     ```
     
     And just to prove it works:
     ```jslive
-      $z.render('@app/dialog5', {
+      $z.render('@app/button9', {
         confirmText: 'Ok',
         content: '&lt;p>content&lt;/p>'
-      }, document.querySelector('.container-19'));
+      }, document.querySelector('.container-21'), function(Button) {
+        Button.click.on(function() {
+          Button.dispose();
+        });
+      });
     ```
-    <div class='container-19' style='margin: 20px'></div>
+    <div class='container-21' style='margin: 20px'></div>
 
         
     ### Converting jQuery Plugins into Render Components
     
     It is straightforward to convert jQuery plugins to work with Zest rendering by loading the plugin as a dependency.
     
-    The CSS and HTML template get gathered together as the render component. What would have been a 'domready' or 'attachment' code becomes this attachment function, and the controller can be returned.
+    The CSS and HTML template get gathered together as the render component. What would have been a 'domready' or 'attachment' code becomes this attachment module, and the standard plugin controller can be returned.
     
-    Most plugins aren't designed for RequireJS usage - for these needs, use the [RequireJS shim config](http://requirejs.org/docs/api.html#config-shim) to tell RequireJS how to load the plugin, and what global it defines.
+    Most plugins aren't designed for AMD environments - for these needs, use the [RequireJS shim config](http://requirejs.org/docs/api.html#config-shim) to tell RequireJS how to load the plugin, and what global it defines.
         
         """
       ,
@@ -933,25 +1056,10 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         markdown: """
         
     Up until now we've assumed that all data for rendering is provided with the initial render call. This is a good way to go about
-    things in many cases, but it is also possible for components to do their own loading.
+    things in most cases, but it is also possible for components to do their own loading.
+
+    We can do this using the asynchronous version of the [`load`](#Dynamic%20Regions) function.
         
-    For this, there is one other property a render component can define. That is it (its only 6 in total).
-    
-    This is the `load` function.
-    
-    The load function is used to preprocess options data before rendering, as well as to load data from other services.
-    
-    The load function can be both synchronous (one argument) and asynchronous (two arguments).
-    
-    It takes the following form:
-    
-    ```javascript
-      function load(o)
-      function load(o, done)
-    ```
-    
-    In the asynchronous case, the load function must call the `done` function otherwise rendering will pause indefinitely.
-    
     > To install [http-amd](https://github.com/guybedford/http-amd) with Volo, use `volo add guybedford/http-amd`.
 
     The asynchronous load is very useful when combined with the an HTTP module like [http-amd](https://github.com/guybedford/http-amd). This provides an HTTP implementation which works with the same API on both the browser and the server.
@@ -1006,24 +1114,32 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     button.coffee:
     ```coffeescript
-      define ['zest', 'jquery', 'css!./button'], ($z, $) ->
-        type: 'MyButton'
+      define ['zest', 'css!./button'], ($z) ->
+        className: 'MyButton'
         options:
           text: 'Button'
         render: (o) -> "&lt;button>&#35;{$z.esc(o.text, 'htmlText')}&lt;/button>"
-          
-        attach: (el, o) ->
+        attach: 'cs!./button-controller'
+    ```
+
+    button-controller.coffee:
+    ```coffeescript
+      define ['jquery'], ($) ->
+        return (el, o) ->
           clickEvent = $z.fn()
           $(el).click clickEvent
 
-          click: clickEvent
-          dispose: -> $(el).unbind()
+          return {
+            click: clickEvent
+            dispose: -> 
+              $(el).unbind()
+          }
     ```
     
     dialog1.coffee:
     ```coffeescript
       define ['cs!./button', 'css!./dialog'], (Button) ->
-        type: 'SimpleDialog'
+        className: 'SimpleDialog'
         render: &quot;&quot;&quot;
           &lt;div>
             {&#96;content&#96;}
@@ -1036,11 +1152,17 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           options:
             text: o.confirmText
 
-        attach: (el, o) ->
+        attach: 'cs!./dialog1-attach.coffee'
+    ```
+
+    dialog1-attach.coffee:
+    ```coffeescript
+      define [], () ->
+        return (el, o) ->
           MyButton = $z.select '>.button MyButton', el
           MyButton.click.on -> $z.dispose el
+          return null # no controller
     ```
-    
 
         
     With the RequireJS CoffeeScript plugin we simply add the `cs!` prefix to the module ID:
@@ -1049,9 +1171,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       $z.render('@cs!app/dialog1', {
         confirmText: 'Ok',
         content: '&lt;p>content&lt;/p>'
-      }, document.querySelector('.container-20'));
+      }, document.querySelector('.container-22'));
     ```
-    <div class='container-20' style='margin: 20px'></div>
+    <div class='container-22' style='margin: 20px'></div>
 
     ***
         """
@@ -1062,26 +1184,34 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     Often it can be useful to define dynamic CSS styles on an element. In the case of the dialog, the width and height could be options for rendering.
     
     Since this is only being used for dynamic instance-specific CSS, this is exactly the sort of situation inline styles are designed for.
+
+    Zest provides a helper on render components for inline styles, with the `style` property.
     
     We must always ensure that we correctly escape the CSS taken from options, either using the `cssAttr` or `num` escaping methods.
     
-    This is demonstrated with CoffeeScript, because it is much neater than the JavaScript equivalent:
+    This style property is demonstrated with CoffeeScript, because it is much neater than the JavaScript equivalent. In JavaScript,
+    the `style` string could be imported from a separate text file using the RequireJS text plugin.
     
     dialog2.coffee:
     ```coffeescript
       define ['zest', 'cs!./button', 'css!./dialog'], ($z, Button) ->
-        type: 'SimpleDialog'
+        className: 'SimpleDialog'
         options:
           width: 400
           height: 300
+
         render: (o) -> &quot;&quot;&quot;
-          &lt;div style="
-            width: &#35;{$z.esc(o.width, 'num', @options.width)}px;
-            height: &#35;{$z.esc(o.height, 'num', @options.height)}px;
-          ">
+          &lt;div>
             {&#96;content&#96;}
             &lt;div class='button'>{&#96;button&#96;}&lt;/div>
           &lt;/div>
+        &quot;&quot;&quot;
+
+        style: (o) -> &quot;&quot;&quot;
+          &#35;&#35;{o.id} {
+            width: &#35;{$z.esc(o.width, 'num', @options.width)}px;
+            height: &#35;{$z.esc(o.height, 'num', @options.height)}px;
+          }
         &quot;&quot;&quot;
         
         button: (o) ->
@@ -1089,9 +1219,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           options:
             text: o.confirmText
 
-        attach: (el, o) ->
-          MyButton = $z.select '>.button MyButton', el
-          MyButton.click.on -> $z.dispose el
+        attach: 'cs!./dialog1-attach'
     ```
     
     Notice the use of the third escaping argument, `@options.width`. This is the equivalent of writing `this.options.width` in JavaScript. We are
@@ -1104,10 +1232,49 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         height: 300,
         confirmText: 'Ok',
         content: '&lt;p>content&lt;/p>'
-      }, document.querySelector('.container-21'));
+      }, document.querySelector('.container-23'));
     ```
-    <div class='container-21' style='margin: 20px'></div>
+    <div class='container-23' style='margin: 20px'></div>
+
+    The `style` property should only ever be used for dynamic CSS. All other CSS should be in a separate CSS file for production use.
     
+        """
+      ,
+        sectionName: 'Querying the Layout'
+        markdown: """
+
+    Often attachment scripts need to calculate the size or position of elements in the DOM layout in order to properly generate a dynamic
+    interaction.
+
+    When rendering on the client, attachment is done entirely outside of the DOM first. Outside of the DOM, events and selectors can all be attached
+    fine, but any layout-based information will be incorrect. This is in order to avoid unnecessary render cycles.
+
+    For this reason, a controller can provide an `init` method, which will be called on injection into the DOM.
+
+    As an example, we can query the dialog size in its attachment:
+
+    dialog3-attach.coffee (dialog3.coffee as in dialog2.coffee):
+    ```coffeescript
+      define [], () ->
+        return (el, o) ->
+          MyButton = $z.select '>.button MyButton', el
+          MyButton.click.on -> $z.dispose el
+
+          alert('height outside DOM: ' + el.offsetHeight)
+          return {
+            init: ->
+              alert('height in DOM: ' + el.offsetHeight)
+          }
+    ```
+    ```jslive
+      $z.render('@cs!app/dialog3', {
+        height: 600,
+        confirmText: 'Ok',
+        content: '&lt;p>content&lt;/p>'
+      }, document.querySelector('.container-24'));
+    ```
+    <div class='container-24' style='margin: 20px'></div>
+
         """
       ,
         sectionName: 'Sharing and Packaging Components'
@@ -1117,7 +1284,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     ```
       -dialog.js
+      -dialog-attach.js
       -button.js
+      -button-controller.js
       -button.css
       -dialog.css
       -package.json
@@ -1132,7 +1301,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ### Volo
 
     To share the component with Volo, we'd typically add a list of dependencies to our `package.json`. The dependencies
-    we have are `jquery`, `require-cs` (for CoffeeScript) and `zest`. So we can write that as:
+    we have are `jquery` and `zest`. So we can write that as:
 
     package.json:
     ```javascript
@@ -1141,9 +1310,8 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       "version": "0.0.1",
       "volo": {
         "dependencies": {
-          "jquery": "jquery",
-          "require-cs": "jrburke/require-cs",
-          "zest": "zestjs/zest"
+          "zest": "zestjs/zest",
+          "jquery": "jquery"
         }
       }
     }
@@ -1155,17 +1323,11 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       volo add your_github_name/button-and-dialog
     ```
 
-    And it would install a folder `button-and-dialog` into their library folder, and also download jQuery, zest and require-cs.
+    And it would install a folder `button-and-dialog` into their library folder, and also download jQuery and zest.
 
     They would then be able to render the dialog from the module ID, `cs!button-and-dialog/dialog`.
 
-    > If you create a template for other package managers, please submit a pull request to the template repo.
-
-    ### Other Options
-
-    There are a variety of package managers available to use. For example, you could use [Bower](https://github.com/twitter/bower). 
-    The Zest template is customised most readily to Volo, but it is easy to adjust the template for other package management 
-    systems.
+    There are a variety of package managers available to use. For example, you could also use [Bower](https://github.com/twitter/bower). 
 
     ### Next Steps
 
@@ -1181,9 +1343,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         sectionName: 'Zest Object Extension'
         markdown: """
 
-    Zest Object Extension ([`zoe.js`](http://zoejs.org)) is provided as a separate library and can be used optionally. By default it is included in the `zest/zest` module bundle, and the `zoe` methods are copied over onto the `$z` object for convenience.
+    Zest Object Extension ([zoe.js](http://zoejs.org)) is provided as a separate library and can be used optionally. By default it is loaded with the `zest` module, and the `zoe` methods are copied over onto the `$z` object for convenience.
 
-    zoe.js provides a natural JavaScript inheritance framework that was designed for dynamic controller interactions from the start.
+    zoe.js provides a natural JavaScript inheritance framework that was designed for the dynamic controller interactions in Zest.
 
     The idea is that render component controllers should use extensible prototype inheritance.
 
@@ -1191,10 +1353,10 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     The inheritance model is based on three functions:
 
-    * [**zoe.fn**](/docs/zoe#zoe.fn): _Generates a function chain event instance. Used for eventing and many other purposes as well._
-    * [**zoe.extend**](/docs/zoe#zoe.extend): _Extends a host object with properties from a new object. Uses extension rules to provide 
+    * [**zoe.fn**](http://zoejs.org/#zoe.fn): _Generates a function chain event instance. Used for eventing and many other purposes as well._
+    * [**zoe.extend**](http://zoejs.org/#zoe.extend): _Extends a host object with properties from a new object. Uses extension rules to provide 
       different extension for different properties._
-    * [**zoe.create**](/docs/zoe#zoe.create): _The inheritance model. Creates a class instance from a definition, using the object extension system with some hooks._
+    * [**zoe.create**](http://zoejs.org/#zoe.create): _The inheritance model. Creates a class instance from a definition, using the object extension system with some hooks._
 
     For component controllers, the zoe.js inheritor [`$z.Component`](#$z.Component) is provided to easily create dynamic render components.
 
@@ -1207,18 +1369,21 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     Consider the controller pattern in the `attach` function we've been using up until now for the button:
 
+    button-controller.js:
     ```javascript
-      function attach(el, o) {
-        var clickEvent = $z.fn();
-        $(el).click(clickEvent);
-        
-        return {
-          click: clickEvent,
-          dispose: function() {
-            $(el).unbind();
-          }
-        };
-      }
+      define([], function() {
+        return function(el, o) {
+          var clickEvent = $z.fn();
+          $(el).click(clickEvent);
+          
+          return {
+            click: clickEvent,
+            dispose: function() {
+              $(el).unbind();
+            }
+          };
+        }
+      });
     ```
 
     The controller is **implicitly** defined by the return function. It is hidden away, with no way for us to extend this button component into anything more than the `click` and `dispose` events as above.
@@ -1227,11 +1392,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     We can solve both of the above by providing a **Controller Constructor** function, a standard JavaScript object constructor, as the `attach` method.
 
-    The button `attach` method can then be written in a separate controller module as:
-
     ```javascript
       define(['zest', 'jquery'], function($z, $) {
-        function attach(el, o) {
+        var attach = function(el, o) {
           this.$button = $(el);
           this.click = $z.fn();
 
@@ -1244,82 +1407,43 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       });
     ```
 
-    We can then reference this `attach` module using the relative controller module ID string `'./button-attach'` in the button render component. The constructor is instantiated by the natural running of the `attach` method.
+    The constructor is then instantiated by the natural running of the `attach` method.
 
     It's not a massive saving for now, but we've opened up the controller prototype so that the button can be extended, and we're also sharing the same dispose function between multiple buttons on the same page.
 
-    ### Controller Constructors in Render Components
-
-    The above **Controller Constructor** can also be used as the `attach` function in a mixed render component, instead of referencing the controller separately. For this, we can use a trick to blend the render component object with the controller constructor.
-
-    button10.js:
-    ```javascript
-      define(['zest', 'jquery', 'css!./button'], function($z, $) {
-        // attachment
-        function ButtonComponent(el, o) {
-          this.$button = $(el);
-          this.click = $z.fn();
-
-          this.$button.click(this.click);
-        }
-        ButtonComponent.prototype.dispose = function() {
-          this.$button.unbind();
-        }
-
-        // rendering
-        ButtonComponent.attach = function(el, o) {
-          return new this(el, o);
-        }
-        ButtonComponent.type = 'MyButton';
-        ButtonComponent.options = {
-          text: 'Button'
-        };
-        ButtonComponent.render = function(o) {
-          return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
-        }
-        
-        return ButtonComponent;
-      });
-    ```
-
-    > If you find yourself becoming suspicious that all these buttons are just the same code, while we pretend to update it, feel free to inspect it yourself with `require('app/button10')` in the JavaScript console!
-
-    ```jslive
-      $z.render('@app/button10', {
-        text: 'Ok'
-      }, document.querySelector('.container-22'));
-    ```
-    <div class='container-22' style='margin: 20px'></div>
-
-    We've written the render component itself as the controller constructor as well, and the `attach` method instantiates an instance of the controller. There are no property clashes, since the render properties are sitting outside of the constructor prototype, on what is otherwise an unused space on the object.
-
-    What does this give us? It allows us to deal with our entire component as a single object if we wish, supporting extension and making for easy-reading. When prototyping components, everything can be in one place, allowing for quick development.
-
-    There is a minor issue with the above - we had to suddenly switch into a procedural definition. In order to allow for the nicer looking object definitions we've been using up until now, we need some class sugar.
+    There is a minor issue with the above - we are writing a procedural definition. In order to allow for the nicer looking object definitions we've been using up until now, we need some class sugar.
 
         """
       ,
         sectionName: 'Object Constructor Sugar'
         markdown: """
 
-    There are many different libraries providing class sugar in JavaScript. zoe.js comes with one model based on object extension. We demonstrate it here, but you can use your own as well.
+    There are many different libraries providing class sugar in JavaScript. zoe.js comes with one model based on object extension. We demonstrate it here, but you can replace this with any other as well.
 
     To use the object constructor, we extend from the base `zoe.Constructor` class, using the extension function `zoe.create`. This allows us to explicitly write our `constructor` and `prototype` properties in the object definition to get our sugar-coated class.
 
-    button11.js:
+    > Read more about `zoe.create` and `zoe.Constructor` in the [zoe documentation](https://zoejs.org).
+
+    button10.js (exactly from button7.js):
     ```javascript
-      define(['zest', 'jquery', 'css!./button'], function($z, $) {
-        return $z.create([$z.Constructor], {
-          type: 'MyButton',
+      define(['zest', 'css!./button'], function($z) {
+        return {
+          className: 'MyButton',
           options: {
             text: 'Button'
           },
           render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
-          attach: function(el, o) {
-            return new this(el, o);
-          },
+          attach: './button10-controller'
+        };
+      });
+    ```
+
+    button10-controller.js:
+    ```javascript
+      define(['zest', 'jquery'], function($z, $) {
+        return $z.create([$z.Constructor], {
           construct: function(el, o) {
             this.$button = $(el);
             this.click = $z.fn();
@@ -1336,300 +1460,335 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```
 
     ```jslive
-      $z.render('@app/button11', {
+      $z.render('@app/button10', {
         text: 'Ok'
-      }, document.querySelector('.container-23'));
+      }, document.querySelector('.container-26'));
     ```
-    <div class='container-23' style='margin: 20px'></div>
+    <div class='container-26' style='margin: 20px'></div>
 
     We've thus created an **explicit** definition of our component, making code much easier to read.
 
-    Read more about `zoe.create` and `zoe.Constructor` in the zoe documentation.
-
         """
       ,
-        sectionName: 'Event Binding'
+        sectionName: 'Events and Binding'
         markdown: """
 
-    By directly adding the `click` event on the prototype to the event listener on the button, we lose our natural `this` reference to the button controller instance in the event callback.
-
-    It can be useful for events to be able to reference the main controller from the `this` reference, just like the methods on the prototype itself.
-
-    Typically, one would define the event callback with a `self` closure to enable the reference.
-
-    In place of the construct method on the previous button:
-
-    ```javascript
-      construct: function(el, o) {
-        this.$button = $(el);
-        this.click = $z.fn();
-
-        var self = this;
-        this.$button.click(function() {
-          self.click();
-        });
-      },
-    ```
-
-    #### function.bind
-
-    Ideally, we could just use the `bind` function method, which is still not supported in many browsers. There are [polyfills that can be used](https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function/bind#Compatibility) to allow working with this.
-
-    #### zoe.fn Binding
-
     The event handler provided by `zoe.fn` supports the `bind` method allowing us to bind the `this` scope of the click
-    callback function if we like.
+    callback function to the controller.
 
     We can then write:
 
     ```javascript
-      construct: function(el, o) {
-        this.$button = $(el);
-        this.click = $z.fn().bind(this);
+      define(['zest', 'jquery'], function($z, $) {
+        return $z.create([$z.Constructor], {
+          construct: function(el, o) {
+            this.$button = $(el);
+            
+            // bind the event to the controller
+            this.click = $z.fn().bind(this);
 
-        this.$button.click(this.click);
-      }
-
+            this.$button.click(this.click);
+          },
+          prototype: {
+            dispose: function() {
+              this.$button.unbind();
+            }
+          }
+        });
+      });
     ```
 
-    Now the `this` reference of the click event will always be the controller. The `bind` function can be called at any time to bind an event function.
+    Now the `this` reference of the click event will always be the controller.
 
     #### zoe.fn Initial Functions
 
     If we wanted the button to come with some click handler functions already provided, we can add initial event listeners into our `zoe.fn` method:
 
     ```javascript
-      construct: function(el, o) {
-        this.$button = $(el);
-
-        // add a click counter
-        this.clickCnt = 0;
-        var countClick = function() {
-          this.clickCnt++;
-        }
-
-        this.click = $z.fn().on(countClick).bind(this);
-
-        this.$button.click(this.click);
-      }
-    ```
-
-    `$z.fn` supports chaining, allowing us to apply the next method in the same line rather than writing separate lines. It doesn't matter if we bind the chain or add the listener first.
-
-    #### Prototype Initial Functions
-
-    If we really want to get into this extensibility thing, we can maintain the `countClicks` method on the prototype so that even this method could be extended or changed.
-
-    ```javascript
-      construct: function(el, o) {
-        this.$button = $(el);
-
-        this.clickCnt = 0;
-
-        this.click = $z.fn().bind(this).on(this.countClick);
-        this.$button.click(this.click);
-      },
-      prototype: {
-        countClick: function() {
-          this.clickCnt++;
-        },
-        dispose: function() {
-          this.$button.unbind();
-        }
+      define(['zest', 'jquery'], function($z, $) {
+        return $z.create([$z.Constructor], {
+          construct: function(el, o) {
+            this.$button = $(el);
+            
+            // create an event chain, add the base click function, bind it to the controller
+            this.click = $z.fn().on(this.click).bind(this);
+            
+            this.$button.click(this.click);
+          },
+          prototype: {
+            dispose: function() {
+              this.$button.unbind();
+            }
+            // base click function, shared between all buttons
+            click: function() {
+            }
+          }
+        });
       });
     ```
 
-    Read more about `zoe.fn` in the [ZOE documentation](/docs/zoe#zoe.fn).
+    #### Event Sugar
+
+    Since the above line of `this.event = $z.fn().on(this.baseEvent).bind(this)` is common to all events, we can sugar this to save typing.
+
+    This is provided by the zoe inheritor, `$z.InstanceEvents`.
+
+    We supply an `_events` array, and these items will then have the above common operation automatically performed for us:
+
+    button11-controller.js (button11.js as expected):
+    ```javascript
+      define(['zest', 'jquery'], function($z) {
+        return $z.create([$z.Constructor, $z.InstanceEvents], {
+          _events: ['click'],
+          construct: function(el, o) {
+            this.$button = $(el);
+
+            // click event already created on the instance and bound to the controller, 
+            // including the base click event.
+            this.$button.click(this.click);
+          },
+          prototype: {
+            // base click function for all instances (optional)
+            click: function() {
+              alert('base click event');
+            },
+            dispose: function() {
+              this.$button.unbind();
+            }
+          }
+        });
+      });
+    ```
+    ```jslive
+      $z.render('@app/button11', {
+        text: 'Ok'
+      }, document.querySelector('.container-27'), function(Button) {
+
+        Button.click.on(function() {
+          alert('instance-specific click event');
+        })
+
+      });
+    ```
+    <div class='container-27' style='margin: 20px'></div>
 
         """
       ,
-        sectionName: 'Extending the Button'
+        sectionName: 'Extending Components'
         markdown: """
 
-    We can extend the button to give it more functionality by extending the class object.
+    Component extension at its core is basically cloning the component object, and modifying some of the properties:
 
-    > The `toggle` function defined in the constructor is just a fancy way of binding the function to the instance, leaving the prototype unchanged - the instance function is created from the prototype function as a `zoe.fn` chain.
-
-    button-unclickable.js:
+    button12.js:
     ```javascript
       define(['zest', './button11'], function($z, Button) {
         return $z.create([Button], {
+          _extend: {
+            'attach': 'REPLACE'
+          },
+          pipe: ['text'],
+          attach: './button12-controller'
+        });
+      });
+    ```
+
+    * `$z.create` creates a new object, then extends it with the button render component properties, then finally extends it with the definition object above.
+    * The definition object just contains the `pipe` and `attach` properties.
+    * Since there is already an attach property, we need to provide an override rule.
+    * We use the `_extend` object to specify our rules - matching the `attach` method to the replace rule.
+
+    We thus get an object contaning the render component properties from button11.js, but with the new properties added.
+    At its core, we are simply applying object extension with rules, provided by zoe.js.
+
+    We then do the same thing for the controllers:
+
+    button12-controller.js:
+    ```javascript
+      define(['zest', './button11-controller'], function($z, ButtonController) {
+        return $z.create([ButtonController], {
+          _events: ['hoverIn', 'hoverOut'],
           construct: function(el, o) {
-            this._visible = true;
-
-            this.toggle = $z.fn().bind(this).on(this.toggle);
-
-            this.$button.mouseenter(this.toggle);
-            this.$button.mouseleave(this.toggle);
+            this.text = o.text;
+            this.$button.bind('mouseenter', this.hoverIn);
+            this.$button.bind('mouseleave', this.hoverOut);
           },
           prototype: {
-            toggle: function() {
-              if (this._visible)
-                this.hide();
-              else
-                this.show();
+            hoverIn: function() {
+              this.$button.text('Hovering!');
             },
-            hide: function() {
-              this.$button.stop().animate({ opacity: 0 }, 50);
-              this._visible = false;
-            },
-            show: function() {
-              this.$button.stop().animate({ opacity: 100}, 50);
-              this._visible = true;
+            hoverOut: function() {
+              this.$button.text(this.text);
             }
           }
         });
       });
     ```
+
+    We can add the new `_events` because `$z.InstanceEvents` is already provided by ButtonController.
+
     ```jslive
-      $z.render('@app/button-unclickable', {
-        id: 'unclickable-button',
+      $z.render('@app/button12', {
         text: 'Ok'
-      }, document.querySelector('.container-24'));
+      }, document.querySelector('.container-28'));
     ```
-    <div class='container-24' style='margin: 20px'></div>
+    <div class='container-28' style='margin: 20px'></div>
 
-    Note that the `prototype` property was automatically extended and the `construct` property was automatically amended to run after the previous construct property. These **extension rules** were defined up by the `zoe.Constructor` base class.
+    We've been able to:
 
-    Since our `toggle` method was lovingly rebound to the instance, we can in fact click the button by switching
-    the toggle externally:
+    * Extend the render component, adding an extra pipe property to access the `text` option from the attachment.
+    * Add two new events, which extended the existing event.
+    * Add an extra constructor to run after the base constructor, binding our new events.
+    * Add two new methods on the prototype shared between all instances.
 
-    ```jslive
-      $z.select('#unclickable-button').toggle();
-    ```
+    The idea with zoe.js is that all of these properties are extended naturally as expected as much as possible.
 
-    If we were using separate files for the render component and controller modules of the button, we could have extended both parts separately, with the `attach` property of the extended render component referencing the extended controller module ID.
-
-    We could also have included some extra CSS or other dependencies as part of the extension. Because the button is a dependency, we can still build the extended button into a single file, with full dependency tracing from the r.js optimizer.
+    We could also have included some extra CSS (and added a className to append the classes) or included other dependencies as part of the extension. 
+    Because the button is a dependency, we can still build the extended button into a single file, with full dependency tracing from the r.js optimizer.
 
         """
       ,
-        sectionName: 'Extension Rules'
+        sectionName: 'Custom Extension Rules'
         markdown: """
 
-    If we want to extend or override a property that already exists, we need to specify an **Extension Rule** for `zoe.create` to use. If there is a property clash with no extension rule provided, an error will be thrown.
+    The extension rules don't do anything magical, they are simply functions of two properties returning a new property and are located at `$z.extend.RULE_NAME`.
 
-    For example we can extend the button to change its hide function, making it transparent instead.
+    The `$z.Constructor` and `$z.InstanceEvents` provide their own rules for the `construct`, `prototype` and `_events` properties in the background, which
+    is how they combine as we'd like.
 
-    button-clickable.js:
+    We can also provide custom rules for our own properties. Let's demonstrate by re-extending the hover button:
+
+    button13.js:
     ```javascript
-      define(['zest', './button-unclickable'], function($z, Button) {
-        return $z.create([Button], {
+      define(['zest', './button12'], function($z, ButtonHover) {
+        return $z.create([ButtonHover], {
+          _extend: {
+            options: 'EXTEND',
+            pipe: 'ARR_APPEND'
+          },
+          options: {
+            doHover: true
+          },
+          pipe: ['doHover'],
+          attach: './button13-controller'
+        });
+      });
+    ```
+
+    Note that we don't need to specify that the `attach` property should be replaced again. This is because it has already been
+    declared a property for replacement by the `ButtonHover` `_extend` rules.
+
+    button13-controller.js:
+    ```javascript
+      define(['./button12-controller'], function(ButtonHoverController) {
+        return $z.create([ButtonHoverController], {
+          _extend: {
+            'prototype.hoverIn': 'REPLACE'
+          },
+          construct: function(el, o) {
+            this.doHover = o.doHover;
+          },
           prototype: {
-            __hide__: function() {
-              this.$button.stop().animate({ opacity: 0.5 }, 50);
+            hoverIn: function() {
+              if (this.doHover)
+                this.$button.text('Hovering!');
             }
           }
         });
       });
     ```
 
-    The use of `__hide__` above indicates that we are using the `REPLACE` rule to replace the previous hide function with the new hide function.
-
     ```jslive
-      $z.render('@app/button-clickable', {
-        text: 'Ok'
-      }, document.querySelector('.container-25'));
+      $z.render([{
+        render: '@app/button13',
+        options: {
+          text: 'Hover Button'
+        }
+      },
+      {
+        render: '@app/button13',
+        options: {
+          text: 'Non-hover button',
+          doHover: false
+        }
+      }], document.querySelector('.container-29'));
     ```
-    <div class='container-25' style='margin: 20px'></div>
+    <div class='container-29' style='margin: 20px'></div>
 
-    It is also possible to provide **Default Extension Rules**, which will be used for all future implementors. Default extension rules are given by the `_extend` property on the object and used by `zoe.create`.
+    With the above extension, we have:
 
-    When we initially created the `hide` and `show` methods, we could have added the extension rules object:
+    * Extended the `options` and `pipe` render component properties to provide the `doHover` option.
+    * In our constructor, we store this property on the instance for reference.
+    * We then override the `hoverIn` function using an extension rule.
+    * The overrided hover function then allows us to check if we want to provide hover support before doing anything.
 
-    ```javascript
-      _extend: {
-        'prototype.hide': 'REPLACE',
-        'prototype.show': 'REPLACE'
-      }
-    ```
+    This is mainly an illustrative example to see the power of extension rules.
 
-    This is exactly how the `zoe.Constructor` base inheritor indicates that the `prototype` and `construct` properties are extended.
+    Getting extension right is quite an advanced concept, and isn't necessary for small projects, but it is an important aspect of reusability.
 
-    `zoe.Constructor` provides the extension rules:
-
-    ```javascript
-      _extend: {
-        'construct': 'CHAIN',
-        'prototype': 'EXTEND'
-      }
-    ```
-
-    This is only meant to be a brief overview - normally when extending a component, the main rules would already be defined.
-
-    If you are interested in creating extensible components like this, read more on the [extension rules in the ZOE documentation](http://localhost:8082/docs/zoe#zoe.extend).
-
+    To read more about extension rules, see the [extension section of the zoe.js documentation](http://zoejs.org/#zoe.extend).
         """
       ,
         sectionName: '$z.Component'
         markdown: """
 
-    `$z.Component` is a small base class wrapping up these extension concepts including:
+    `$z.Component` brings together the concepts of this chapter into a single inheritor. It allows for a standard definition form when writing
+    extensible components to be used by both the render component and attachment modules.
 
-    * Controllers as constructors
-    * Automatic reinstancing and rebinding of `zoe.fn` chains from the prototype to the instance
-    * Contextual DOM and component selectors on the controller prototype
-    * Standard extension rules for render component properties
+    It provides:
 
-    It can be used by controllers to provide easy construction contextual selectors, it can be used by render components to provide extension rules for the render component properties, or it can
-    be used by combined render components and controllers for both of these.
+    * Controllers as constructors - just provide the `construct` and `prototype` properties.
+    * `zoe.InstanceEvents` for automatic eventing through the `_event` property.
+    * Standard extension rules the render component properties (className, options, load, pipe).
+    * Contextual DOM and component selectors on the controller prototype (`this.$` and `this.$z`).
+    * Automatic copying of the `el` and `o` parameters from the constructor to the instance (`this.el` and `this.o`).
 
-    It can also be extended further to provide whatever utilities you may need in your classes.
-
-    In this way, a simple flexible inheritance model is provided.
-
-    We can now rewrite the button component with `$z.Component`.
-
-    button12.js:
+    button14.js:
     ```javascript
-      define(['zest', 'jquery', 'css!./button'], function($z, $) {
+      define(['zest', 'css!./button'], function($z) {
         return $z.create([$z.Component], {
-          type: 'MyButton',
+          className: 'MyButton',
           options: {
             text: 'Button'
           },
           render: function(o) {
             return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
           },
+          attach: './button14-controller'
+        });
+      });
+    ```
+
+    button14-controller.js:
+    ```javascript
+      define(['jquery'], function($) {
+        return $z.create([$z.Component], {
+          _events: ['click'],
           construct: function(el, o) {
-            this.$button = this.$(el);
+            this.$button = $(el);
             this.$button.click(this.click);
           },
           prototype: {
-            __click: function() {
+            click: function() {
               alert('a prototype event function');
             },
             dispose: function() {
               this.$button.unbind();
             }
           }
-        };
-      });
-    ```
-    ```jslive
-      $z.render('@app/button12', {
-        id: 'button-component',
-        text: 'Ok'
-      }, document.querySelector('.container-26'), function() {
-
-        $z.select('#button-component').click.on(function() {
-          alert('a bound instance event function');
-          this.dispose();
         });
-
       });
     ```
-    <div class='container-26' style='margin: 20px'></div>
 
-    We get the `attach` method created for us to instantiate the constructor, as well as the `zoe.Constructor implementor included.
+    With the above definition of Button, we wouldn't have needed to provide extension rules for `pipe`, `options` and `attach` as we did in the previous section.
 
-    #### Function Instance Chains
+    We only need to include `_extend` rules for properties we define, which is the general principle with `_extend` rules, unless performing an override.
 
-    The `click` function is defined with `__click` to indicate that it should be extended with the `CHAIN` rule. This means that the `click` function is created as an instance of `zoe.fn()`, including the `on` method support.
-
-    When constructed, all `zoe.fn()` instances on the prototype are automatically recreated on the constructor instance and bound to the constructor. This way we don't need to worry about binding for events and event listeners are always added to the instance not the prototype (which would affect all buttons on the page).
-
-    This functionality is provided by the ZOE inheritor, [`zoe.InstanceChains`].
+    ```jslive
+      $z.render('@app/button14', {
+        text: 'Ok'
+      }, document.querySelector('.container-30'));
+    ```
+    <div class='container-30' style='margin: 20px'></div>
 
     #### Contextual Selectors
 
@@ -1642,16 +1801,70 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     These selectors are restricted to within the containing element of the component and both support the leading direct child selector (`>`) so that selectors can be carefully written to be exactly scoped to the component regardless of the contents of their regions.
 
-    ***
-
-    ### Next Steps
-
     Typically one can implement `$z.Component` when it suits, and follow the basic patterns here without worrying too much about the implementation details.
 
     If you are looking to provide extensible component parts and base classes and want to use `zoe` as
-    the inheritance system then read more about it at the [ZOE documentation page](/docs/zoe).
+    the inheritance system then read more about it at the [ZOE documentation page](http://zoejs.org/).
+
+        """
+      ,
+        sectionName: 'Mixed Render Components'
+        markdown: """
+
+    There is a shortcut we can do when defining components, and that is to write the entire component as a single object, without a separate attach module.
+
+    **This can be useful for components that render on the client only.** 
+
+    For components that render on the server, one should always have separate attach and render modules.
+
+    `$z.Component` is fully compatible with mixed render components. We can write our button as:
+
+    button15.js (client-only version):
+    ```javascript
+      define(['zest', 'jquery', 'css!./button'], function($z, $) {
+        return $z.create([$z.Component], {
+          className: 'MyButton',
+          options: {
+            text: 'Button'
+          },
+          render: function(o) {
+            return '&lt;button>' + $z.esc(o.text, 'htmlText') + '&lt;/button>';
+          },
+          pipe: true,
+          _events: ['click'],
+          construct: function(el, o) {
+            this.$button = $(el);
+            this.$button.click(this.click);
+          },
+          prototype: {
+            click: function() {
+              alert('a prototype event function');
+            },
+            dispose: function() {
+              this.$button.unbind();
+            }
+          }
+        });
+      });
+    ```
+    ```jslive
+      $z.render('@app/button15', {
+        text: 'Ok'
+      }, document.querySelector('.container-31'));
+    ```
+    <div class='container-31' style='margin: 20px'></div>
+
+    `$z.Component` automatically fills in the `attach` function in this case. The above is also fully-compatible with extension as expected.
+
+    #### Next Steps
+
+    The way we've written the button and dialog with separate render and attachment modules allows us to seamlessly render them on the server as
+    well, with full build support.
+
+    Read about this in the next section, or if building a client-only rendering app, jump to the [build section](#Building).
 
     ***
+
         """
       ]
     ,
@@ -1676,7 +1889,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     Within NodeJS, Zest Server can used as a request handler to provide the full routing and rendering service, or simply as a rendering function without using routing or modules.
 
-    Zest Server NodeJS API Reference
+    [Zest Server NodeJS API Reference](#NodeJS%20API)
 
     ### Using Zest Server in other Applications
 
@@ -1692,12 +1905,20 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     A basic HTTP adapter library in another framework can then provide a Zest rendering API within the application, allowing for JavaScript rendering as a service in other environments.
 
+    [Zest Server Render Service Module](#Render%20Service%20Module)
+
+    ### Server Rendering Mechanics
+
+    To read about how the mechanics of Zest server rendering works at a low level, [see the overview at the end of this documentation](#Server%20Rendering%20Mechanics).
+
+    _The immediate sections cover the use of Zest Server as the primary site server._
+
         """
       ,
         sectionName: 'Server Configuration Basics'
         markdown: """
 
-    The server is easily started with the command:
+    The server is started with the command:
 
     ```
       zest start [environmentName]
@@ -1764,14 +1985,14 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     define({
       routes: {
         '/dialog1': {
-          title: 'Dialog',
+          title: 'Dialog Page',
           body: '@cs!app/dialog'
         }
       }
     });
     ```
     
-    Navigate to [/dialog1](/dialog1) to see this route.
+    Navigate to [/dialog1](/dialog1) to see this route. This is the dialog component exactly as created in the [Dynamic CSS render component section](#Dynamic%20CSS).
 
     The route is a URL pattern, which maps to a partial **Page Render Component**. In the above case, we are simply setting the `body` region and `title` property of the page render component. The `render` property on the page component is set for us to the default page template, hence why this is a partial render component. We are extending the base page render component with properties for our current page.
 
@@ -1870,13 +2091,13 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     When no route is matched, and no pageComponent is set for rendering, the request is passed to the file server. If the request isn't a valid file in the `www` folder, then the 404 Not Found page is shown. By default this is the 404 page from the [HTML5 Boilerplate](http://html5boilerplate.com/), but it can be customized to any partial page component just like any route.
 
-    To set the 404 not found page, add the `404` property in the configuration file:
+    To set the 404 not found page, add the `404` property in the main Zest configuration file:
 
     ```javascript
     {
       404: {
         title: 'Page Not Found',
-        body: '<p>No page here</p>'
+        body: '&lt;p>No page here&lt/p>'
       }
     }
     ```
@@ -1916,8 +2137,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     The full list of properties on the page render component are:
 
     * **title**, String: _Sets the title of the page._
-    * **meta**, Render Structure: _Sets the meta region of the page._
+    * **head**, Render Structure: _Sets any extra rendering in the head region of the page._
     * **body**, Render Structure: _Sets the body region of the page._
+    * **footer**, Render Structure: _Sets the footer region of the page, after the body. Useful for analytics scripts._
     * **lang**, String: _Sets the HTML `lang` attribute for the page language._
     * **scripts**, Array: _Any **blocking** scripts to load into the page. URLs are relative to the RequireJS baseUrl. Not recommended to use unless absolutely necessary. Typically scripts are built and [@loaded as layers](), not blocking the page unnecessarily._
     * **requireMain**, String: _Sets the RequireJS `data-main` entry point for the page._
@@ -1936,11 +2158,16 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     Modules form a collection of routes that may share similar RequireJS configuration and other properties.
 
-    To avoid repetition, modules can specify a **Base Page Component** that can provide base page component properties, before being extended by a specific page component for a route.
+    To avoid repetition, we can specify a **Base Page Component** that can provide base page component properties, 
+    before being extended by a specific page component for a route.
 
-    The base page component is set as the `page` property on the module, and will apply whenever a route from the module is matched.
+    This can be set on both modules and in the main `zest.json` configuration file.
 
-    For example, a module-specific shared `map` config could be provided with:
+    It is set as the `page` property on the module, and will apply whenever a route from the module is matched.
+
+    In the configuration file, it can also be set to be environment-specific (like all other configuration options).
+
+    For example, a module-specific `map` config could be provided with:
 
     ```javascript
       page: {
@@ -1961,15 +2188,11 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         sectionName: 'Browser Modules'
         markdown: """
 
-    When we wrote the [button component originally](#CoffeeScript%20Components), we didn't separate the `attach` function into a controller module to allow for easier reading. 
+    If attempting to render a mixed render component on the server, that loads dependencies only usable in the browser (such as jQuery), this will give an error.
 
-    As a result, the button component has a dependency on jQuery, which is not designed to be loaded on the server. Yet, we need to load this file to get access to the render component.
-
-    To make this possible, there is a configuration for **Browser Modules**, which are automatically loaded as empty dependencies.
+    To make rendering of these components possible, there is a configuration for **Browser Modules**, which are automatically loaded as empty dependencies.
 
     To inform Zest Server that jQuery is a browser module, we add the `browserModules` configuration array in the configuration file:
-
-    > Note that if jQuery is [mapped to the `selector` module](#Using%20jQuery%20and%20Other%20Client%20Frameworks), then it is already a browser module since the `selector` module is automatically stubbed.
 
     zest.json:
     ```javascript
@@ -1980,7 +2203,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     This can be a list of any number of RequireJS module IDs.
 
-    If we had written the button with the `attach` property pointing to separate controller module ID, then this wouldn't be necessary as the render component can still be loaded without loading the jQuery dependency at all.
+    This isn't necessary on components with separate attachment modules.
 
         """
       ,
@@ -2075,10 +2298,39 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```
         """
       ,
+        sectionName: 'Build Environment'
+        markdown: """
+
+    Once development is complete, we build all of the separate files into a single script (or layered scripts) to be included in the page.
+
+    This is done by specifying build configurations, and then running the server in a build environment.
+
+    Build environments are any environments, which specify the main configuration option:
+
+    ```javascript
+    {
+      build: true
+    }
+    ```
+
+    When started, the site will run a whole project build with the RequireJS Optimizer and then switch to the built public folder to serve the site, from minified layers. Details of the build settings are provided in the [build section](#Building).
+
+    There is a default build environment included, which provides all of the fastest build settings in the RequireJS optimizer.
+
+    This is called `dev-build`.
+
+    When experimenting with build configurations, run in this environment:
+
+    ```
+      zest start dev-build
+    ```
+
+        """
+      ,
         sectionName: 'Production Environment'
         markdown: """
 
-    Once development is complete, the site can be started in the production environment by passing the `production` environment name into Zest Server:
+    Once ready to go into production, the site can be started in the production environment by passing the `production` environment name into Zest Server:
 
     ```
       zest start production
@@ -2088,14 +2340,13 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```
     environments: {
       production: {
-        build: true
+        build: true,
+        production: true
       }
     }
     ```
 
-    When started, the site will run a whole project build with the RequireJS Optimizer and then switch to the built public folder to serve the site, from minified layers. Details of the build settings are provided in the [build section](#Building).
-
-    Alternative production environments can be made by setting `build: true` on any environment.
+    This environment will perform full minification of all files, and so make take a while to run. The RequireJS optimizer settings can still be tweaked using overrides as necessary.
 
     ### File Server Cache Expiry
 
@@ -2114,8 +2365,8 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     The handler module properties are:
 
-    * **handler, function(req, res, next)**: _Runs only when one of this module's routes has been matched by the current request. Suitable for data loading, module-specific middleware and minor page component adjustments.
-    * **globalHandler, function(req, res, next)**: _Runs on all application requests, regardless of what route may or may not have been matched. Suitable for service API requests and global middleware.
+    * **handler, function(req, res, next)**: _Runs only when one of this module's routes has been matched by the current request. Suitable for data loading, module-specific middleware and minor page component adjustments._
+    * **globalHandler, function(req, res, next)**: _Runs on all application requests, regardless of what route may or may not have been matched. Suitable for service API requests and global middleware._
 
     These handler properties are set directly on the module object, just like the `routes` property. They are just standard NodeJS request handlers.
 
@@ -2137,7 +2388,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     For example, to load Connect middleware and session management (after installing connect - `npm install connect`)
     within a module, one can do:
 
-    > Note this code use of Connect is currently pending Connect pull request [#701](https://github.com/senchalabs/connect/pull/701), which should be approved shortly.
+    > Note this Connect support is currently only working in the master branch of Connect, pending the release of Connect version 2.7.3.
 
     ```javascript
       define(['zest', 'connect'], function($z, connect) {
@@ -2160,7 +2411,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       });
     ```
 
-    The ZOE async function chain allows for easy creation of server handler functions - [read its documentation here](/docs/zoe#zoe.fn.ASYNC).
+    The ZOE async function chain allows for easy creation of server handler functions - [read its documentation here](http://zoejs.org/#zoe.fn.ASYNC).
     ***
         """
       ,
@@ -2277,38 +2528,44 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     But if the `modules` array in `zest.json` is empty, this module is loaded as a fallback module, allowing Zest Server to be a provide the render service by default.
 
-    Once enabled, it responds to the service request:
+    Once enabled, it responds to the service requests:
 
     <code>**POST** /render:{moduleId*}</code>
 
+    <code>**POST** /renderPage:{moduleId*}</code>
+
+    * **render / renderPage**: _The render mode to use (render a normal component or partial page component)._
     * **moduleId**: _The render structure module ID to render._
     * **POST body**: _The strictly encoded JSON render options._
     * **POST response**: _The rendered HTML, as an efficiently streamed output._
 
     If the module ID is not found, or there is an error loading, a 500 header will be returned, with the body containing the error message.
 
-    For example, if I run the following:
+    For example, for the following POST request:
 
     ```
-      curl --data '{"width":50}' 'http://localhost:8082/render:cs!app/dialog2'
+      curl -d '{"width":50}' 'http://localhost:8081/render:app/Dialog/dialog'
     ```
 
     the response is:
 
     ```
-      <script src='/lib/require-inline.js' data-require='css!app/button,css!app/dialog'></script>
-      <div id="z1" component="SimpleDialog" style="
+      <style data-zid="z1">
+      #z1{ 
         width: 50px;
         height: 300px;
-      ">
-        <div class='button'>
-          <button id="z2" component="MyButton">Button</button>
-          <script src='/lib/require-inline.js' data-require='zest,cs!app/button'></script> 
-          <script src='/lib/zest/attach.js' data-zid='z2' data-controllerid='cs!app/button'></script> 
+      }
+      </style>
+      <script src='/lib/require-inline.js' data-require='css!app/Dialog/button,css!app/Dialog/dialog'></script> 
+      <div id="z1" component class="SimpleDialog">
+        <div class="button">
+          <button id="z2" component class="MyButton">Button</button>
+          <script src='/lib/require-inline.js' data-require='zest,app/Dialog/button-attach'></script> 
+          <script src='/lib/zest/attach.js' data-zid='z2' data-controllerid='app/Dialog/button-attach'></script> 
         </div>
       </div>
-      <script src='/lib/require-inline.js' data-require='zest,cs!app/dialog2'></script> 
-      <script src='/lib/zest/attach.js' data-zid='z1' data-controllerid='cs!app/dialog2'></script>
+      <script src='/lib/require-inline.js' data-require='zest,app/Dialog/dialog-attach'></script> 
+      <script src='/lib/zest/attach.js' data-zid='z1' data-controllerid='app/Dialog/dialog-attach'></script>
     ```
 
     > If you use this service to create a render library for any other frameworks, [create an issue](https://github.com/zestjs/zestjs.org) to post the link here.
@@ -2316,6 +2573,10 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     The attachment scripts are all designed to work so long as the rendering page `lib` folder is found as expected, and the module IDs match up to what is expected. This includes instant CSS injection without flashing and script loading with instant enhancements. 
 
     In production, the only difference in the HTML is that the `require-inline.js` and `attach.js` requests will be mapped to the single built file name. This is automatically changed when running Zest Server in the production environment. With paths mappings, the RequireJS module IDs get mapped to their correct built layer to load from.
+
+    The render server is started in a production environment in the same way as before.
+
+    To examine how the above script output works, [an explanation is given here](#Server%20Rendering%20Mechanics).
         """
       ]
     ,
@@ -2383,157 +2644,231 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     > If using Zest Server, [skip to the Zest Server Single File Build](#Single%20File%20Build%20-%20-Zest%20Server).
 
-    In the Zest Client template, 
+    In the [Zest browser template example](#Install%20Zest%20Client), we have the build file:
+
+    build.js:
+    ```javascript
+      {
+        appDir: 'www',
+        dir: 'www-built',
+
+        mainConfigFile: 'www/main.js',
+
+        // faster build - only minifies layers
+        skipDirOptimize: true,
+        keepBuildDir: true,
+
+        modules: [
+          {
+            name: '../main',
+            include: ['app/main']
+          }
+        ]
+      }
+    ```
+
+    The natural process of building in a module which requires a component is enough to ensure that the CSS and attachments are included as needed in the build.
+
+    The plugins we've used ensure that the RequireJS Optimizer does everything for us.
+
+    To ensure that the attachment modules are included, we need to have at least one component in a build layer require the Zest client library itself.
 
         """
       ,
         sectionName: 'Single File Build - Zest Server'
         markdown: """
 
+    When running a server build, Zest Server drives the optimization process for us.
 
+    It creates a default blocking script layer for the page, `zestLayer`.
 
-    To create a build of the dialog component, we want to include the dialog and all its dependencies (which will include the button, CSS, jQuery and the Zest Client library)
+    This layer by includes RequireJS and the core libraries necessary for Zest.
 
-    in `require.build` configuration for the server, or `build.js` for the client example:
+    We can add to it by ammending it on the RequireJS build configuration, even though it isn't strictly a RequireJS configuration.
+
+    _When building render components which are only rendered on the server, we don't want to include the render component itself in the build
+     as this code won't be needed on the client._
+
+    _For this purpose, we use an **Attachment Build**, which is indicated by the sudo-plugin syntax `^!renderModuleID`._
+
+    _This builds in just the CSS or compiled LESS, along with the full dependency trees of the attachment module scripts for the components._
+
+    To build just the attachment scripts necessary to display the dialog, we use the build configuration:
+
+    In zest.json or a module:
     ```javascript
-    {
-      modules: [
-        {
-          name: 'cs!app/dialog'
+      require: {
+        build: {
+          zestLayer: {
+            include: ['^!cs!app/dialog']
+            //'exclude' and 'excludeShallow' can also be provided here
+          }
         }
+      }
+    ```
+
+    **The above is the only necessary configuration to ensure all dependencies for server rendering of the dialog are included on the page.**
+
+    We can still build in a component normally to include the render component scripts as well where client rendering is needed.
+
+    Running `zest start dev-build` or `zest start production` will then enable loading all scripts from this layer.
+
+    For small sites such as this one, this build is sufficient - all resources are loaded from a single file.
+
+    For larger sites, some thought should be taken to structure multiple layers between pages.
+
+        """
+      ,
+        sectionName: 'Separate CSS Build - Zest Server'
+        markdown: """
+
+    The single `zestLayer` script will dynamically inject the page CSS, minimizing the page load to a single script request.
+
+    To support environments that don't execute JavaScript, a `separateCSS` option can be set to build the layer CSS into
+    a standard `<link>` tag instead.
+
+    To enable this, set the `separateCSS` property on the `zestLayer` object in the build:
+
+    ```javascript
+      require: {
+        build: {
+          zestLayer: {
+            include: ['^!cs!app/dialog'],
+            separateCSS: true
+          }
+        }
+      }
+    ```
+
+    All build modules support separateCSS as it is a feature of the [Require-CSS module](https://github.com/guybedford/require-css).
+
+    For other build layers, this separate CSS will need to be included manually as needed in the page component `head` region.
+
+        """
+      ,
+        sectionName: 'Multiple Layer Build - Zest Server'
+        markdown: """
+
+    #### Building Multiple Layers
+
+    To build additional layers alongside the `zestLayer`, we use the standard `modules` build option:
+
+    In zest.json or a module:
+    ```javascript
+      require: {
+        build: {
+          zestLayer: {...},
+          zestExcludes: {...},
+          modules: [
+          {
+            name: 'product-page',
+            include: ['^!pages/products'],
+            exclude: ['zest/layer', 'zest/excludes']
+          }
+          ]
+        }
+      }
+    ```
+
+    The excludes, `zest/layer` and `zest/exclude` provide standard excludes for layers to ensure they don't include unnecessary core scripts.
+
+    The exclude layer can also be ammended by using the `zestExcludes` configuration just like `zestLayer`.
+
+    #### Configuring Mulitple Layer Loading
+
+    Zest Server automatically includes the layer map for the `zestLayer` built layer in each loaded page. This ensures that a request to a module located within the
+    `zestLayer` will seek the layer first and not attempt to download the module separately.
+
+    When running multiple layers on a page, typically all other layers should not be loaded at all but only requested asynchronously when they are needed
+    (although they could be added as blocking page scripts in the page configuration if really desired).
+
+    By including a layer map in the page, any module request can trigger a layer load from the suitable layer as needed, without it needing to be loaded or executed first.
+
+    By default, only the layer map for the `zestLayer` is included in all pages. When using multiple layers in the page, Zest Server will
+    include the layer maps of layers contained in the `layers` property on the page component.
+
+    So we add our layer name to the page either in the base site configuration, module configuration, or specific page route configuration.
+
+    For example in module:
+    ```javascript
+      routes: {
+        '/product/page': {
+          title: 'Page Title',
+          body: '@pages/products',
+          layers: ['product-page']
+        }
+      }
+    ```
+
+    The above allows full build flexibility for optimizing the page loads at a low level.
+
+        """
       ]
-    }
-    ```
-
-    include the exclude of coffee script etc. and then include an example test page (the site will be!)
-
-    #### Core Zest Layer
-
-    If using Zest Server, the core layer is already created automatically, containing the build of the Zest files.
-
-    This layer is called `zest/build-layer`.
-
-    We can add to this layer using the specical configuration items:
-
-    ```javascript
-    {
-      zestLayerInclude: [moduleIds]
-      zestLayerExclude: [moduleIds]
-      zestLayerExcludeShallow: [moduleIds]
-    }
-    ```
-
-    #### Exclude Layer Helper
-
-    Another layer is also generated, called `zest/excludes`. This is an exclusion-only layer which should be applied to
-    all layers you create in order to 
-
-
-
-    In this way we can ammend the core build to ensure that our entire site is loaded from a single file, while having
-    the standard build configurations automatically populated.
-
-    Typically one only needs to add the following in the server configuration for it all to just work:
-    ```javascript
-      zestLayerInclude: ['$attach!my/page/component']
-    ```
-        """
-      ,
-        sectionName: 'Render Component Controller-Only Attachment Builds'
+    ,
+      chapterName: 'Appendix'
+      sections: [
+        sectionName: 'Server Rendering Mechanics'
         markdown: """
 
-    When running a build of a Render Component, the build will typically contain the template (compiled if using a template
-    loader plugin), CSS or compiled LESS, the compiled CoffeeScript it was written in CoffeeScript, as well as any dependencies.
+    For those interested in understanding what Zest Server is doing at a script level, an explanation of the process
+    is given here.
 
-    This is all assuming that we want the **entire** Render Component. That is, the ability to render that Render Component
-    on the client.
+    _The main principle of the Zest Server output is that a single HTML string should be able to completely describe the rendering
+     and attachment of a component, including its styles and controller such that it can be streamed straight to the browser._
 
-    But if the component was rendered from the server, it makes no sense to package the render code as well. We only need to
-    package the CSS, compiled LESS and controller code, as well as the attachment of any sub components used in regions.
+    Accomplishing the above while maintaining full compatibility with RequireJS, which is naturally asynchronous, is key to this approach.
 
-    To automatically package everything except the render code, we can use the `$attach` plugin provided by Zest.
-
-    In Zest Client, the attach plugin is located at `zest/attachment`.
-
-    In place of a build id, we then specify:
+    Here is the example output for a button component rendered on the server:
 
     ```
-      include: ['$attach!my/component/id']
+      <script src='/lib/require-inline.js' data-require='css!app/button'></script>
+
+      <button id="z1" component>Button</button>
+
+      <script src='/lib/require-inline.js' data-require='zest,cs!app/button'></script> 
+
+      <script src='/lib/zest/attach.js' data-zid='z1' data-controllerid='cs!app/button-controller' data-options='{pipedOptionsJSON}'></script>
     ```
 
-    This doesn't conflict with a full build of the component, so that if another module needs the full component there will
-    be no build conflict or duplication.
+    The inline requires are performed using the [require-inline](https://github.com/guybedford/require-inline) RequireJS addon,
+    which provides a full-compatible synchronous inline script loading capability.
 
-    Note that the attachment can only separate the render code from the controller code, when the components have been
-    with separate `attach` modules of the form:
+    The load process then takes the following form as above:
 
-    ```javascript
-    define({
-      render: '...',
-      attach: './my-controller-id'
-    });
-    ```
+    1. The `<script>` tag before the button HTML ensures that the button style has been loaded, blocking the page while it does this.
+       If the CSS is built into a layer, it will load that layer. If the CSS has already been loaded, this will be instantaneous.
 
-    When there isn't a separate controller Id as above, the attachment build will be the same as the full build anyway,
-    although component dependencies will also be included with their attachment builds.
+    2. The HTML for the button is then displayed, now that the styles have been loaded so that styled HTML is displayed.
 
-        """
-      ,
-        sectionName: 'Optimized Page Loading with Zest Server'
-        markdown: """
+    3. Any regions within the component have the same cycle applied to themselves.
 
-    ### Layer Loading
+    4. The attachment module for the button is loaded. When the `progressive` property on the component has been enabled,
+       the attachment will not block the page and the third line of script above is ommited by the render function causing
+       progressive enhancement behavior.
+       For critical attachments, the page will not display further until the attachment script is loaded.
+    
+    5. Finally the attachment script is executed and the controller registered to the element. The options for attachment
+       are loaded from the `data-options` JSON attribute, as provided by the render component pipe function on the server.
 
-    When using multiple layers on a page, there are different ways to go about loading the layers. Instead of just
-    throwing all the layers into `<script>` tags at the top of the page, layers can be carefully loaded for an optimal
-    page load.
+    The idea is that these critical requires form a **critical path** for the page load at a fine level. In production,
+    this critical path should be minimized as far as possible to be a small single blocking layer ideally, with asynchronous parallel layers 
+    downloaded after this blocking page path.
 
-    To allow for efficient layer loading, the Zest Server page template has a `layers` array option. This is the array
-    of layers to use with the current page. By default the `zest/build-layer` layer is already included. When using additional
-    layers on the page, add them to this array in the configuration file or through the page options in the module.
+    In terms of future technology support, when SPDY becomes mainstream builds may become redundant allowing for such requires to work in production
+    without layering being necessary. The use of script tags without inline script also ensures that this approach can be compatible with
+    a Content Security Policy.
 
-    The layer loading process is based on RequireJS best-practise:
+    When components have been designed for progressive enhancement, the attachment scripts can be non-blocking, but extra care needs
+    to be taken when dealing with component communication using asynchronous component selection and controller behavior.
 
-    1. When running the build, Zest Server stores the built file dependencies so that it has a full list of all layer dependencies.
-    2. When including a layer in the page, Zest Server adds RequireJS paths configurations mapping each of the dependencies for that
-     layer to the layer itself. _The layer is thus not loaded by default, but loaded as soon as a request is made to a dependency
-     that refers to a layer._ The paths configuration ensures that the dependency is always loaded from the correct layer and never
-     directly.
+    Components that have a highly dynamic behaviour can use render and require calls within their attachment code to dynamically
+    render more complex interactions. This way the component can display quickly with some partial scripts before fully rendering into itself with
+    more complex interaction and data. 
 
-     
-    ### Understanding the Page Load and Inline Requiring
+    This can form a more advanced version of progressive enhancement, with baseline script behaviour loaded within the critical layer,
+    followed by more complex scripts loaded dynamically. These dyanamic scripts can then be built into separate async layers, 
+    so that the core critical layer remains minimal.
 
-    This is all good and well, but since loading is asynchronous, that means there will be a delay in displaying resources and dynamic
-    scripts while these layers are loaded. The user could be seeing unstyled content and unattached render components in this time.
-
-    To solve this problem, [require-inline](https://github.com/guybedford/require-inline) is used to provide a synchronous 
-    requiring mechanism while the page is being displayed.
-
-    It is an addon to RequireJS that is fully compatible with all module loads, blocking the page display while the load is made.
-
-    Loading a stylesheet or module with require-inline is thus equivalent to using a blocking `<link>` or `<script>` tag, but providing
-    the full RequireJS API load.
-
-    The way Render Components are loaded is with a **require-inline** call before the component, ensuring that the styles for
-    the component have loaded. If the css dependency maps to a layer, then that layer will be sychronously downloaded at this point
-    as it is the critical resource blocking the current page display.
-
-    This is followed by the HTML for the render component. Any sub-render components will also have the same process running on them,
-    so that by the time all the HTML for this component has loaded, all its sub components will be fully loaded first.
-
-    Immediately after the component HTML, is another **require-inline** call which ensures the component controller is fully
-    loaded, before the attachment is performed.
-
-    In this way, any visible HTML will always be styled, and it will be entirely possible to interact with components before
-    the page load has even completed.
-
-    When optimizing the page load, it is important to carefully consider layers such that this interactive load is as quick as possible,
-    and using as few layers as possible. If there are parts of the page outside of the layer they will be requested with separate
-    requests. By checking the network tab, these can be found and then added back into the layer. The goal should be for all of the
-    page controllers and scripts to sit within a layer.
-
-    In this way, full control over the page load dependencies is given based on the critical load requirements. This allows
-    for creating highly optimized sites with minimal development effort.
         """
       ]
     ]

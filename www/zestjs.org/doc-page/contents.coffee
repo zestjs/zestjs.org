@@ -26,6 +26,8 @@ define ['cs!../page/line-break', 'less!./contents'], (LineBreak) ->
         </div>
       </div>
     """
+
+  attachAsync: true
   
   contentsFooter: [
     render: LineBreak

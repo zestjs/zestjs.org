@@ -1,6 +1,6 @@
 define(['zest', 'css!./button'], function($z) {
   return {
-    'class': 'MyButton',
+    className: 'MyButton',
     options: {
       text: 'Button',
       msg: 'Message'
@@ -13,10 +13,6 @@ define(['zest', 'css!./button'], function($z) {
         msg: o.msg
       };
     },
-    attach: function(el, o) {
-      el.addEventListener('click', function() {
-        alert(o.msg);
-      });
-    }
+    attach: './button6-attach'
   };
 });
