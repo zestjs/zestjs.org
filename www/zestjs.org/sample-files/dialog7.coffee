@@ -22,11 +22,4 @@ define ['zest', 'cs!app/button', 'css!./dialog'], ($z, Button) ->
     options:
       text: o.confirmText
 
-  attach: (el, o) ->
-    MyButton = $z.select '>.button .MyButton', el
-    MyButton.click.on -> $z.dispose el
-    alert('height outside DOM: ' + el.offsetHeight)
-    return {
-      init: ->
-        alert('height in DOM: ' + el.offsetHeight)
-    }
+  attach: 'cs!./dialog7-attach'

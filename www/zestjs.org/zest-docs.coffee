@@ -1136,7 +1136,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           }
     ```
     
-    dialog1.coffee:
+    dialog5.coffee:
     ```coffeescript
       define ['cs!./button', 'css!./dialog'], (Button) ->
         className: 'SimpleDialog'
@@ -1152,10 +1152,10 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           options:
             text: o.confirmText
 
-        attach: 'cs!./dialog1-attach.coffee'
+        attach: 'cs!./dialog5-attach.coffee'
     ```
 
-    dialog1-attach.coffee:
+    dialog5-attach.coffee:
     ```coffeescript
       define [], () ->
         return (el, o) ->
@@ -1168,7 +1168,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     With the RequireJS CoffeeScript plugin we simply add the `cs!` prefix to the module ID:
     
     ```jslive
-      $z.render('@cs!app/dialog1', {
+      $z.render('@cs!app/dialog5', {
         confirmText: 'Ok',
         content: '&lt;p>content&lt;/p>'
       }, document.querySelector('.container-22'));
@@ -1192,7 +1192,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     This style property is demonstrated with CoffeeScript, because it is much neater than the JavaScript equivalent. In JavaScript,
     the `style` string could be imported from a separate text file using the RequireJS text plugin.
     
-    dialog2.coffee:
+    dialog6.coffee:
     ```coffeescript
       define ['zest', 'cs!./button', 'css!./dialog'], ($z, Button) ->
         className: 'SimpleDialog'
@@ -1219,7 +1219,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           options:
             text: o.confirmText
 
-        attach: 'cs!./dialog1-attach'
+        attach: 'cs!./dialog5-attach'
     ```
     
     Notice the use of the third escaping argument, `@options.width`. This is the equivalent of writing `this.options.width` in JavaScript. We are
@@ -1227,7 +1227,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     can still be used.
     
     ```jslive
-      $z.render('@cs!app/dialog2', {
+      $z.render('@cs!app/dialog6', {
         width: 'asdf',
         height: 300,
         confirmText: 'Ok',
@@ -1253,7 +1253,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     As an example, we can query the dialog size in its attachment:
 
-    dialog3-attach.coffee (dialog3.coffee as in dialog2.coffee):
+    dialog7-attach.coffee (dialog7.coffee as in dialog6.coffee):
     ```coffeescript
       define [], () ->
         return (el, o) ->
@@ -1267,7 +1267,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           }
     ```
     ```jslive
-      $z.render('@cs!app/dialog3', {
+      $z.render('@cs!app/dialog7', {
         height: 600,
         confirmText: 'Ok',
         content: '&lt;p>content&lt;/p>'

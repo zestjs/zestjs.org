@@ -1,18 +1,18 @@
-define ['require', 'cs!app/dialog1', 'zest-server'], (require, Dialog, zest) ->
+define ['require', 'zest-server'], (require, zest) ->
   routes:
 
     '/dialog1': 
       title: 'Dialog Page'
-      body: '@cs!app/dialog2'
+      body: '@cs!app/dialog5'
 
     '/dialog2/{width}/{height}': 
       title: 'Dialog Page'
-      body: '@cs!app/dialog2'
+      body: '@cs!app/dialog5'
 
     '/dialog3':
       title: 'Dialog Page'
       requireMain: 'test'
-      body: '@cs!app/dialog2'
+      body: '@cs!app/dialog5'
       options:
         width: 400
         height: 50

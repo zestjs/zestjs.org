@@ -12,4 +12,4 @@ define ['cs!./button', 'css!./dialog'], (Button) ->
     options:
       text: o.confirmText
 
-  attach: 'cs!./dialog1-controller'
+  attach: 'cs!./dialog5-attach'

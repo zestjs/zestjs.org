@@ -65,12 +65,12 @@ require:
         'app/dialog3'
         'app/dialog4'
         
-        'cs!app/dialog1'
-        'cs!app/dialog2'
-        'cs!app/dialog3'
-        'cs!app/dialog4'
+        'cs!app/dialog5'
+        'cs!app/dialog6'
+        'cs!app/dialog7'
 
         'cs!app/button'
 
         'app/button-list'
+
       ]
