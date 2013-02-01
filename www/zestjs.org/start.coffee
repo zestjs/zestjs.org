@@ -81,7 +81,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           1. To install Zest server, install Zest and Volo as global modules (ensure you have [NodeJS](http://nodejs.org/) installed):
 
             ```
-              npm install volo zest -g
+              npm install volo zest-server -g
             ```
           
           2. To create a Zest application, use [Volo](http://volojs.org) to automatically generate the application from the basic server template:
