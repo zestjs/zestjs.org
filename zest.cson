@@ -71,6 +71,7 @@ require:
         'cs!app/dialog7'
 
         'cs!app/button'
+        'cs!app/dialog'
 
         'app/button-list'
 
