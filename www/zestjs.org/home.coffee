@@ -1,10 +1,3 @@
-define [
-  'zest'
-  'cs!./page/page'
-], ($z, Page) ->
-  $z.create([Page],
-    options:
-      title: 'ZestJS'
-      section: ''
-    content: ['Welcome']
-  )
+define ['cs!./start'], (Start) ->
+  render: Start.body
+  options: Start.options

@@ -125,9 +125,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
           Zest provides a suggested way of setting up component eventing and inheritance.
           
-          This is referred to as the [@ Zest Object Extension model (ZOE)](http://zestjs.org/docs/).
+          This is referred to as the [Zest Object Extension model (ZOE)](http://zoejs.org/).
           
-          It's a very small (6KB) JavaScript inheritance model with eventing. It was designed from the ground up to work with
+          It's a small JavaScript inheritance model with eventing. It was designed from the ground up to work with
           Zest Render Components.
           
           It provides a simple class pattern, which makes it very easy to define controllers as JavaScript classes

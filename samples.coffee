@@ -1,18 +1,27 @@
 define ['require', 'zest-server'], (require, zest) ->
   routes:
 
+    '/dialog':
+      title: 'Dialog Page'
+      body: 
+        render: '@cs!app/dialog6'
+        options:
+          content: "<p>Welcome to ZestJS.</p>"
+          confirmText: 'Yay'
+          width: 300,
+          height: 50
+
     '/dialog1': 
       title: 'Dialog Page'
-      body: '@cs!app/dialog5'
+      body: '@cs!app/dialog6'
 
     '/dialog2/{width}/{height}': 
       title: 'Dialog Page'
-      body: '@cs!app/dialog5'
+      body: '@cs!app/dialog7'
 
     '/dialog3':
       title: 'Dialog Page'
-      requireMain: 'test'
-      body: '@cs!app/dialog5'
+      body: '@cs!app/dialog7'
       options:
         width: 400
         height: 50
@@ -23,7 +32,7 @@ define ['require', 'zest-server'], (require, zest) ->
     '/dialog4':
       title: 'Dialog Page'
       requireMain: 'test'
-      body: '@cs!app/dialog2'
+      body: '@cs!app/dialog6'
       options:
         width: 400
         height: 50
@@ -40,10 +49,10 @@ define ['require', 'zest-server'], (require, zest) ->
     if req.method != 'POST'
       return next();
 
-    if !(routeMatch = req.url.match /^\/render:cs!app\/dialog2/)
+    if !(routeMatch = req.url.match /^\/render:cs!app\/dialog6/)
       return next();
 
-    moduleId = 'cs!app/dialog2'
+    moduleId = 'cs!app/dialog6'
 
     postData = []
     req.on 'data', (chunk) ->

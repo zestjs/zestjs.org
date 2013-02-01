@@ -1,186 +1,139 @@
 define ['cs!./doc-page/doc-page'], (DocPage) ->
-  title: 'Zest Quick Start'
+  title: 'ZestJS - Client and Server Component Rendering'
   body: DocPage
   options:
     section: 'start'
     data: [
-      chapterName: 'Zest Quick Start'
+      chapterName: 'ZestJS'
       sections: [
-        sectionName: 'Getting Started'
+        sectionName: 'Client and Server Component Rendering'
         markdown: """
 
-          There are two template applications provided to quickly get started with Zest.
+      ZestJS provides client and server rendering for static and dynamic widgets (**Render Components**) written as AMD
+      modules providing low-level application modularity and portability.
 
-          The [Zest Client Quick Start](#Install%20Zest%20Client) template demonstrates browser rendering and builds.
+      1. Write widgets as AMD Render Components.
+      2. Render them on the client or server with a single render call.
+      3. Build with only the RequireJS Optimizer into a single file or layers in production, including the compilation of CSS or LESS and templates.
 
-          The [Zest Server Quick Start](#Install%20Zest%20Server) template demonstrates server routing and rendering with NodeJS.
+      ### Client Rendering
 
-          A brief introduction to [rendering](#Render%20Components), [server modules](#Server%20Modules) and 
-          [builds](#Production%20Builds) is provided here.
+      Include RequireJS and the Zest Client library (10KB minified and gzipped) in the page, then use the provided render function:
 
-          For further background, [read the conceptual introduction](/why-zest).
+      ```jslive
+        $z.render('@app/dialog', {
 
-          For the comprehensive guide to rendering, [read the documentation here](/docs).
-                    
-        """
-      ,
-        sectionName: 'Engage'
-        markdown: """
-          If you're stuck or have any questions, post a comment on the [ZestJS Google Group](http://groups.google.com/group/zestjs).
-          
-          To report issues or get involved in the development, [find ZestJS on GitHub](https://github.com/zestjs).
-        """ 
-      ]
-    ,
-      chapterName: 'Installation'
-      sections: [
-        sectionName: 'Install Zest Client'
-        markdown: """
-          The best way to start an application is by installing one of the application templates with Volo.
-
-          > [Volo](http://volojs.org) is a package manager that allows for creating project templates and installing project dependencies such as jQuery (`volo add jquery`).
-            It's a convenient way to get started with Zest and manage project dependencies. Other package managers can also work with Zest - feel free to send a pull request.
-
-          1. * Either use Volo to install the client template, by ensuring you have [NodeJS installed](http://nodejs.org), then installing Volo
-               and creating the project from the template:
-
-                ```
-                  npm install volo -g
-                  volo create myapp zestjs/template-browser
-                ```
-
-               This will download the template and all its dependencies to the 'myapp' folder.
-
-          2. Run the app by opening up `www/index.html` in the browser.
-
-        This loads up RequireJS with the minimal Zest configuration, and then renders a sample component into the page.
-
-        This technique can be used to create single page apps, with all Zest rendering occurring in the browser.
-
-        #### CoffeeScript Template
-
-          Writing Render Components with CoffeeScript is a lot neater. To see the sample in CoffeeScript, use the version from:
-
-          ```
-            volo create myapp zestjs/template-browser-cs
-          ```
-
-          The CoffeeScript template also comes with `less` in the sample app as well.
-
-        #### Next Steps
-
-        Follow the [Render Component Introduction](#Render%20Components) below.
-
-        ***
-
-        """
-      ,
-        sectionName: 'Install Zest Server'
-        markdown: """
-        
-          1. To install Zest server, install Zest and Volo as global modules (ensure you have [NodeJS](http://nodejs.org/) installed):
-
-            ```
-              npm install volo zest-server -g
-            ```
-          
-          2. To create a Zest application, use [Volo](http://volojs.org) to automatically generate the application from the basic server template:
-            ```
-              volo create myapp zestjs/template-basic
-            ```
-
-            This will create a new folder called 'myapp' containing the project template, and download all the necessary Zest dependencies into the public library folder.
-
-          3. * To start the template application, simply run `zest` from within the zestapp folder:
-              ```
-                cd zestapp
-                zest
-              ```
-             * Alternatively, if you want to use Zest Server from within NodeJS, run the NodeJS server at:
-              ```
-               node ~node-server.js
-              ```
-          
-          5. Navigate to <http://localhost:8080/> and <http://localhost:8080/test> to see the site.
-          
-        #### CoffeeScript Template
-
-          For the same template, but written as a CoffeeScript server and using LESS, use the following install command:
-
-          ```
-            volo create myapp zestjs/template-basic-cs
-          ```
-
-          #### Next Steps
-
-          With the server installed, follow the [Render Component introduction below](#Render%Components).
-
-        ***
-          
-        """
-      ]
-    ,
-      chapterName: 'Quick Starts'
-      sections: [
-        sectionName: 'Render Components'
-        markdown: """
-        
-      In both template apps, you are greeted to an incredibly simple welcome component. So how does this component get rendered?
-      
-      In both cases, it is rendered by the Zest render function. 
-
-      With Zest Server, the application routing matches the URL to a component to render with some options.
-
-      With the Zest Client example, the main application code entry point simply runs the render directly in the form:
-      
-      ```javascript
-        $z.render('app/Dialog/dialog', {
+          content: "&lt;p>Welcome to ZestJS.&lt;/p>",
           width: 300,
           height: 50,
-          content: "<p>Welcom to ZestJS.</p>",
-          confirmText: 'Close'
-        }, document.body);
-      ```
-      
-      The first parameter is the RequireJS moduleId for the component. RequireJS moduleIds are just like file paths, but excluding the
-      extension and base path. So the above means: render the component located at `www/app/Hello/hello.js`, and append it into the body of the page.
-      
-      The second parameter is the options object. This passes the data into the render component to render with, with defaults also provided.
-      
-      A standard render component looks like:
+          confirmText: 'Yay'
 
-      my-component.js:
+        }, document.querySelector('.dialog-example'));
+      ```
+      <div class="dialog-example"></div>
+
+      _Click "run" above to see the render._
+
+      * This loads the render component located RequireJS Module ID, `app/dialog`.
+      * The component is then rendered with the given content, dimensions and button text.
+      * It is injected into the div above with class `.dialog-example`.
+
+      ### Server Rendering
+
+      Use the provided NodeJS server module or the dedicated render server.
+
+      [Click here for the example component rendered on the server](/dialog).
+
+      * The exact same component is now rendered on the server, with assets and scripts attached seamlessly.
+      * The CSS blocks the HTML page render stream to show only styled widgets.
+      * The dynamic attachment can optionally block the page render stream until its scripts have loaded,
+        or it can be configured for progressive enhancement.
+      * In production, scripts are loaded fully compatible with built script layers.
+
+      ### Blow my Mind
+
+      _Click the run button below._
+
+      ```jslive
+        $z.dispose(document.body.childNodes);
+        
+        if (document.body.innerHTML.trim() == '')
+          alert('Rendering the homepage on the client...');
+
+        $z.render('@cs!site/home', document.body);
+      ```
+
+      <div class='test'></div>
+
+      * The Zest render function dynamically requested this home page component with RequireJS.
+      * RequireJS compiled and evaluated the CoffeeScript, LESS and Markdown with the compilers running in the browser.
+      * Zest then rendered the page component into the body, applying the dynamic attachments predictably.      
+
+      Note that in production we would never normally download the compilers to the browser, this is only useful in development as it
+        allows us to have an efficient on-demand compilation removing the need for a development build.
+
+      **Zest gives you:**
+
+      * A way of managing modular render component files with AMD.
+      * Custom controller registration for interacting with dynamic components.
+      * Nested component rendering with regions.
+      * A natural modularity for frontend code based on controller hierarchies.
+      * Natural build support through AMD including CSS or LESS, templates and attachments on both the client and server.
+      * Browser support in IE7+ and the rest.
+
+      **Zest doesn't give you:**
+
+      * Models or binding.
+      * A DOM manipulation library.
+      * A dictated environment - it's more of a tool and a method than a framework.
+
+        """
+      ,
+        sectionName: 'Writing Render Components'
+        markdown: """
+
+      A Render Component takes the following form as an AMD module:
+
+      button.js:
       ```javascript
-        define(['zest', 'jade!./my-component', 'less!./my-component'], function($z, Template) {
-          return {
-            // provide default options
-            options: {
-              some: 'default',
-              template: 'options'
-            },
-            // do some preprocessing of the data
-            load: function(options) {
-            },
-            // render the HTML template
-            render: Template,
-            // attach a dynamic enhancement
-            attach: './my-component-controller'
-          };
-        });
+      define(['zest', 'tpl!./button', 'less!./button'], function($z, template) {
+        return {
+          
+          // provide default options
+          options: {
+            text: 'Default Text'
+          },
+
+          // dynamic options processing (async also supported)
+          load: function(options) {
+            options.text = $z.esc(options.text, 'htmlText');
+          },
+
+          // render the template function into HTML
+          render: template,
+
+          // attach a dynamic enhancement
+          attach: './button-controller'
+
+        };
+      });
       ```
 
-      my-component-controller.js:
+      button-controller.js:
       ```javascript
         define(['zest', 'jquery'], function($z, $) {
           // enhancement function
           return function(el, o) {
-            // can do DOM manipulation
+            
+            // standard frontend code
             $(el).click(function() {
+              // ...
             });
+            
             // returns a controller object
             return {
-              controllerAction: function() {
-                // custom controller methods
+              method: function() {
+                // controller method
               }
             };
           }
@@ -189,14 +142,10 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       
       * The use of **define** is the standard way of defining a JavaScript module in [RequireJS](http://requirejs.org) (and in any AMD loader).
       * The array, `['zest', 'jade!./my-component', 'less!./my-component']` specifies the **dependencies** for the Render Component, loading
-        the zest client library, a jade template file, and a modular less style into the page before running the definition callback.
+        the zest client library, a template file, and a modular less style into the page before running the definition callback.
       * The module object then conforms to the **Render Component** interface, providing expected hooks as above. The render component is
         rendered by the **Zest Renderer** into HTML.
       * It has a separate attachment module which then applies the dynamic DOM behaviour.
-
-      By writing a component in the above format, it maintains complete modularity of style and scripts, and can be rendered both on the client
-      and server identically. In production, it can be fully compiled and built using the RequireJS optimizer, including dyanmic LESS or
-      template scripts.
       
     To learn more about rendering from the first principles, read the [Render Component Introduction](/docs#Writing%20Render%20Components).
     
@@ -283,6 +232,119 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     Read more on the [build process in the documentation](/docs#Building).
 
+        """
+      ]
+    ,
+      chapterName: 'Install'
+      sections: [
+        sectionName: 'Getting Started'
+        markdown: """
+
+          There are two template applications provided to quickly get started with Zest.
+
+          The [Zest Client Quick Start](#Install%20Zest%20Client) template demonstrates browser rendering and builds.
+
+          The [Zest Server Quick Start](#Install%20Zest%20Server) template demonstrates server routing and rendering with NodeJS.
+
+          A brief introduction to [rendering](#Render%20Components), [server modules](#Server%20Modules) and 
+          [builds](#Production%20Builds) is provided here.
+
+          For further background, [read the conceptual introduction](/why-zest).
+
+          For the comprehensive guide to rendering, [read the documentation here](/docs).
+                    
+        """
+      ,
+        sectionName: 'Install Zest Client'
+        markdown: """
+          The best way to start an application is by installing one of the application templates with Volo.
+
+          > [Volo](http://volojs.org) is a package manager that allows for creating project templates and installing project dependencies such as jQuery (`volo add jquery`).
+            It's a convenient way to get started with Zest and manage project dependencies. Other package managers can also work with Zest - feel free to send a pull request.
+
+          1. Use Volo to install the client template, by ensuring you have [NodeJS installed](http://nodejs.org), then installing Volo
+               and creating the project from the template:
+
+                ```
+                  npm install volo -g
+                  volo create myapp zestjs/template-browser
+                ```
+
+               This will download the template and all its dependencies to the 'myapp' folder.
+
+          2. Run the app by opening up `www/index.html` in the browser.
+
+        This loads up RequireJS with the minimal Zest configuration, and then renders a sample component into the page.
+
+        This technique can be used to create single page apps, with all Zest rendering occurring in the browser.
+
+        #### CoffeeScript Template
+
+          Writing Render Components with CoffeeScript is a lot neater. To see the sample in CoffeeScript, use the version from:
+
+          ```
+            volo create myapp zestjs/template-browser-cs
+          ```
+
+          The CoffeeScript template also comes with `less` in the sample app as well.
+
+        #### Next Steps
+
+        Follow the [Render Component Introduction](#Render%20Components) below.
+
+        ***
+
+        """
+      ,
+        sectionName: 'Install Zest Server'
+        markdown: """
+        
+          1. To install Zest server, install Zest and Volo as global modules (ensure you have [NodeJS](http://nodejs.org/) installed):
+
+            ```
+              npm install volo zest-server -g
+            ```
+          
+          2. To create a Zest application, use [Volo](http://volojs.org) to automatically generate the application from the basic server template:
+            ```
+              volo create myapp zestjs/template-basic
+            ```
+
+            This will create a new folder called 'myapp' containing the project template, and download all the necessary Zest dependencies into the public library folder.
+
+          3. * To start the template application, simply run `zest` from within the zestapp folder:
+              ```
+                cd zestapp
+                zest
+              ```
+             * Alternatively, if you want to use Zest Server from within NodeJS, run the NodeJS server at:
+              ```
+               node ~node-server.js
+              ```
+          
+          5. Navigate to <http://localhost:8080/> and <http://localhost:8080/test> to see the site.
+          
+        #### CoffeeScript Template
+
+          For the same template, but written as a CoffeeScript server and using LESS, use the following install command:
+
+          ```
+            volo create myapp zestjs/template-basic-cs
+          ```
+
+          #### Next Steps
+
+          With the server installed, follow the [Render Component introduction below](#Render%Components).
+
+        ***
+          
+        """
+      ,
+        sectionName: 'Engage'
+        markdown: """
+          If you're stuck or have any questions, post a comment on the [ZestJS Google Group](http://groups.google.com/group/zestjs).
+          
+          To report issues or get involved in the development, [find ZestJS on GitHub](https://github.com/zestjs).
         """
       ]
     ]

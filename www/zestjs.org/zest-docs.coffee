@@ -2114,7 +2114,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       routes: {
         '/dialog3': {
           title: 'Dialog Page',
-          body: '@cs!app/dialog2',
+          body: '@cs!app/dialog6',
           options: {
             width: 400,
             height: 300,
@@ -2236,7 +2236,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       routes: {
         '/dialog4': {
           title: 'Dialog Page',
-          body: '@cs!app/dialog2',
+          body: '@cs!app/dialog6',
           options: {
             width: 400,
             height: 300,

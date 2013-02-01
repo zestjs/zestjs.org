@@ -12,4 +12,4 @@ define [], () ->
     '/components':  'cs!site/components'
 
   page:
-    meta: """<meta name="viewport" content="width=device-width">"""
+    head: """<meta name="viewport" content="width=device-width">"""
