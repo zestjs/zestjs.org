@@ -3,7 +3,7 @@ define ['zest', 'css!./clearfix', 'less!./page'], ($z) ->
     section: 'about'
     menu:
       '/why-zest': 'Why Zest?'
-      '/start': 'Get Started'
+      '/start': 'Start'
       '/docs': 'Documentation'
       # '/components': 'Component Library'
   

@@ -30,6 +30,7 @@ environments:
       ]
 
 require:
+  waitSeconds: 0
   paths:
     www: '../'
     site: '../zestjs.org'
