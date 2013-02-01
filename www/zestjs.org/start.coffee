@@ -55,17 +55,36 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       _Click the run button below._
 
       ```jslive
+        // start preloading
+        require(['cs!site/home']);
+
+        // clear the page
         $z.dispose(document.body.childNodes);
         
-        if (document.body.innerHTML.trim() == '')
-          alert('Rendering the homepage on the client...');
+        // render a dialog
+        $z.render('@app/dialog', {
 
-        $z.render('@cs!site/home', document.body);
+          content: "&lt;p>Render the homepage from the client.&lt;/p>",
+          width: 300,
+          height: 50,
+          confirmText: 'Go'
+
+        }, document.body, function(Dialog) {
+
+          Dialog.Button.click.on(function() {
+
+            // render the homepage
+            $z.render('@cs!site/home', document.body);
+
+          });
+
+        });
       ```
 
       <div class='test'></div>
 
-      * The Zest render function dynamically requested this home page component with RequireJS.
+      * On the dialog controller, we register an event to the button click.
+      * When clicked, the Zest render function dynamically requested this home page component with RequireJS.
       * RequireJS compiled and evaluated the CoffeeScript, LESS and Markdown with the compilers running in the browser.
       * Zest then rendered the page component into the body, applying the dynamic attachments predictably.      
 
@@ -83,7 +102,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
       **Zest doesn't give you:**
 
-      * Models or binding.
+      * Models or binding - the choices here are left up to you.
       * A DOM manipulation library.
       * A dictated environment - it's more of a tool and a method than a framework.
 
