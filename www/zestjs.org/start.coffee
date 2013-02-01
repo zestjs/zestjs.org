@@ -14,7 +14,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
       1. Write widgets as AMD Render Components.
       2. Render them on the client or server with a single render call, loading them through RequireJS.
-      3. Build with only the RequireJS Optimizer into a single file or layers in production, including the compilation of CSS or LESS and templates.
+      3. Build with the RequireJS Optimizer into a single file or layers in production, including the compilation of CSS or LESS and templates.
 
       ### Client Rendering
 
@@ -60,6 +60,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
         // clear the page
         $z.dispose(document.body.childNodes);
+        document.body.scrollTop = 0;
         
         // render a dialog
         $z.render('@app/dialog', {
@@ -74,7 +75,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           Dialog.Button.click.on(function() {
 
             // render the homepage
-            $z.render('@cs!site/home', document.body);
+            $z.render('@cs!site/home', document.body, function() {
+              document.body.scrollTop = 1090; 
+            });
 
           });
 
