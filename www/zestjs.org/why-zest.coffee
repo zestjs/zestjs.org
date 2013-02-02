@@ -28,10 +28,10 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           workload between developers. Testing becomes easier as you can isolate separate components easily.
           
           _Zest grew out of the idea that there is a need to write such Render Components in a common format that can be easily installed,
-          rendered on both the client and server, built for production and shared between sites, without imposing unnecessary framework
-          constraints and leaving the development environment as open and flexible as possible._
+          rendered on both the client and server, built for production and shared between sites without imposing unnecessary framework
+          constraints, leaving the development environment as open and flexible as possible._
           
-          Zest at its core is an implementation and specification for these components, that works across all of today's devices and browsers.
+          Zest at its core is an implementation and specification for these components that works across all of today's devices and browsers.
         """
       ,
         sectionName: 'Designing for Many Environments'
@@ -79,7 +79,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           call, a page can be rendered from the browser that is also rendered on the server. We can have the benefits of dynamic
           application interaction, without page reloads, while still allowing search-engine crawling of all application pages.
 
-          A Render Component renders based on some render options. For a gallery, it could be a set of image URLs. For a menu,
+          A Render Component renders based on some render options. For a gallery, it could be a set of image URLs; for a menu,
           the menu item names and links.
           
           The render process is broken down into two phases:

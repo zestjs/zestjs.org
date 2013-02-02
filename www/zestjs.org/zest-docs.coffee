@@ -67,7 +67,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     By defining render components as [RequireJS](http://requirejs.org) modules, this allows us to manage code and style dependencies, code portability and builds.
     
     In both the zest-server or zest-browser template, we create `button.js` in the `www/app` folder (the buttons
-      in this example are numbered as we have some evolving to do).
+      in this example are numbered as we have some evolving to do here).
     
     >  The define statement takes two arguments - an array of dependency moduleIds, and a callback function. The callback is called once the dependencies have been
     loaded, with the loaded dependencies as the arguments. The return of the callback is the defined module value.
@@ -82,7 +82,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```
 
     The form above is the standard AMD module definition format used by [RequireJS](http://requirejs.org). It is just
-    defining the render component with its `render` property as we wrote previously.
+    defining the render component with its `render` property as we saw previously.
     
     > _Module IDs_ in RequireJS are like paths to files, relative to a baseUrl and excluding the '.js' extension.
 
@@ -172,7 +172,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       });
     ```
     
-    Since the jade plugin supports builds, the above would also support adding the compiled template into the build, without including
+    Since the Jade plugin supports builds, the above would also support adding the compiled template into the build, without including
     the Jade compiler in production.
     
     There is a list of supported templating languages on the [RequireJS plugins page](https://github.com/jrburke/requirejs/wiki/Plugins#wiki-templating).
@@ -521,7 +521,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     Often the component options need to be processed before being rendered by the template function. It is best to move any data-processing code
     into the load function in this case.
 
-    The load function is a hook on any render component, taking the following forms (this is the last hook - there are only 6 in total!):
+    The load function is a hook on any render component, taking the following forms (this is the last hook - there are only 7 in total):
 
     ```javascript
       // 1. synchronous
@@ -778,7 +778,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     * **context**, (optional): _An optional container DOM element within which to do the selection._
     * **callback**, (optional): _Optionally when rendering on the server and the component has **progressive
         enhancement** enabled, this allows a callback to be fired once the attachment has been done. 
-        This is only necessary for components with the `progressive` property set to true, but will work for all component selection.
+        This is only necessary for components with the `progressive` property set to true, but will work for all component selection._
 
     As a shortcut to `$z.selectAll`, `$z` is an alias to this selector function.
         
@@ -841,7 +841,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     })
     ```
 
-    If the component has already attached, the callback will trigger immediately. The selector still requires the HTML
+    If the component has already been attached, the callback will trigger immediately. The selector still requires the HTML
     to be present in the page before it will work. This is ensured naturally for any parent component as its attachment
     will come after any child component in the HTML.
 
@@ -1110,7 +1110,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     
     > To install the [CoffeeScript plugin](https://github.com/jrburke/require-cs) to write CoffeeScript modules, use `volo add jrburke/require-cs`.
 
-    CoffeeScript makes render components much easier to work with as cumbersome return calls and curly braces can be omitted. The multi-line string support with interpolation makes the templates easier to write, and the code looks nicer in general.
+    CoffeeScript makes render components much easier to work with, as cumbersome return calls and curly braces can be omitted. The multi-line string support with interpolation makes the templates easier to write, and the code looks nicer in general.
     
     button.coffee:
     ```coffeescript
@@ -1999,7 +1999,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ### Page Component Modules
 
     Instead of referencing the page component directly in the route, we can also specify a module ID to load the partial page component from.
-    Eg:
+    
     ```javascript
     define({
       routes: {
@@ -2230,7 +2230,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         sectionName: 'Asynchronous Streaming'
         markdown: """
 
-    To demonstrate the asynchronous streaming used by Zest Server, lets mimic a heavy loading function in the content of the dialog, taking 3 seconds to load data:
+    To demonstrate the asynchronous streaming used by Zest Server, let's mimic a heavy loading function in the content of the dialog, taking 3 seconds to load data:
 
     ```javascript
       routes: {
@@ -2445,7 +2445,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     #### Disabling the 404 Page
 
-    To have the Zest Server route handler call the `next` callback when used within NodeJS, the 404 not found page must be disabled. Simply set `404: null` in the Zest Server configuration file to disable the 404 catch-all, then additional handlers can be used after `zest.server`.
+    To have the Zest Server route handler call the `next` callback when used within NodeJS, the 404 Not Found page must be disabled. Simply set `404: null` in the Zest Server configuration file to disable the 404 catch-all, then additional handlers can be used after `zest.server`.
 
     To disable the file server, [see the next section](#File%20Server%20and%20Paths%20Configurations).
 
@@ -2854,7 +2854,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     this critical path should be minimized as far as possible to be a small single blocking layer ideally, with asynchronous parallel layers 
     downloaded after this blocking page path.
 
-    In terms of future technology support, when SPDY becomes mainstream builds may become redundant allowing for such requires to work in production
+    In terms of future technology support, when SPDY becomes mainstream, builds may become redundant, allowing for such requires to work in production
     without layering being necessary. The use of script tags without inline script also ensures that this approach can be compatible with
     a Content Security Policy.
 
@@ -2866,7 +2866,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     more complex interaction and data. 
 
     This can form a more advanced version of progressive enhancement, with baseline script behaviour loaded within the critical layer,
-    followed by more complex scripts loaded dynamically. These dyanamic scripts can then be built into separate async layers, 
+    followed by more complex scripts loaded dynamically. These dynamic scripts can then be built into separate async layers, 
     so that the core critical layer remains minimal.
 
         """
