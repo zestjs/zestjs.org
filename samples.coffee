@@ -7,7 +7,7 @@ define ['require', 'zest-server'], (require, zest) ->
         render: '@cs!app/dialog6'
         options:
           content: "<p>Welcome to ZestJS.</p>"
-          confirmText: 'Yay'
+          confirmText: 'Ok'
           width: 300,
           height: 50
 

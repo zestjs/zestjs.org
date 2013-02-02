@@ -71,8 +71,16 @@ require:
         'cs!app/dialog7'
 
         'cs!app/button'
-        'cs!app/dialog'
+        'app/dialog'
 
         'app/button-list'
 
-      ]
+      ],
+      exclude: ['jquery']
+
+    modules: [
+      name: 'demo'
+      create: true
+      include: ['cs!site/home']
+      exclude: ['zest/layer', 'zest/excludes']
+    ]

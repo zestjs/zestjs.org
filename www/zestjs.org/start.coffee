@@ -1,12 +1,13 @@
 define ['cs!./doc-page/doc-page'], (DocPage) ->
-  title: 'ZestJS - Client and Server Component Rendering'
+  title: 'ZestJS - Modular Render Components'
   body: DocPage
+  layers: ['demo']
   options:
     section: 'start'
     data: [
       chapterName: 'ZestJS'
       sections: [
-        sectionName: 'Client and Server Component Rendering'
+        sectionName: 'Modular Render Components'
         markdown: """
 
       ZestJS provides client and server rendering for static and dynamic HTML widgets (**Render Components**) written as AMD
@@ -26,7 +27,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           content: "&lt;p>Welcome to ZestJS.&lt;/p>",
           width: 300,
           height: 50,
-          confirmText: 'Yay'
+          confirmText: 'Ok'
 
         }, document.querySelector('.dialog-example'));
       ```
@@ -50,7 +51,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         or it can be configured for progressive enhancement.
       * In production, scripts are loaded fully compatible with built script layers.
 
-      ### Blow my Mind
+      ### Demonstration
 
       _Click the run button below._
 
@@ -88,7 +89,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
       * On the dialog controller, we register an event to the button click.
       * When clicked, the Zest render function dynamically requested this home page component with RequireJS.
-      * RequireJS compiled and evaluated the CoffeeScript, LESS and Markdown with the compilers running in the browser.
+      * RequireJS handles compilation of the site CoffeeScript, LESS and Markdown dynamically.
       * Zest then rendered the page component into the body, applying the dynamic attachments predictably.      
 
       Note that in production we would never normally download the compilers to the browser, this is only useful in development as it
@@ -108,6 +109,8 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       * Models or binding - the choices here are left up to you.
       * A DOM manipulation library.
       * A dictated environment - it's more of a tool and a method than a framework.
+
+      ***
 
         """
       ,
@@ -131,7 +134,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
             options.text = $z.esc(options.text, 'htmlText');
           },
 
-          // render the template function into HTML
+          // provide the template function returning HTML
           render: template,
 
           // attach a dynamic enhancement
@@ -168,8 +171,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       * The module object then conforms to the **Render Component** interface, providing expected hooks as above. The render component is
         rendered by the **Zest Renderer** into HTML.
       * It has a separate attachment module which then applies the dynamic DOM behaviour.
-      
-    To learn more about rendering from the first principles, read the [Render Component Introduction](/docs#Writing%20Render%20Components).
+    
+    [Try it out yourself by installing ZestJS](#Install), or to learn more about rendering from the first principles, 
+    read the [Render Component Introduction](/docs#Writing%20Render%20Components).
     
     ***
 
