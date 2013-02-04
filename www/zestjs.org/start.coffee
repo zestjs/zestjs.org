@@ -53,6 +53,12 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
       ### Demonstration
 
+      Pages are compound render components contained within eachother. This home page was developed as a compound render component, with separate header,
+      sidebar and content regions. 
+
+      To demonstrate the seamless change between client and server rendering for compound render components, we can re-render this home page from the client. 
+      This includes generating all the HTML from markup, attaching the scroll detection in the contents on the left and enabling the live code `run` buttons.
+
       _Click the run button below._
 
       ```jslive
@@ -87,6 +93,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
       <div class='test'></div>
 
+      * We completely cleared the page, then rendered a dialog.
       * On the dialog controller, we register an event to the button click.
       * When clicked, the Zest render function dynamically requested this home page component with RequireJS.
       * RequireJS handles compilation of the site CoffeeScript, LESS and Markdown dynamically.
@@ -125,6 +132,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
     The renderer takes the following form as an AMD module:
 
+    > The use of **define** is the standard way of defining a JavaScript module in [RequireJS](http://requirejs.org) (and in any AMD loader),
+      where the first array argument specifies the dependencies for the module.
+
       button.js:
       ```javascript
       define(['zest', 'tpl!./button', 'less!./button'], function($z, template) {
@@ -150,7 +160,13 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       });
       ```
 
-      The attachment module taks the following form:
+      * The renderer conforms to the expected **Render Component** specification so it can be rendered by a `$z.render` call.
+      * Rendering takes some options data, which gets populated with defaults or processed.
+      * By making the CSS or LESS a dependency of the module, this provides client injection, server tracing and modular CSS build support.
+      * A RequireJS template plugin can load a template file and return a JavaScript function to provide as the `render` property. A custom
+        function or string returning HTML from the options data can also be used.
+
+      The attachment module takes the following form:
 
       button-controller.js:
       ```javascript
@@ -172,13 +188,11 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           }
         });
       ```
-      
-      * The use of **define** is the standard way of defining a JavaScript module in [RequireJS](http://requirejs.org) (and in any AMD loader).
-      * The array, `['zest', 'jade!./my-component', 'less!./my-component']` specifies the **dependencies** for the Render Component, loading
-        the zest client library, a template file, and a modular less style into the page before running the definition callback.
-      * The module object then conforms to the **Render Component** interface, providing expected hooks as above. The render component is
-        rendered by the **Zest Renderer** into HTML.
-      * It has a separate attachment module which then applies the dynamic DOM behaviour.
+
+      * The attachment is called on the client with the DOM element and attachment options as arguments.
+      * The optional return value is a JavaScript object to be used as the controller.
+      * Controllers can be found using the selector `$z.select('.Button')`, where the selector is a standard DOM selector,
+        making debugging from the console straigthforward.
     
     [Try it out yourself by installing ZestJS](#Install), or to learn more about rendering from the first principles, 
     read the [Render Component Introduction](/docs#Writing%20Render%20Components).
@@ -191,7 +205,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         markdown: """
 
     Server rendering can be performed via a NodeJS API, as an HTML render service (just a like a database server), or
-    using a Zest Server module. THe HTML render service module could easily be linked into other server languages through
+    using a Zest Server module. The HTML render service module could easily be linked into other server languages through
     a bridge library, providing the rendering function for other frameworks.
 
     Zest Server modules map routes into components, which are then rendered with options from the URL.
