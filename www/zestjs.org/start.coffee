@@ -53,10 +53,10 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
       ### Demonstration
 
-      Pages are compound render components contained within eachother. This home page was developed as a compound render component, with separate header,
-      sidebar and content regions. 
+      Components can be combined together with regions allowing for compound components. This home page is a compound render component with separate header,
+      sidebar and content regions.
 
-      To demonstrate the seamless change between client and server rendering for compound render components, we can re-render this home page from the client. 
+      Written as a Render Component, despite this page being rendering on the server, we can re-render this home page from the client quite easily.
       This includes generating all the HTML from markup, attaching the scroll detection in the contents on the left and enabling the live code `run` buttons.
 
       _Click the run button below._
@@ -166,7 +166,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       * A RequireJS template plugin can load a template file and return a JavaScript function to provide as the `render` property. A custom
         function or string returning HTML from the options data can also be used.
 
-      The attachment module takes the following form:
+    The attachment module takes the following form:
 
       button-controller.js:
       ```javascript
