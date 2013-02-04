@@ -117,10 +117,13 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         sectionName: 'Writing Render Components'
         markdown: """
 
-      A Render Component consists of two modules: a renderer which returns HTML to be run on the client or server and an attachment which is
-      executed on the client to add interaction to the DOM.
+      A Render Component consists of two AMD modules:
 
-      The renderer takes the following form as an AMD module:
+      1. A **renderer** which can be used to generate HTML on the client or server, while specifying CSS dependencies.
+      2. An **attachment** which is executed on the client to add interaction to the DOM. For static components with
+         no interaction, this can be left out.
+
+    The renderer takes the following form as an AMD module:
 
       button.js:
       ```javascript
