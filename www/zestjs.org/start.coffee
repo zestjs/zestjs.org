@@ -57,7 +57,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
       ```jslive
         // start preloading
-        require(['cs!site/home']);
+        require(['demo']);
 
         // clear the page
         $z.dispose(document.body.childNodes);
@@ -117,7 +117,10 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         sectionName: 'Writing Render Components'
         markdown: """
 
-      A Render Component takes the following form as an AMD module:
+      A Render Component consists of two modules: a renderer which returns HTML to be run on the client or server and an attachment which is
+      executed on the client to add interaction to the DOM.
+
+      The renderer takes the following form as an AMD module:
 
       button.js:
       ```javascript
@@ -137,12 +140,14 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
           // provide the template function returning HTML
           render: template,
 
-          // attach a dynamic enhancement
+          // reference the attachment module
           attach: './button-controller'
 
         };
       });
       ```
+
+      The attachment module taks the following form:
 
       button-controller.js:
       ```javascript
@@ -183,7 +188,8 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         markdown: """
 
     Server rendering can be performed via a NodeJS API, as an HTML render service (just a like a database server), or
-    using a Zest Server module.
+    using a Zest Server module. THe HTML render service module could easily be linked into other server languages through
+    a bridge library, providing the rendering function for other frameworks.
 
     Zest Server modules map routes into components, which are then rendered with options from the URL.
 

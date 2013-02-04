@@ -10,7 +10,10 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         markdown: """
         
           1. [Writing Render Components](#Writing%20Render%20Components)
+          2. [Writing Extensible Render Components](#Managing)
           2. [Zest Server](#Zest%20Server)
+          3. [Building](#Building)
+
         """
       ]
     ,
@@ -515,67 +518,6 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
         
         """
       ,
-        sectionName: 'Dynamic Regions'
-        markdown: """
-
-    Often the component options need to be processed before being rendered by the template function. It is best to move any data-processing code
-    into the load function in this case.
-
-    The load function is a hook on any render component, taking the following forms (this is the last hook - there are only 7 in total):
-
-    ```javascript
-      // 1. synchronous
-      load: function(o) { ... }
-
-      // 2. asynchronous
-      load: function(o, done) { ... done() }
-    ```
-
-    Consider a component which renders a list of buttons:
-
-    button-list.js
-    ```javascript
-      define(['./button6'], function(Button) {
-        return {
-          options: {
-            buttonList: ['default', 'buttons']
-          },
-          load: function(o) {
-            o.listStructure = o.buttonList.map(function(title) {
-              return {
-                render: Button,
-                options: {
-                  text: title,
-                  msg: 'clicked ' + title
-                }
-              };
-            });
-          },
-          render: function(o) {
-            return "&lt;div>{&#96;listStructure&#96;}&lt;/div>"
-          }
-        };
-      });
-    ```
-
-    We map the options data into a render structure (an array of render structures being an allowed render structure itself),
-    which is then stored as a dynamically generated region on the options object, before being rendered.
-    
-    ```jslive
-      $z.render('@app/button-list', {
-        buttonList: ['here', 'are', 'some', 'buttons']
-      }, document.querySelector('.container-13'));
-    ```
-    <div class='container-13' style='margin: 20px'></div>
-
-    Note that when rendering lists where each item has mouse events or attachments, it is often better for performance for the list component 
-    itself to handle the  attachment through a single event handler delegate, than having individual attachments for each sub-component.
-
-    `$z.render` should never be called within the render cycle - regions should always be used for sub-rendering. `$z.render` can be used
-    in component attachment functions as part of client-side dynamic rendering though.
-
-        """
-      ,
         sectionName: 'Render Structures'
         markdown: """
 
@@ -656,8 +598,70 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     For regions with multiple items, we can return an array of instance renders from the render function on the region,
     each with their own mapped options.
 
-    ***
           """
+      ,
+        sectionName: 'Dynamic Regions'
+        markdown: """
+
+    Often the component options need to be processed before being rendered by the template function. It is best to move any data-processing code
+    into the load function in this case.
+
+    The load function is a hook on any render component, taking the following forms (this is the last hook - there are only 7 in total):
+
+    ```javascript
+      // 1. synchronous
+      load: function(o) { ... }
+
+      // 2. asynchronous
+      load: function(o, done) { ... done() }
+    ```
+
+    Consider a component which renders a list of buttons:
+
+    button-list.js
+    ```javascript
+      define(['./button6'], function(Button) {
+        return {
+          options: {
+            buttonList: ['default', 'buttons']
+          },
+          load: function(o) {
+            o.listStructure = o.buttonList.map(function(title) {
+              return {
+                render: Button,
+                options: {
+                  text: title,
+                  msg: 'clicked ' + title
+                }
+              };
+            });
+          },
+          render: function(o) {
+            return "&lt;div>{&#96;listStructure&#96;}&lt;/div>"
+          }
+        };
+      });
+    ```
+
+    We map the options data into a render structure (an array of render structures being an allowed render structure itself),
+    which is then stored as a dynamically generated region on the options object, before being rendered.
+    
+    ```jslive
+      $z.render('@app/button-list', {
+        buttonList: ['here', 'are', 'some', 'buttons']
+      }, document.querySelector('.container-13'));
+    ```
+    <div class='container-13' style='margin: 20px'></div>
+
+    Note that when rendering lists where each item has mouse events or attachments, it is often better for performance for the list component 
+    itself to handle the  attachment through a single event handler delegate, than having individual attachments for each sub-component.
+
+    `$z.render` should never be called within the render cycle - regions should always be used for sub-rendering. `$z.render` can be used
+    in component attachment functions as part of client-side dynamic rendering though.
+
+    ***
+
+        """
       ,
         sectionName: 'Attaching Controllers'
         markdown: """
@@ -799,53 +803,6 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     <div class='container-17' style='margin: 20px'></div>
     
     Note that because rendering is asynchronous, we've put the interaction code in the complete callback for the render function to ensure that rendering is completed before we run the component selector.
-
-        """
-      ,
-        sectionName: 'Asynchronous Attachment'
-        markdown: """
-
-    When we render a component on the server, we need to decide if we want to block the page until it
-    has fully loaded its dynamic attachment scripts, or if we want to continue displaying the page and then 
-    **progressively enhance** the component once its scripts have completed loading asychronously with RequireJS.
-
-    By default, the attachment for a component rendered on the server will block the HTML page render stream until the dynamic component has been fully attached. 
-    This is to ensure synchronous component selectors will behave as expected between client and server.
-
-    To indicate that a component should be progressively enhanced with asynchronous attachment, set the `progressive`
-    property on the render component:
-
-    ```javascript
-    define(['./WidgetTemplate'], function(WidgetTemplate) {
-      return {
-        className: 'ProgressiveWidget'
-        render: WidgetTemplate,
-        attach: './WidgetAttachment',
-        progressive: true
-      };
-    });
-    ```
-
-    Other components or scripts needing access to the component controller will then need to use asynchronous component
-    selection in case the component is still being attached.
-
-    parent-widget-attach.js (for example):
-    ```javascript
-    define([], function() {
-      return function(el, o) {
-        $z.select('> .ProgressiveWidget', el, function(EnhancedWidgetController) {
-          // now we know the controller for the child component, 
-          // ProgressiveWidget has been attached
-        });
-      }
-    })
-    ```
-
-    If the component has already been attached, the callback will trigger immediately. The selector still requires the HTML
-    to be present in the page before it will work. This is ensured naturally for any parent component as its attachment
-    will come after any child component in the HTML.
-
-    [Read more about the server load process here](#Server%20Rendering%20Mechanics).
 
         """
       ,
@@ -997,6 +954,53 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
     ```
 
     `$z.$` will then reference jQuery, and `jQuery` can also be loaded directly.
+        """
+      ,
+        sectionName: 'Asynchronous Attachment'
+        markdown: """
+
+    When we render a component on the server, we need to decide if we want to block the page until it
+    has fully loaded its dynamic attachment scripts, or if we want to continue displaying the page and then 
+    **progressively enhance** the component once its scripts have completed loading asychronously with RequireJS.
+
+    By default, the attachment for a component rendered on the server will block the HTML page render stream until the dynamic component has been fully attached. 
+    This is to ensure synchronous component selectors will behave as expected between client and server.
+
+    To indicate that a component should be progressively enhanced with asynchronous attachment, set the `progressive`
+    property on the render component:
+
+    ```javascript
+    define(['./WidgetTemplate'], function(WidgetTemplate) {
+      return {
+        className: 'ProgressiveWidget'
+        render: WidgetTemplate,
+        attach: './WidgetAttachment',
+        progressive: true
+      };
+    });
+    ```
+
+    Other components or scripts needing access to the component controller will then need to use asynchronous component
+    selection in case the component is still being attached.
+
+    parent-widget-attach.js (for example):
+    ```javascript
+    define([], function() {
+      return function(el, o) {
+        $z.select('> .ProgressiveWidget', el, function(EnhancedWidgetController) {
+          // now we know the controller for the child component, 
+          // ProgressiveWidget has been attached
+        });
+      }
+    })
+    ```
+
+    If the component has already been attached, the callback will trigger immediately. The selector still requires the HTML
+    to be present in the page before it will work. This is ensured naturally for any parent component as its attachment
+    will come after any child component in the HTML.
+
+    [Read more about the server load process here](#Server%20Rendering%20Mechanics).
+
         """
       ,
         sectionName: 'Adding jQuery'
