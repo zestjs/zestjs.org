@@ -339,7 +339,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
         #### Next Steps
 
-        Follow the [Render Component Introduction](#Render%20Components) below.
+        Follow the [Render Component Introduction](#Writing%20Render%20Components) above, or [read the full guided documentation](/docs).
 
         ***
 
@@ -361,9 +361,9 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
             This will create a new folder called 'myapp' containing the project template, and download all the necessary Zest dependencies into the public library folder.
 
-          3. * To start the template application, simply run `zest` from within the zestapp folder:
+          3. * To start the template application, simply run `zest` from within the myapp folder:
               ```
-                cd zestapp
+                cd myapp
                 zest
               ```
              * Alternatively, if you want to use Zest Server from within NodeJS, run the NodeJS server at:
@@ -383,7 +383,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
 
           #### Next Steps
 
-          With the server installed, follow the [Render Component introduction below](#Render%Components).
+          With the server installed, follow the [Render Component introduction](#Writing%20Render%20Components), or [read the full guided documentation](/docs).
 
         ***
           
