@@ -13,7 +13,7 @@ define ['cs!./doc-page/doc-page'], (DocPage) ->
       ZestJS provides client and server rendering for static and dynamic HTML widgets (**Render Components**) written as AMD
       modules providing low-level application modularity and portability.
 
-      1. Write widgets as AMD Render Components.
+      1. Write widgets as AMD Render Components, with separate template, interaction script and CSS files.
       2. Render them on the client or server with a single render call, loading them through RequireJS.
       3. Build with the RequireJS Optimizer into a single file or layers in production, including the compilation of CSS or LESS and templates.
 
